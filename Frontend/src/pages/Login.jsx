@@ -5,6 +5,8 @@ import google from "../assets/google.png";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import { authDataContext } from '../context/AuthContext';
 import axios from 'axios';
+import { signInWithPopup } from 'firebase/auth';
+import { auth, provider } from '../../utils/Firebase';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -38,6 +40,35 @@ const Login = () => {
         }
     };
 
+
+    const googlelogin = async () => {
+        try {
+            setLoading(true);
+
+            // Firebase popup for Google
+            const response = await signInWithPopup(auth, provider);
+            const user = response.user;
+
+            const name = user.displayName;
+            const email = user.email;
+
+            // Send user info to backend
+            const result = await axios.post(
+                serverUrl + "/api/auth/googlelogin",
+                { name, email },
+                { withCredentials: true }
+            );
+
+            console.log("Google login success:", result.data);
+            navigate("/");
+        } catch (error) {
+            console.error("Google signup error:", error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
     return (
         <div className="w-screen min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] text-white flex flex-col">
 
@@ -66,7 +97,7 @@ const Login = () => {
                     {/* Google Button */}
                     <div
                         className={`w-full flex items-center justify-center gap-3 bg-[#42656cae] rounded-lg py-3 mb-6 transition 
-                        ${loading ? "opacity-50 cursor-not-allowed" : "hover:bg-[#42656c] cursor-pointer"}`}
+                        ${loading ? "opacity-50 cursor-not-allowed" : "hover:bg-[#42656c] cursor-pointer"}`} onClick={googlelogin}
                     >
                         <img src={google} alt="Google" className="w-5 h-5 sm:w-6 sm:h-6 object-contain rounded-full" />
                         <span className="font-medium text-white text-sm sm:text-base">
