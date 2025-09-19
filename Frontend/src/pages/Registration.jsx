@@ -20,30 +20,33 @@ const Registration = () => {
     let [email, setEmail] = useState("");
     let [password, setPassword] = useState("");
 
+    // ✅ Normal Signup
     const handleSignup = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
-            const result = await axios.post(
+            await axios.post(
                 serverUrl + '/api/auth/registration',
                 { name, email, password },
                 { withCredentials: true }
             );
-            getCurrentUser()
-            navigate("/login");
-            console.log(result.data);
+
+            await getCurrentUser(); // update context
+            navigate("/"); // ✅ redirect directly to home
         } catch (error) {
             if (error.response) {
                 console.log("Backend Response:", error.response.data);
+                alert(error.response.data.message || "Signup failed");
             } else {
                 console.log("Error:", error.message);
+                alert("Network error");
             }
         } finally {
             setLoading(false);
         }
     };
 
-
+    // ✅ Google Signup/Login
     const googleSignup = async () => {
         try {
             setLoading(true);
@@ -56,22 +59,21 @@ const Registration = () => {
             const email = user.email;
 
             // Send user info to backend
-            const result = await axios.post(
+            await axios.post(
                 serverUrl + "/api/auth/googlelogin",
                 { name, email },
                 { withCredentials: true }
             );
 
-            console.log("Google login success:", result.data);
-            navigate("/");
+            await getCurrentUser(); // update context
+            navigate("/"); // ✅ redirect directly to home
         } catch (error) {
             console.error("Google signup error:", error.message);
+            alert("Google signup failed");
         } finally {
             setLoading(false);
         }
     };
-
-
 
     return (
         <div className="w-full h-full min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] text-white flex flex-col overflow-hidden">
@@ -102,7 +104,8 @@ const Registration = () => {
                     {/* Google Button */}
                     <div
                         className={`w-full flex items-center justify-center gap-3 bg-[#42656cae] rounded-lg py-3 mb-6 transition 
-            ${loading ? "opacity-50 cursor-not-allowed" : "hover:bg-[#42656c] cursor-pointer"}`} onClick={googleSignup}
+                        ${loading ? "opacity-50 cursor-not-allowed" : "hover:bg-[#42656c] cursor-pointer"}`}
+                        onClick={googleSignup}
                     >
                         <img src={google} alt="Google" className="w-5 h-5 sm:w-6 sm:h-6 object-contain rounded-full" />
                         <span className="font-medium text-white text-sm sm:text-base">
@@ -123,7 +126,7 @@ const Registration = () => {
                             type="text"
                             placeholder="Username"
                             className="w-full h-11 sm:h-12 px-4 rounded-lg bg-[#ffffff15] border border-[#96969635] 
-              focus:outline-none focus:border-[#4aa4b5] text-white placeholder-gray-400 text-sm sm:text-base"
+                            focus:outline-none focus:border-[#4aa4b5] text-white placeholder-gray-400 text-sm sm:text-base"
                             required
                             disabled={loading}
                             onChange={(e) => setName(e.target.value)}
@@ -133,20 +136,20 @@ const Registration = () => {
                             type="email"
                             placeholder="Email"
                             className="w-full h-11 sm:h-12 px-4 rounded-lg bg-[#ffffff15] border border-[#96969635] 
-              focus:outline-none focus:border-[#4aa4b5] text-white placeholder-gray-400 text-sm sm:text-base"
+                            focus:outline-none focus:border-[#4aa4b5] text-white placeholder-gray-400 text-sm sm:text-base"
                             required
                             disabled={loading}
                             onChange={(e) => setEmail(e.target.value)}
                             value={email}
                         />
 
-                        {/* Password Field with Eye Icon */}
+                        {/* Password Field */}
                         <div className="relative">
                             <input
                                 type={showPassword ? "text" : "password"}
                                 placeholder="Password"
                                 className="w-full h-11 sm:h-12 px-4 pr-10 rounded-lg bg-[#ffffff15] border border-[#96969635] 
-                focus:outline-none focus:border-[#4aa4b5] text-white placeholder-gray-400 text-sm sm:text-base"
+                                focus:outline-none focus:border-[#4aa4b5] text-white placeholder-gray-400 text-sm sm:text-base"
                                 required
                                 disabled={loading}
                                 onChange={(e) => setPassword(e.target.value)}
@@ -156,7 +159,7 @@ const Registration = () => {
                                 type="button"
                                 disabled={loading}
                                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 
-                hover:text-white transition-colors"
+                                hover:text-white transition-colors"
                                 onClick={() => setShowPassword(!showPassword)}
                             >
                                 {showPassword ? <IoEyeOffOutline size={18} /> : <IoEyeOutline size={18} />}
@@ -168,7 +171,7 @@ const Registration = () => {
                             type="submit"
                             disabled={loading}
                             className={`w-full h-11 sm:h-12 rounded-lg text-white font-semibold mt-4 transition
-                ${loading ? "bg-gray-500 cursor-not-allowed" : "bg-[#4aa4b5] hover:bg-[#3a8c9a]"}`}
+                            ${loading ? "bg-gray-500 cursor-not-allowed" : "bg-[#4aa4b5] hover:bg-[#3a8c9a]"}`}
                         >
                             {loading ? "Creating..." : "Create Account"}
                         </button>

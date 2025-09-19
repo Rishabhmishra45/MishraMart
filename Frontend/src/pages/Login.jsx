@@ -7,7 +7,6 @@ import { authDataContext } from '../context/AuthContext';
 import axios from 'axios';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, provider } from '../../utils/Firebase';
-import { getCurrentUser } from '../../../backend/controller/userController';
 import { userDataContext } from '../context/UserContext';
 
 const Login = () => {
@@ -17,21 +16,19 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     let { serverUrl } = useContext(authDataContext);
-    let { getCurrentUser } = useContext(userDataContext)
+    let { getCurrentUser } = useContext(userDataContext);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
-            const result = await axios.post(
+            await axios.post(
                 serverUrl + '/api/auth/login',
                 { email, password },
                 { withCredentials: true }
             );
-            console.log(result.data);
-
-            getCurrentUser()
-            navigate("/");
+            await getCurrentUser(); // ✅ ensure context updates
+            navigate("/");          // ✅ redirect after update
         } catch (error) {
             if (error.response) {
                 alert(error.response.data.message);
@@ -43,38 +40,32 @@ const Login = () => {
         }
     };
 
-
     const googlelogin = async () => {
         try {
             setLoading(true);
-
-            // Firebase popup for Google
             const response = await signInWithPopup(auth, provider);
             const user = response.user;
 
             const name = user.displayName;
             const email = user.email;
 
-            // Send user info to backend
-            const result = await axios.post(
+            await axios.post(
                 serverUrl + "/api/auth/googlelogin",
                 { name, email },
                 { withCredentials: true }
             );
 
-            console.log("Google login success:", result.data);
+            await getCurrentUser(); // ✅ update user in context
             navigate("/");
         } catch (error) {
-            console.error("Google signup error:", error.message);
+            console.error("Google login error:", error.message);
         } finally {
             setLoading(false);
         }
     };
 
-
     return (
         <div className="w-screen min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] text-white flex flex-col">
-
             {/* Navbar / Logo */}
             <div className="w-full h-[70px] sm:h-[80px] flex items-center justify-start px-4 sm:px-8">
                 <img
@@ -100,7 +91,8 @@ const Login = () => {
                     {/* Google Button */}
                     <div
                         className={`w-full flex items-center justify-center gap-3 bg-[#42656cae] rounded-lg py-3 mb-6 transition 
-                        ${loading ? "opacity-50 cursor-not-allowed" : "hover:bg-[#42656c] cursor-pointer"}`} onClick={googlelogin}
+                        ${loading ? "opacity-50 cursor-not-allowed" : "hover:bg-[#42656c] cursor-pointer"}`}
+                        onClick={googlelogin}
                     >
                         <img src={google} alt="Google" className="w-5 h-5 sm:w-6 sm:h-6 object-contain rounded-full" />
                         <span className="font-medium text-white text-sm sm:text-base">
@@ -128,7 +120,7 @@ const Login = () => {
                             onChange={(e) => setEmail(e.target.value)}
                         />
 
-                        {/* Password Field with Eye Icon */}
+                        {/* Password Field */}
                         <div className="relative">
                             <input
                                 type={showPassword ? "text" : "password"}
@@ -151,7 +143,7 @@ const Login = () => {
                             </button>
                         </div>
 
-                        {/* Forgot Password Link */}
+                        {/* Forgot Password */}
                         <div className="text-right mt-1 sm:mt-2">
                             <span
                                 className={`text-[#5555f6cf] text-xs sm:text-sm font-semibold ${loading ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:underline"}`}
