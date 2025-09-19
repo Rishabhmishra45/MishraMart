@@ -7,14 +7,17 @@ import { authDataContext } from '../context/AuthContext';
 import axios from 'axios';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, provider } from '../../utils/Firebase';
+import { getCurrentUser } from '../../../backend/controller/userController';
+import { userDataContext } from '../context/UserContext';
 
 const Login = () => {
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false); // <-- loading state
+    const [loading, setLoading] = useState(false);
     let { serverUrl } = useContext(authDataContext);
+    let { getCurrentUser } = useContext(userDataContext)
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -27,7 +30,7 @@ const Login = () => {
             );
             console.log(result.data);
 
-            // success pe navigate
+            getCurrentUser()
             navigate("/");
         } catch (error) {
             if (error.response) {

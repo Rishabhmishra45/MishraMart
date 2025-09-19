@@ -7,12 +7,14 @@ import { authDataContext } from '../context/AuthContext';
 import axios from 'axios';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, provider } from '../../utils/Firebase';
+import { userDataContext } from '../context/UserContext';
 
 const Registration = () => {
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     let { serverUrl } = useContext(authDataContext);
+    let { getCurrentUser } = useContext(userDataContext);
 
     let [name, setName] = useState("");
     let [email, setEmail] = useState("");
@@ -27,8 +29,9 @@ const Registration = () => {
                 { name, email, password },
                 { withCredentials: true }
             );
-            console.log(result.data);
+            getCurrentUser()
             navigate("/login");
+            console.log(result.data);
         } catch (error) {
             if (error.response) {
                 console.log("Backend Response:", error.response.data);
