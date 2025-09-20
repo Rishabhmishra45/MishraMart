@@ -1,15 +1,24 @@
-// controller/authController.js
 import User from "../model/UserModel.js";
 import validator from "validator";
 import bcrypt from "bcryptjs";
 import { genToken } from "../config/token.js";
+
+// common cookie options for cross-site (Netlify <-> Render)
+const cookieOptions = {
+  httpOnly: true,
+  secure: true,        // always true for cross-site
+  sameSite: "None",    // required for cross-site cookies
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
 
 export const registration = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "Name, email and password required" });
+      return res
+        .status(400)
+        .json({ message: "Name, email and password required" });
     }
 
     // check if user already exists
@@ -25,7 +34,9 @@ export const registration = async (req, res) => {
 
     // validate password
     if (password.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters" });
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters" });
     }
 
     // hash password
@@ -41,14 +52,7 @@ export const registration = async (req, res) => {
     // generate token
     const token = genToken(user._id);
 
-    // cookie options
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    };
-
+    // set cookie
     res.cookie("token", token, cookieOptions);
 
     // remove password before sending
@@ -58,7 +62,9 @@ export const registration = async (req, res) => {
     return res.status(201).json({ user: userObj });
   } catch (error) {
     console.error("Register error:", error.message);
-    return res.status(500).json({ message: `registration error ${error.message}` });
+    return res
+      .status(500)
+      .json({ message: `registration error ${error.message}` });
   }
 };
 
@@ -81,13 +87,7 @@ export const login = async (req, res) => {
 
     let token = genToken(user._id);
 
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    };
-
+    // set cookie
     res.cookie("token", token, cookieOptions);
 
     const userObj = user.toObject();
@@ -96,13 +96,19 @@ export const login = async (req, res) => {
     return res.status(200).json({ message: "Login successful", user: userObj });
   } catch (error) {
     console.error("Login error:", error.message);
-    return res.status(500).json({ message: `login error ${error.message}` });
+    return res
+      .status(500)
+      .json({ message: `login error ${error.message}` });
   }
 };
 
 export const logOut = async (req, res) => {
   try {
-    res.clearCookie("token");
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    });
     return res.status(200).json({ message: "Logout successful" });
   } catch (error) {
     console.error("logOut error:", error.message);
@@ -126,13 +132,7 @@ export const googleLogin = async (req, res) => {
 
     const token = genToken(user._id);
 
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    };
-
+    // set cookie
     res.cookie("token", token, cookieOptions);
 
     const userObj = user.toObject();
@@ -141,6 +141,8 @@ export const googleLogin = async (req, res) => {
     return res.status(200).json({ message: "Login successful", user: userObj });
   } catch (error) {
     console.error("googleLogin error:", error.message);
-    return res.status(500).json({ message: "googleLogin error", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "googleLogin error", error: error.message });
   }
 };
