@@ -1,10 +1,11 @@
 import React, { createContext } from 'react'
 
+// Context create
 export const authDataContext = createContext()
 
 function AuthContext({ children }) {
-
-  const serverUrl = "https://mishramart.onrender.com"
+  // take the URL from env; fallback to localhost if undefined
+  const serverUrl = import.meta.env.VITE_SERVER_URL || "http://localhost:8000"
   const value = { serverUrl }
 
   return (
@@ -15,4 +16,3 @@ function AuthContext({ children }) {
 }
 
 export default AuthContext
-///////test/////

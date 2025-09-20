@@ -1,8 +1,15 @@
+// controller/userController.js
 import User from "../model/UserModel.js";
 
 export const getCurrentUser = async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select("-password"); // 👈 fixed
+    // isAuth middleware sets req.userId
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(400).json({ message: "User id missing from request" });
+    }
+
+    const user = await User.findById(userId).select("-password");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });

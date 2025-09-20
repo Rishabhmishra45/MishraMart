@@ -1,27 +1,36 @@
+// middleware/isAuth.js
 import jwt from "jsonwebtoken";
 
-const isAuth = async (req, res, next) => {
-    try {
-        const { token } = req.cookies;
+const isAuth = (req, res, next) => {
+  try {
+    let token;
 
-        if (!token) {
-            return res.status(401).json({ message: "No token provided, user not authenticated" });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        if (!decoded) {
-            return res.status(401).json({ message: "Invalid token, user not authenticated" });
-        }
-
-        // attach userId to req
-        req.userId = decoded.id;
-
-        next();
-    } catch (error) {
-        console.log("isAuth error:", error.message);
-        return res.status(500).json({ message: `isAuth error: ${error.message}` });
+    // 1) Authorization header (Bearer ...)
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer ")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
     }
+
+    // 2) Cookie named 'token'
+    if (!token && req.cookies && req.cookies.token) {
+      token = req.cookies.token;
+    }
+
+    if (!token) {
+      return res.status(401).json({ message: "Not authorized, no token" });
+    }
+
+    // verify
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // set userId on request (controllers expect req.userId)
+    req.userId = decoded.id;
+    next();
+  } catch (error) {
+    console.error("isAuth error:", error.message);
+    return res.status(401).json({ message: "Token invalid or expired" });
+  }
 };
 
 export default isAuth;

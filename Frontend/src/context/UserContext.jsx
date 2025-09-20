@@ -5,38 +5,45 @@ import axios from "axios";
 export const userDataContext = createContext();
 
 const UserContextProvider = ({ children }) => {
-    const [userData, setUserData] = useState(null);
-    const { serverUrl } = useContext(authDataContext);
+  const [userData, setUserData] = useState(null);
+  const { serverUrl } = useContext(authDataContext);
 
-    const getCurrentUser = async () => {
-        try {
-            const result = await axios.get(`${serverUrl}/api/user/getcurrentuser`, {
-                withCredentials: true,
-            });
-
-            setUserData(result.data);
-            console.log("Current User:", result.data);
-        } catch (error) {
-            setUserData(null);
-            console.error("getCurrentUser error:", error.response?.data || error.message);
+  const getCurrentUser = async () => {
+    try {
+      const result = await axios.get(
+        `${serverUrl}/api/user/getcurrentuser`,
+        {
+          // ✅ very important for cookie-based auth
+          withCredentials: true,
         }
-    };
+      );
 
-    useEffect(() => {
-        getCurrentUser();
-    }, []);
+      setUserData(result.data);
+      console.log("Current User:", result.data);
+    } catch (error) {
+      setUserData(null);
+      console.error(
+        "getCurrentUser error:",
+        error.response?.data || error.message
+      );
+    }
+  };
 
-    const value = {
-        userData,
-        setUserData,
-        getCurrentUser,
-    };
+  useEffect(() => {
+    getCurrentUser();
+  }, []);
 
-    return (
-        <userDataContext.Provider value={value}>
-            {children}
-        </userDataContext.Provider>
-    );
+  const value = {
+    userData,
+    setUserData,
+    getCurrentUser,
+  };
+
+  return (
+    <userDataContext.Provider value={value}>
+      {children}
+    </userDataContext.Provider>
+  );
 };
 
 export default UserContextProvider;

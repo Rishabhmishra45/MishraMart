@@ -1,3 +1,4 @@
+// index.js
 import express from "express";
 import dotenv from "dotenv";
 import connectDb from "./config/db.js";
@@ -5,27 +6,54 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
 import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
+import morgan from "morgan";
 
 dotenv.config();
-
 const port = process.env.PORT || 6000;
 const app = express();
 
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-    origin: "https://mishramarts.netlify.app",
-    // origin: "http://localhost:5173", // frontend ka URL
-    credentials: true
-}));
+app.use(morgan("dev"));
+
+// ✅ Allow both production & local dev origins
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://mishramarts.netlify.app",
+];
+
+// CORS config
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin (like curl, Postman)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed for this origin"));
+      }
+    },
+    credentials: true,
+  })
+);
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/user", userRoutes);   // ✅ FIXED
+app.use("/api/user", userRoutes);
 
-// Start server
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-    connectDb(); // DB connect on startup
-});
+// Default root
+app.get("/", (req, res) => res.send("API is running"));
+
+// DB connect then start server
+connectDb()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+    });
+  })
+  .catch((err) => {
+    console.error("DB connection failed:", err);
+    process.exit(1);
+  });
