@@ -1,4 +1,3 @@
-// index.js
 import express from "express";
 import dotenv from "dotenv";
 import connectDb from "./config/db.js";
@@ -17,24 +16,17 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
 
-// ✅ Allow both production & local dev origins
+// ✅ Allowed origins for CORS
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://mishramarts.netlify.app",   // Netlify
-  "https://www.mishramart.com",        // (if you use custom domain)
+  "https://mishramarts.netlify.app", // Netlify
+  // add your custom domain here if you use one
 ];
 
+// ✅ Simple CORS config
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.log("CORS blocked for origin:", origin);
-        callback(new Error("CORS not allowed for this origin"));
-      }
-    },
+    origin: allowedOrigins,
     credentials: true,
   })
 );
