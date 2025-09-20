@@ -20,18 +20,18 @@ app.use(morgan("dev"));
 // ✅ Allow both production & local dev origins
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://mishramarts.netlify.app",
+  "https://mishramarts.netlify.app",   // Netlify
+  "https://www.mishramart.com",        // (if you use custom domain)
 ];
 
-// CORS config
 app.use(
   cors({
     origin: function (origin, callback) {
-      // allow requests with no origin (like curl, Postman)
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.log("CORS blocked for origin:", origin);
         callback(new Error("CORS not allowed for this origin"));
       }
     },
