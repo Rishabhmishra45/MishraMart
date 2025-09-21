@@ -16,26 +16,38 @@ const Nav = () => {
   const { userData, setUserData } = useContext(userDataContext);
   const { serverUrl } = useContext(authDataContext);
   const navigate = useNavigate();
-  const dropdownRef = useRef(null);
 
-  // ✅ Close dropdown on outside click
+  // ✅ Separate refs for Desktop & Mobile dropdowns
+  const desktopDropdownRef = useRef(null);
+  const mobileDropdownRef = useRef(null);
+
+  // ✅ Close dropdown when clicked outside (fix for desktop issue)
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
+      // agar click desktop ya mobile dropdown ke andar hai → ignore
+      if (
+        (desktopDropdownRef.current && desktopDropdownRef.current.contains(event.target)) ||
+        (mobileDropdownRef.current && mobileDropdownRef.current.contains(event.target))
+      ) {
+        return;
       }
+      // otherwise dropdown band ho jaye
+      setIsDropdownOpen(false);
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
+  // ✅ Toggle search box open/close
   const handleSearchToggle = () => {
     setSearchOpen(!searchOpen);
     if (searchOpen) setSearchQuery('');
   };
 
+  // ✅ Handle search form submit
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -44,7 +56,7 @@ const Nav = () => {
     }
   };
 
-  // ✅ Logout function (works for both desktop & mobile)
+  // ✅ Logout function
   const handleLogout = async () => {
     try {
       await axios.get(`${serverUrl}/api/auth/logout`, { withCredentials: true });
@@ -57,7 +69,7 @@ const Nav = () => {
     }
   };
 
-  // ✅ Fixed: Handle dropdown item clicks properly
+  // ✅ Handle dropdown actions
   const handleDropdownAction = (action) => {
     if (action === 'logout') {
       handleLogout();
@@ -96,7 +108,7 @@ const Nav = () => {
               <a href="#contact" className="text-gray-700 hover:text-[#00bcd4] font-medium">Contact</a>
             </div>
 
-            {/* Right - Desktop Icons */}
+            {/* ✅ Right Side (Desktop) */}
             <div className="hidden md:flex items-center space-x-6">
 
               {/* Search */}
@@ -129,8 +141,8 @@ const Nav = () => {
                 )}
               </div>
 
-              {/* User Dropdown (Desktop) - FIXED */}
-              <div className="relative" ref={dropdownRef}>
+              {/* ✅ User Dropdown (Desktop) */}
+              <div className="relative" ref={desktopDropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="text-gray-700 hover:text-[#00bcd4] p-2"
@@ -144,6 +156,7 @@ const Nav = () => {
                   )}
                 </button>
 
+                {/* Dropdown Menu */}
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-black text-white rounded-md shadow-lg p-2 space-y-2 z-50">
                     {userData ? (
@@ -198,7 +211,7 @@ const Nav = () => {
 
               {/* Cart */}
               <div className="relative">
-                <button 
+                <button
                   className="text-gray-700 hover:text-[#00bcd4] p-2 relative"
                   onClick={() => navigate("/cart")}
                 >
@@ -212,8 +225,9 @@ const Nav = () => {
               </div>
             </div>
 
-            {/* ✅ Mobile Right (Search + User) - UNCHANGED */}
+            {/* ✅ Mobile Right (Search + User) */}
             <div className="flex md:hidden items-center space-x-4">
+
               {/* Search */}
               {searchOpen ? (
                 <form onSubmit={handleSearchSubmit} className="flex items-center bg-white rounded-full shadow-sm">
@@ -242,8 +256,8 @@ const Nav = () => {
                 </button>
               )}
 
-              {/* User Dropdown (Mobile) - UNCHANGED */}
-              <div className="relative" ref={dropdownRef}>
+              {/* ✅ User Dropdown (Mobile) */}
+              <div className="relative" ref={mobileDropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="text-gray-700 hover:text-[#00bcd4] p-2"
@@ -313,7 +327,7 @@ const Nav = () => {
         </div>
       </nav>
 
-      {/* ✅ Bottom Navigation (Mobile only) - UNCHANGED */}
+      {/* ✅ Bottom Navigation (Mobile only) */}
       <div className="fixed bottom-0 left-0 w-full bg-[#ecfafa] shadow-md z-50 md:hidden">
         <div className="flex justify-around items-center py-2">
           <button onClick={() => navigate("/")} className="flex flex-col items-center text-gray-700 hover:text-[#00bcd4]">
