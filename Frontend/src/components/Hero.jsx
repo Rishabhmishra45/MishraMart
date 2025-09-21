@@ -23,7 +23,7 @@ const Hero = () => {
       </div>
 
       {/* Right Background Slider */}
-      <div className="w-full md:w-1/2 h-[250px] sm:h-[350px] md:h-[calc(100vh-70px)]">
+      <div className="w-full md:w-1/2 h-[250px] sm:h-[350px] md:h-[calc(100vh-70px)] pt-[0px]">
         <Background />
       </div>
     </section>
