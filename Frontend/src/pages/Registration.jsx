@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Logo from "../assets/logo.png";
+import image from "../assets/image.png";
 import google from "../assets/google.png";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import { authDataContext } from '../context/AuthContext';
@@ -70,7 +71,7 @@ const Registration = () => {
   };
 
   return (
-    <div className="w-full h-full min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] text-white flex flex-col overflow-hidden">
+    <div className="w-full h-full min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] text-white flex flex-col overflow-hidden select-none pointer-events-auto">
 
       {/* Navbar / Logo */}
       <div className="w-full h-[70px] sm:h-[80px] flex items-center justify-start px-4 sm:px-8">

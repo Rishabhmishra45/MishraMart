@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
-    host: true,   // ✅ isse aapke LAN (mobile, same Wi-Fi) pe open hoga
+    host: true,   // isse aapke LAN (mobile, same Wi-Fi) pe open hoga
     port: 5173    // default port, chahe to change kar sakte ho
   }
 })

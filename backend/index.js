@@ -19,8 +19,8 @@ app.use(morgan("dev"));
 // ✅ Allowed origins for CORS
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://mishramarts.netlify.app", // Netlify
-  // add your custom domain here if you use one
+  "https://mishramarts.netlify.app",
+  "http://localhost:5174",
 ];
 
 // ✅ Simple CORS config

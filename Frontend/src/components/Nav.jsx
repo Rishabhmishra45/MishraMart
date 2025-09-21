@@ -85,7 +85,7 @@ const Nav = () => {
   return (
     <>
       {/* ✅ Top Navbar */}
-      <nav className="w-full bg-[#ecfafa] shadow-md fixed top-0 left-0 z-50 h-[60px] flex items-center">
+      <nav className="w-full bg-[#ecfafa] shadow-md fixed top-0 left-0 z-50 h-[60px] flex items-center select-none pointer-events-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="flex items-center justify-between">
 

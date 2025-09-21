@@ -1,7 +1,7 @@
 import User from "../model/UserModel.js";
 import validator from "validator";
 import bcrypt from "bcryptjs";
-import { genToken } from "../config/token.js";
+import { genToken, genToken1 } from "../config/token.js";
 
 // common cookie options for cross-site (Netlify <-> Render)
 const cookieOptions = {
@@ -126,3 +126,26 @@ export const googleLogin = async (req, res) => {
     return res.status(500).json({ message: "googleLogin error", error: error.message });
   }
 };
+
+
+
+
+export const adminLogin = async (req, res) => {
+  try {
+    let { email, password } = req.body
+    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+      let token = await genToken1(email)
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "Strict",
+        maxAge: 1 * 24 * 60 * 1000
+      })
+      return res.status(200).json(token)
+    }
+    return res.status(400).json({ message: "Invalid credential" })
+  } catch (error) {
+    console.error("AdminLogin error:", error.message);
+    return res.status(500).json({ message: "AdminLogin error", error: error.message });
+  }
+}

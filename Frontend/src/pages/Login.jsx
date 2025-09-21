@@ -68,7 +68,7 @@ const Login = () => {
   };
 
   return (
-    <div className="w-screen min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] text-white flex flex-col">
+    <div className="w-screen min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] text-white flex flex-col select-none pointer-events-auto">
       {/* Navbar / Logo */}
       <div className="w-full h-[70px] sm:h-[80px] flex items-center justify-start px-4 sm:px-8">
         <img
