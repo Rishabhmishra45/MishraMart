@@ -71,10 +71,12 @@ const Registration = () => {
 
   return (
     <div className="w-full h-full min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] text-white flex flex-col overflow-hidden">
+
       {/* Navbar / Logo */}
       <div className="w-full h-[70px] sm:h-[80px] flex items-center justify-start px-4 sm:px-8">
         <img
-          className="h-[120px] sm:h-[200px] w-auto object-contain cursor-pointer select-none block"
+          className="h-[120px] sm:h-[200px] w-auto object-contain 
+                     cursor-pointer select-none pointer-events-auto block"
           src={Logo}
           alt="Logo"
           draggable={false}

@@ -90,9 +90,9 @@ const Nav = () => {
           <div className="flex items-center justify-between">
 
             {/* Left - Logo */}
-            <div className="flex-shrink-0 flex items-center h-[190px]">
+            <div className="flex-shrink-0 flex items-center h-[150px]">
               <img
-                className="max-h-[200px] h-full w-auto object-contain cursor-pointer select-none"
+                className="max-h-[180px] h-full w-auto object-contain cursor-pointer select-none"
                 src={Logo}
                 alt="Logo"
                 draggable={false}
