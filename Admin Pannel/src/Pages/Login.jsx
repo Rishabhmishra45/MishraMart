@@ -4,6 +4,7 @@ import Logo from "../assets/logo.png";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import axios from "axios";
 import { authDataContext } from "../context/AuthContext";
+import { adminDataContext } from "../context/AdminContext";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { serverUrl } = useContext(authDataContext);
+  const { adminData, getAdmin } = useContext(adminDataContext)
 
   const AdminLogin = async (e) => {
     e.preventDefault();
@@ -23,7 +25,8 @@ const Login = () => {
         { withCredentials: true }
       );
       console.log(result.data);
-      // navigate("/dashboard"); // uncomment for redirect
+      getAdmin()
+      navigate("/")
     } catch (error) {
       console.log(error);
     } finally {
@@ -36,7 +39,7 @@ const Login = () => {
       {/* Navbar / Logo */}
       <div className="w-full h-[70px] sm:h-[80px] flex items-center justify-start px-4 sm:px-8">
         <img
-          className="h-[80px] sm:h-[120px] w-auto object-contain cursor-pointer hover:scale-105 transition-transform"
+          className="h-[120px] sm:h-[160px] w-auto object-contain cursor-pointer hover:scale-105 transition-transform"
           src={Logo}
           alt="Logo"
         />
