@@ -6,6 +6,7 @@ import authRoutes from "./routes/authRoutes.js";
 import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
 import morgan from "morgan";
+import productRoutes from "./routes/productRoutes.js";
 
 dotenv.config();
 const port = process.env.PORT || 6000;
@@ -16,14 +17,14 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
 
-// ✅ Allowed origins for CORS
+// Allowed origins for CORS
 const allowedOrigins = [
   "http://localhost:5173",
   "https://mishramarts.netlify.app",
   "http://localhost:5174",
 ];
 
-// ✅ Simple CORS config
+// Simple CORS config
 app.use(
   cors({
     origin: allowedOrigins,
@@ -34,6 +35,7 @@ app.use(
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/product", productRoutes);
 
 // Default root
 app.get("/", (req, res) => res.send("API is running"));

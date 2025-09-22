@@ -24,7 +24,7 @@ const Nav = () => {
   };
 
   return (
-    <div className="w-full h-[60px] bg-[#dcdbdbf8] fixed top-0 left-0 z-10 flex       items-center justify-between px-4 md:px-8 shadow-md shadow-black select-none">
+    <div className="w-full h-[60px] bg-[#dcdbdbf8] fixed top-0 left-0 z-10 flex items-center justify-between px-4 md:px-8 shadow-md shadow-black select-none">
       {/* Logo + text */}
       <div
         className="flex items-center gap-2 cursor-pointer"
@@ -43,7 +43,7 @@ const Nav = () => {
       {/* Logout button */}
       <button
         onClick={logOut}
-        className="bg-black text-white px-4 py-2 rounded-2xl hover:bg-gray-800 transition-colors text-sm sm:text-base
+        className="bg-black text-white px-4 py-2 rounded-2xl cursor-pointer hover:bg-gray-800 transition-colors text-sm sm:text-base
         "
       >
         LogOut
