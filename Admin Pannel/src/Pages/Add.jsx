@@ -1,57 +1,24 @@
-import React, { useState } from 'react';
-import Nav from '../components/Nav';
-import Sidebar from '../components/Sidebar';
-import upload_image2 from '../assets/upload_image2.png';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import Nav from "../components/Nav";
+import Sidebar from "../components/Sidebar";
+import upload_image2 from "../assets/upload_image2.png";
+import axios from "axios";
 
-const Add = () => {
-  const [image1, setImage1] = useState(null);
-  const [image2, setImage2] = useState(null);
-  const [image3, setImage3] = useState(null);
-  const [image4, setImage4] = useState(null);
+/* ---- UploadBox inside Add.jsx (but memoised) ---- */
+const UploadBox = ({ image, setImage, required = false }) => {
+  const [preview, setPreview] = useState(upload_image2);
 
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('Men');
-  const [price, setPrice] = useState('');
-  const [subcategory, setsubCategory] = useState('TopWear');
-  const [bestseller, setbestSeller] = useState(false);
-  const [sizes, setSizes] = useState([]);
-
-  const handleAddProduct = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('image1', image1);
-    if (image2) formData.append('image2', image2);
-    if (image3) formData.append('image3', image3);
-    if (image4) formData.append('image4', image4);
-
-    formData.append('name', name);
-    formData.append('description', description);
-    formData.append('price', price);
-    formData.append('category', category);
-    formData.append('subcategory', subcategory);
-    formData.append('sizes', JSON.stringify(sizes));
-
-    try {
-      const res = await axios.post(
-        'http://localhost:6000/api/product/addproduct',
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true,
-        }
-      );
-      console.log(res.data);
-      alert('Product added successfully!');
-    } catch (err) {
-      console.error('Error uploading:', err);
-      alert('Upload error');
+  useEffect(() => {
+    if (!image) {
+      setPreview(upload_image2);
+      return;
     }
-  };
+    const url = URL.createObjectURL(image);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [image]);
 
-  // Upload box with required
-  const UploadBox = ({ image, setImage, required = false }) => (
+  return (
     <label className="cursor-pointer">
       <input
         type="file"
@@ -60,14 +27,55 @@ const Add = () => {
         onChange={(e) => setImage(e.target.files[0])}
       />
       <div className="w-[80px] h-[80px] md:w-[100px] md:h-[100px] rounded-md border border-gray-400/40 overflow-hidden flex items-center justify-center hover:border-blue-400 transition-colors">
-        <img
-          src={!image ? upload_image2 : URL.createObjectURL(image)}
-          alt=""
-          className="w-full h-full object-cover"
-        />
+        <img src={preview} alt="" className="w-full h-full object-cover" />
       </div>
     </label>
   );
+};
+
+const Add = () => {
+  const [image1, setImage1] = useState(null);
+  const [image2, setImage2] = useState(null);
+  const [image3, setImage3] = useState(null);
+  const [image4, setImage4] = useState(null);
+
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("Men");
+  const [price, setPrice] = useState("");
+  const [subcategory, setsubCategory] = useState("TopWear");
+  const [sizes, setSizes] = useState([]);
+
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("image1", image1);
+    if (image2) formData.append("image2", image2);
+    if (image3) formData.append("image3", image3);
+    if (image4) formData.append("image4", image4);
+
+    formData.append("name", name);
+    formData.append("description", description);
+    formData.append("price", price);
+    formData.append("category", category);
+    formData.append("subcategory", subcategory);
+    formData.append("sizes", JSON.stringify(sizes));
+
+    try {
+      const res = await axios.post(
+        "http://localhost:6000/api/product/addproduct",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        }
+      );
+      alert("Product added successfully!");
+    } catch (err) {
+      console.error("Error uploading:", err);
+      alert("Upload error");
+    }
+  };
 
   return (
     <div className="w-[100vw] min-h-[100vh] bg-gradient-to-l from-[#141414] to-[#0c2025] text-white overflow-x-hidden relative">
@@ -87,7 +95,6 @@ const Add = () => {
             Upload Images
           </p>
 
-          {/* small gap on both mobile and desktop */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <UploadBox image={image1} setImage={setImage1} required />
             <UploadBox image={image2} setImage={setImage2} required />
@@ -95,7 +102,7 @@ const Add = () => {
             <UploadBox image={image4} setImage={setImage4} required />
           </div>
 
-          {/* Product name input */}
+          {/* Product name */}
           <div className="mt-4">
             <label
               htmlFor="productName"
@@ -114,11 +121,11 @@ const Add = () => {
             />
           </div>
 
-          {/* Product description input */}
+          {/* Product description */}
           <div className="mt-4">
             <label
               htmlFor="productdes"
-              className="block text-[16px] md:text-[18px] font-semibold mb-1 overflow-hidden select-none"
+              className="block text-[16px] md:text-[18px] font-semibold mb-1 select-none"
             >
               Product Description
             </label>
@@ -132,10 +139,10 @@ const Add = () => {
             />
           </div>
 
-          {/* Product category and sub-category */}
+          {/* Category & Subcategory */}
           <div className="w-[80%] flex items-center gap-[10px] flex-wrap">
             <div className="md:w-[30%] w-[100%] flex items-start sm:justify-center flex-col gap-[10px]">
-              <p className="block text-[16px] md:text-[18px] font-semibold mb-1 overflow-hidden select-none">
+              <p className="block text-[16px] md:text-[18px] font-semibold mb-1 select-none">
                 Product Category
               </p>
               <select
@@ -151,7 +158,7 @@ const Add = () => {
             </div>
 
             <div className="md:w-[30%] w-[100%] flex items-start sm:justify-center flex-col gap-[10px]">
-              <p className="block text-[16px] md:text-[18px] font-semibold mb-1 overflow-hidden select-none">
+              <p className="block text-[16px] md:text-[18px] font-semibold mb-1 select-none">
                 Sub-Category
               </p>
               <select
@@ -167,7 +174,7 @@ const Add = () => {
             </div>
           </div>
 
-          {/* Product price input */}
+          {/* Price */}
           <div className="mt-4">
             <label
               htmlFor="productPrice"
