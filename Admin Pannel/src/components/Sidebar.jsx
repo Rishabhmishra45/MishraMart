@@ -27,22 +27,26 @@ const Sidebar = () => {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 bg-gray-800 p-3 rounded-lg text-white"
+        className="lg:hidden fixed top-4 left-4 z-50 bg-gray-800 p-2 sm:p-3 rounded-lg text-white shadow-lg"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
 
+      {/* Mobile Overlay */}
       {isMobileOpen && (
-        <div className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setIsMobileOpen(false)} />
+        <div 
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40" 
+          onClick={() => setIsMobileOpen(false)} 
+        />
       )}
 
       {/* Fixed Sidebar */}
       <div
         className={`
           fixed left-0 top-16 lg:top-20 z-40
-          w-64 lg:w-72 xl:w-80
+          w-64 sm:w-72 lg:w-72 xl:w-80
           h-[calc(100vh-4rem)] lg:h-[calc(100vh-5rem)]
           bg-gradient-to-b from-gray-900 to-gray-800
           border-r border-gray-700
@@ -51,12 +55,12 @@ const Sidebar = () => {
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
-        <div className="p-6 border-b border-gray-700">
-          <h1 className="text-xl font-bold text-white">Admin Panel</h1>
-          <p className="text-gray-400 text-sm mt-1">Product Management</p>
+        <div className="p-4 sm:p-6 border-b border-gray-700">
+          <h1 className="text-lg sm:text-xl font-bold text-white">Admin Panel</h1>
+          <p className="text-gray-400 text-xs sm:text-sm mt-1">Product Management</p>
         </div>
 
-        <nav className="p-4 space-y-2 overflow-y-auto h-[calc(100%-6rem)]">
+        <nav className="p-3 sm:p-4 space-y-2 overflow-y-auto h-[calc(100%-6rem)]">
           {navItems.map((item) => {
             const IconComponent = item.icon;
             const active = isActive(item.path);
@@ -65,7 +69,7 @@ const Sidebar = () => {
                 key={item.path}
                 onClick={() => handleNavigation(item.path)}
                 className={`
-                  w-full flex items-center gap-4 p-4 rounded-xl
+                  w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl
                   transition-all duration-200
                   hover:bg-blue-500/20 hover:border-blue-500/50
                   border-2
@@ -75,19 +79,19 @@ const Sidebar = () => {
                   }
                 `}
               >
-                <IconComponent className="w-6 h-6 flex-shrink-0" />
+                <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
                 <div className="flex-1 text-left">
-                  <div className="font-medium">{item.label}</div>
-                  <div className="text-xs text-gray-400 mt-1">{item.description}</div>
+                  <div className="font-medium text-sm sm:text-base">{item.label}</div>
+                  <div className="text-xs text-gray-400 mt-0.5 sm:mt-1">{item.description}</div>
                 </div>
-                {active && <div className="w-2 h-2 bg-blue-500 rounded-full"></div>}
+                {active && <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full"></div>}
               </button>
             );
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
-          <div className="text-center text-gray-400 text-sm">Admin Dashboard v1.0</div>
+        <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 border-t border-gray-700">
+          <div className="text-center text-gray-400 text-xs sm:text-sm">Admin Dashboard v1.0</div>
         </div>
       </div>
     </>

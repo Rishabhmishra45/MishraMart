@@ -31,28 +31,28 @@ const Nav = () => {
     <nav className="w-full h-16 lg:h-20 bg-white/95 backdrop-blur-sm fixed top-0 left-0 z-50 shadow-lg border-b border-gray-200">
       <div className="h-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
         
-        {/* Logo Section - Left */}
+        {/* Logo Section - Left - Only show logo on mobile */}
         <div 
-          className="flex items-center gap-3 cursor-pointer group"
+          className="flex items-center gap-2 cursor-pointer group"
           onClick={() => navigate('/')}
         >
           <div className="flex-shrink-0">
             <img
               src={logo}
               alt="Company Logo"
-              className="h-10 lg:h-12 w-auto object-contain transition-transform group-hover:scale-105"
+              className="h-10 w-10 sm:h-12 sm:w-12 lg:h-12 lg:w-12 object-contain transition-transform group-hover:scale-105"
             />
           </div>
           
-          {/* Brand Name - Hidden on mobile */}
-          <div className="hidden md:block">
+          {/* Brand Name - Hidden on mobile, show from sm breakpoint */}
+          <div className="hidden sm:block">
             <h1 className="text-lg lg:text-xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-xs text-gray-600">Product Management</p>
+            <p className="text-xs text-gray-600 hidden lg:block">Product Management</p>
           </div>
         </div>
 
-        {/* Mobile Title - Centered */}
-        <div className="md:hidden absolute left-1/2 transform -translate-x-1/2">
+        {/* Mobile Title - Centered - Show only on mobile */}
+        <div className="sm:hidden absolute left-1/2 transform -translate-x-1/2">
           <h1 className="text-lg font-bold text-gray-900 whitespace-nowrap">Admin Panel</h1>
         </div>
 
@@ -62,7 +62,7 @@ const Nav = () => {
           disabled={isLoggingOut}
           className={`
             relative flex items-center gap-2 
-            px-4 lg:px-6 py-2 
+            px-4 sm:px-5 lg:px-6 py-2 
             rounded-xl
             font-medium 
             text-sm lg:text-base
@@ -80,6 +80,7 @@ const Nav = () => {
             <>
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               <span className="hidden sm:inline">Logging Out</span>
+              <span className="sm:hidden">Logging Out</span>
             </>
           ) : (
             <>
