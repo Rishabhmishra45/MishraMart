@@ -13,22 +13,24 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { serverUrl } = useContext(authDataContext);
-  const { adminData, getAdmin } = useContext(adminDataContext)
+  const { getAdmin } = useContext(adminDataContext);
 
   const AdminLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       const result = await axios.post(
-        serverUrl + "/api/auth/adminlogin",
+        `${serverUrl}/api/auth/adminlogin`,
         { email, password },
         { withCredentials: true }
       );
       console.log(result.data);
-      getAdmin()
-      navigate("/")
+      // refresh admin data
+      await getAdmin();
+      navigate("/");
     } catch (error) {
-      console.log(error);
+      console.log("Login error:", error);
+      alert("Login failed. Please check credentials.");
     } finally {
       setLoading(false);
     }
@@ -42,21 +44,23 @@ const Login = () => {
           className="h-[120px] sm:h-[160px] w-auto object-contain cursor-pointer hover:scale-105 transition-transform"
           src={Logo}
           alt="Logo"
+          onClick={() => navigate("/")}
         />
       </div>
 
       {/* Page Title */}
-      <div className="w-full text-center mt-2 sm:mt-4 px-4">
+      <div className="w-full text-center mt-10 sm:mt-5 px-4">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-wide">
           Admin Login
         </h1>
         <p className="text-gray-300 mt-2 text-sm sm:text-base">
-          Secure access to your <span className="text-[#4aa4b5]">MishraMart</span> panel
+          Secure access to your{" "}
+          <span className="text-[#4aa4b5]">MishraMart</span> panel
         </p>
       </div>
 
       {/* Login Box */}
-      <div className="flex flex-1 items-center justify-center px-3 sm:px-4 py-6">
+      <div className="flex flex-1 items-start sm:items-center justify-center px-3 sm:px-4 py-6 sm:py-10 mt-10 sm:mt-0 sm:mb-8">
         <div className="w-full max-w-sm sm:max-w-md bg-[#ffffff10] border border-[#ffffff20] backdrop-blur-2xl rounded-2xl shadow-2xl p-6 sm:p-8">
           <h2 className="text-xl sm:text-2xl font-semibold text-center mb-6">
             Welcome Back
@@ -94,7 +98,11 @@ const Login = () => {
                   hover:text-white transition-colors"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <IoEyeOffOutline size={20} /> : <IoEyeOutline size={20} />}
+                {showPassword ? (
+                  <IoEyeOffOutline size={20} />
+                ) : (
+                  <IoEyeOutline size={20} />
+                )}
               </button>
             </div>
 
@@ -103,7 +111,11 @@ const Login = () => {
               type="submit"
               disabled={loading}
               className={`w-full h-11 sm:h-12 rounded-lg text-white font-semibold mt-4 transition
-                ${loading ? "bg-gray-500 cursor-not-allowed" : "bg-[#4aa4b5] hover:bg-[#3a8c9a] hover:shadow-lg"}`}
+                ${
+                  loading
+                    ? "bg-gray-500 cursor-not-allowed"
+                    : "bg-[#4aa4b5] hover:bg-[#3a8c9a] hover:shadow-lg"
+                }`}
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>

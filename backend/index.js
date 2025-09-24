@@ -22,6 +22,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://mishramarts.netlify.app",
   "http://localhost:5174",
+  "http://192.168.1.3:5174",
 ];
 
 // Simple CORS config
