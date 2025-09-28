@@ -5,6 +5,7 @@ import image2 from "../assets1/image2.png"
 import image3 from "../assets1/image3.png"
 import image4 from "../assets1/image4.png"
 import image5 from "../assets1/image5.png"
+import image6 from "../assets1/image6.png"
 
 const images = [
   image,
@@ -12,6 +13,7 @@ const images = [
   image2,
   image4,
   image5,
+  image6,
   image3,
 ];
 
