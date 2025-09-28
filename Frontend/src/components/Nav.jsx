@@ -86,7 +86,7 @@ const Nav = () => {
   return (
     <>
       {/* Top Navbar */}
-      <nav className="w-full bg-[#ecfafa] shadow-md fixed top-0 left-0 z-50 h-[60px] flex items-center select-none pointer-events-auto">
+      <nav className="w-full bg-[#ecfafa] shadow-md shadow-[#0092B8] fixed top-0 left-0 z-50 h-[60px] flex items-center select-none pointer-events-auto ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="flex items-center justify-between">
 
@@ -337,18 +337,29 @@ const Nav = () => {
             <FaHome className="text-xl" />
             <span className="text-xs">Home</span>
           </button>
-          <a href="#collection" className="flex flex-col items-center text-gray-700 hover:text-[#00bcd4]">
+          <Link
+            to="/collection"
+            className="flex flex-col items-center text-gray-700 hover:text-[#00bcd4]"
+          >
             <FaThLarge className="text-xl" />
             <span className="text-xs">Collection</span>
-          </a>
-          <a href="#about" className="flex flex-col items-center text-gray-700 hover:text-[#00bcd4]">
+          </Link>
+
+          <Link
+            to="/about"
+            className="flex flex-col items-center text-gray-700 hover:text-[#00bcd4]"
+          >
             <FaInfoCircle className="text-xl" />
             <span className="text-xs">About</span>
-          </a>
-          <a href="#contact" className="flex flex-col items-center text-gray-700 hover:text-[#00bcd4]">
+          </Link>
+
+          <Link
+            to="/contact"
+            className="flex flex-col items-center text-gray-700 hover:text-[#00bcd4]"
+          >
             <FaPhone className="text-xl" />
             <span className="text-xs">Contact</span>
-          </a>
+          </Link>
           <button onClick={() => navigate("/cart")} className="relative flex flex-col items-center text-gray-700 hover:text-[#00bcd4]">
             <MdOutlineShoppingCart className="text-xl" />
             <span className="text-xs">Cart</span>

@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from "react";
+import image from "../assets1/image.png"
+import image1 from "../assets1/image1.png"
+import image2 from "../assets1/image2.png"
+import image3 from "../assets1/image3.png"
+import image4 from "../assets1/image4.png"
+import image5 from "../assets1/image5.png"
 
 const images = [
-  "https://images.unsplash.com/photo-1521334884684-d80222895322?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=800&q=80",
+  image,
+  image1,
+  image2,
+  image4,
+  image5,
+  image3,
 ];
 
 const Background = () => {
@@ -27,11 +35,10 @@ const Background = () => {
           src={img}
           alt={`slide-${idx}`}
           draggable={false}
-          className={`absolute w-full h-full object-cover transition-opacity duration-1000 transform ${
-            idx === current
-              ? "opacity-100 scale-100"
-              : "opacity-0 scale-110"
-          }`}
+          className={`mt-[60px] absolute w-full h-full  transition-opacity duration-1000 transform ${idx === current
+            ? "opacity-100 scale-100"
+            : "opacity-0 scale-110"
+            }`}
         />
       ))}
 
@@ -43,9 +50,8 @@ const Background = () => {
         {images.map((_, idx) => (
           <div
             key={idx}
-            className={`w-3 h-3 rounded-full ${
-              idx === current ? "bg-cyan-400 shadow-lg" : "bg-gray-400/50"
-            } transition-all duration-300`}
+            className={`w-3 h-3 rounded-full ${idx === current ? "bg-cyan-400 shadow-lg" : "bg-gray-400/50"
+              } transition-all duration-300`}
           />
         ))}
       </div>
@@ -53,7 +59,7 @@ const Background = () => {
       {/* Optional: Left/Right Arrows (Mobile & Desktop) */}
       <button
         onClick={() => setCurrent((current - 1 + images.length) % images.length)}
-        className="absolute top-1/2 left-4 transform -translate-y-1/2 text-white bg-black/30 p-2 rounded-full hover:bg-black/50 transition z-20 hidden md:flex"
+        className="absolute cursor-pointer top-1/2 left-4 transform -translate-y-1/2 text-white bg-black/30 p-2 rounded-full hover:bg-black/50 transition z-20 hidden md:flex"
       >
         &#8592;
       </button>
