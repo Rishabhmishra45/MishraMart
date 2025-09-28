@@ -1,31 +1,46 @@
-// Hero.jsx
 import React from "react";
 import Background from "./Background";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
+
   return (
-    <section
-      id="home"
-      className="w-full min-h-[calc(100vh-70px)] pt-[70px] flex flex-col md:flex-row items-center justify-between bg-gradient-to-r from-[#0c2025] to-[#141414] text-white"
-    >
-      {/* Left Text */}
-      <div className="w-full md:w-1/2 flex flex-col items-center md:items-start justify-center px-6 md:px-12 py-10 text-center md:text-left">
-        <h1 className="text-3xl md:text-5xl font-bold leading-snug">
-          Discover the Best of <br /> Bold Fashion <br />
-          <span className="text-cyan-400">Limited Time Only!</span>
+    <section className="relative w-full min-h-screen flex flex-col md:flex-row items-center justify-between bg-gray-900 text-white overflow-hidden">
+
+      {/* Left content */}
+      <div className="z-20 w-full md:w-1/2 flex flex-col items-center md:items-start justify-center px-6 md:px-16 py-20 text-center md:text-left">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight">
+          Bold Fashion, <br />
+          <span className="text-cyan-400">Exclusive Offers</span> <br />
+          Just For You
         </h1>
-        <p className="text-gray-400 mt-4 text-sm md:text-base max-w-md">
-          Shop the latest trends and get exclusive offers only at MishraMart.
+        <p className="mt-4 text-gray-300 max-w-md text-sm sm:text-base">
+          Discover the latest trends in fashion, tech, and lifestyle. Limited time deals available now!
         </p>
-        <button className="mt-6 px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg shadow-md transition">
-          Shop Now
-        </button>
+        <div className="mt-6 flex flex-col sm:flex-row gap-4">
+          <button
+            // onClick={() => navigate("/products")}
+            className="px-8 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg shadow-lg transition duration-300"
+          >
+            Shop Now
+          </button>
+          <button
+            // onClick={() => navigate("/products")}
+            className="px-8 py-3 border border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-white font-semibold rounded-lg transition duration-300"
+          >
+            Explore
+          </button>
+        </div>
       </div>
 
       {/* Right Background Slider */}
-      <div className="w-full md:w-1/2 h-[250px] sm:h-[350px] md:h-[calc(100vh-70px)] pt-[0px]">
+      <div className="w-full md:w-1/2 h-[300px] sm:h-[400px] md:h-screen relative">
         <Background />
       </div>
+
+      {/* Optional Overlay (for left text visibility) */}
+      <div className="absolute inset-0 bg-black/20 z-10 md:hidden"></div>
     </section>
   );
 };

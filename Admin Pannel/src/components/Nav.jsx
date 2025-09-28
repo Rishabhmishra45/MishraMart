@@ -30,9 +30,9 @@ const Nav = () => {
   return (
     <nav className="w-full h-16 lg:h-20 bg-white/95 backdrop-blur-sm fixed top-0 left-0 z-50 shadow-lg border-b border-gray-200">
       <div className="h-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
-        
+
         {/* Logo Section - Left - Only show logo on mobile */}
-        <div 
+        <div
           className="flex items-center gap-2 cursor-pointer group"
           onClick={() => navigate('/')}
         >
@@ -40,13 +40,13 @@ const Nav = () => {
             <img
               src={logo}
               alt="Company Logo"
-              className="h-10 w-10 sm:h-12 sm:w-12 lg:h-12 lg:w-12 object-contain transition-transform group-hover:scale-105"
+              className="h-10 w-10 sm:h-12 sm:w-12 lg:h-[135px] lg:w-[135px] object-contain transition-transform group-hover:scale-105"
             />
           </div>
-          
+
           {/* Brand Name - Hidden on mobile, show from sm breakpoint */}
           <div className="hidden sm:block">
-            <h1 className="text-lg lg:text-xl font-bold text-gray-900">Admin Dashboard</h1>
+            <h1 className="text-lg lg:text-[15px] font-bold text-gray-900">Admin Dashboard</h1>
             <p className="text-xs text-gray-600 hidden lg:block">Product Management</p>
           </div>
         </div>
@@ -70,8 +70,8 @@ const Nav = () => {
             transform hover:scale-105 active:scale-95
             disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
             shadow-md
-            ${isLoggingOut 
-              ? 'bg-gray-500 text-white' 
+            ${isLoggingOut
+              ? 'bg-gray-500 text-white'
               : 'bg-gradient-to-r from-gray-900 to-gray-700 hover:from-gray-800 hover:to-gray-600 text-white'
             }
           `}

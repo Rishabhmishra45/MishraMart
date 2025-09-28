@@ -5,6 +5,7 @@ import Logo from "../assets/logo.png";
 import { userDataContext } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Link } from "react-router-dom";
 import { authDataContext } from '../context/AuthContext';
 
 const Nav = () => {
@@ -17,11 +18,11 @@ const Nav = () => {
   const { serverUrl } = useContext(authDataContext);
   const navigate = useNavigate();
 
-  // ✅ Separate refs for Desktop & Mobile dropdowns
+  //  Separate refs for Desktop & Mobile dropdowns
   const desktopDropdownRef = useRef(null);
   const mobileDropdownRef = useRef(null);
 
-  // ✅ Close dropdown when clicked outside (fix for desktop issue)
+  //  Close dropdown when clicked outside (fix for desktop issue)
   useEffect(() => {
     const handleClickOutside = (event) => {
       // agar click desktop ya mobile dropdown ke andar hai → ignore
@@ -41,13 +42,13 @@ const Nav = () => {
     };
   }, []);
 
-  // ✅ Toggle search box open/close
+  //  Toggle search box open/close
   const handleSearchToggle = () => {
     setSearchOpen(!searchOpen);
     if (searchOpen) setSearchQuery('');
   };
 
-  // ✅ Handle search form submit
+  //  Handle search form submit
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -56,7 +57,7 @@ const Nav = () => {
     }
   };
 
-  // ✅ Logout function
+  // Logout function
   const handleLogout = async () => {
     try {
       await axios.get(`${serverUrl}/api/auth/logout`, { withCredentials: true });
@@ -69,7 +70,7 @@ const Nav = () => {
     }
   };
 
-  // ✅ Handle dropdown actions
+  // Handle dropdown actions
   const handleDropdownAction = (action) => {
     if (action === 'logout') {
       handleLogout();
@@ -84,7 +85,7 @@ const Nav = () => {
 
   return (
     <>
-      {/* ✅ Top Navbar */}
+      {/* Top Navbar */}
       <nav className="w-full bg-[#ecfafa] shadow-md fixed top-0 left-0 z-50 h-[60px] flex items-center select-none pointer-events-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="flex items-center justify-between">
@@ -100,15 +101,17 @@ const Nav = () => {
               />
             </div>
 
-            {/* ✅ Desktop Nav Links */}
+
+            {/* Desktop Nav Links */}
             <div className="hidden md:flex space-x-8 mx-4">
-              <a href="#home" className="text-gray-700 hover:text-[#00bcd4] font-medium">Home</a>
-              <a href="#collection" className="text-gray-700 hover:text-[#00bcd4] font-medium">Collection</a>
-              <a href="#about" className="text-gray-700 hover:text-[#00bcd4] font-medium">About</a>
-              <a href="#contact" className="text-gray-700 hover:text-[#00bcd4] font-medium">Contact</a>
+              <Link to="/" className="text-gray-700 hover:text-[#00bcd4] font-medium">Home</Link>
+              <Link to="/collection" className="text-gray-700 hover:text-[#00bcd4] font-medium">Collection</Link>
+              <Link to="/about" className="text-gray-700 hover:text-[#00bcd4] font-medium">About</Link>
+              <Link to="/contact" className="text-gray-700 hover:text-[#00bcd4] font-medium">Contact</Link>
             </div>
 
-            {/* ✅ Right Side (Desktop) */}
+
+            {/* Right Side (Desktop) */}
             <div className="hidden md:flex items-center space-x-6">
 
               {/* Search */}
@@ -141,7 +144,7 @@ const Nav = () => {
                 )}
               </div>
 
-              {/* ✅ User Dropdown (Desktop) */}
+              {/* User Dropdown (Desktop) */}
               <div className="relative" ref={desktopDropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -225,7 +228,7 @@ const Nav = () => {
               </div>
             </div>
 
-            {/* ✅ Mobile Right (Search + User) */}
+            {/*  Mobile Right (Search + User) */}
             <div className="flex md:hidden items-center space-x-4">
 
               {/* Search */}
@@ -256,7 +259,7 @@ const Nav = () => {
                 </button>
               )}
 
-              {/* ✅ User Dropdown (Mobile) */}
+              {/*  User Dropdown (Mobile) */}
               <div className="relative" ref={mobileDropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -327,7 +330,7 @@ const Nav = () => {
         </div>
       </nav>
 
-      {/* ✅ Bottom Navigation (Mobile only) */}
+      {/*  Bottom Navigation (Mobile only) */}
       <div className="fixed bottom-0 left-0 w-full bg-[#ecfafa] shadow-md z-50 md:hidden">
         <div className="flex justify-around items-center py-2">
           <button onClick={() => navigate("/")} className="flex flex-col items-center text-gray-700 hover:text-[#00bcd4]">

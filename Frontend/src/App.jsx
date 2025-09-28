@@ -5,12 +5,15 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Nav from './components/Nav'
 import { userDataContext } from './context/UserContext'
+import About from './pages/About'
+import Collections from './pages/Collections'
+import Product from './pages/Product'
+import Contact from './pages/Contact'
 
 const App = () => {
   const { userData } = useContext(userDataContext)
   const navigate = useNavigate()
 
-  // Redirect to registration if not logged in and trying to access protected routes
   useEffect(() => {
     if (!userData && window.location.pathname === '/') {
       navigate('/signup')
@@ -19,11 +22,9 @@ const App = () => {
 
   return (
     <>
-      {/* Only show Nav if user is logged in */}
       {userData && <Nav />}
 
       <Routes>
-        {/* Protected route - redirect to signup if not authenticated */}
         <Route
           path='/'
           element={
@@ -31,7 +32,6 @@ const App = () => {
           }
         />
 
-        {/* If already logged in, redirect away from auth pages */}
         <Route
           path='/login'
           element={
@@ -45,6 +45,11 @@ const App = () => {
             userData ? <Navigate to="/" replace /> : <Registration />
           }
         />
+
+        <Route path="/about" element={<About />} />
+        <Route path="/collection" element={<Collections />} />
+        <Route path="/product" element={<Product />} />
+        <Route path="/contact" element={<Contact />} />
       </Routes>
     </>
   )
