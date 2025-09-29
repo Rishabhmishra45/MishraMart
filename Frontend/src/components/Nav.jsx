@@ -97,7 +97,7 @@ const Nav = () => {
                 src={Logo}
                 alt="Logo"
                 draggable={false}
-                onClick={() => navigate("/")}
+                // onClick={() => navigate("/")}
               />
             </div>
 

@@ -1,5 +1,11 @@
 import React, { useContext, useEffect } from "react";
-import {Route,Routes,Navigate,useNavigate,useLocation,} from "react-router-dom";
+import {
+  Route,
+  Routes,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import Registration from "./pages/Registration";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -11,42 +17,37 @@ import Product from "./pages/Product";
 import Contact from "./pages/Contact";
 
 const App = () => {
-  const { userData } = useContext(userDataContext);
+  const { userData, loading } = useContext(userDataContext); // loading added
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    // agar userData nahi hai aur root route hai to signup par bhejo
-    if (!userData && window.location.pathname === "/") {
+    if (!loading && !userData && window.location.pathname === "/") {
       navigate("/signup");
     }
-  }, [userData, navigate]);
+  }, [userData, navigate, loading]);
+
+  if (loading) {
+    return <div className="text-white p-10">Checking login...</div>;
+  }
 
   return (
     <>
-      {/* Nav sirf tab dikhe jab user logged in hai */}
       {userData && <Nav />}
 
       <Routes>
-        {/* Home */}
         <Route
           path="/"
           element={userData ? <Home /> : <Navigate to="/signup" replace />}
         />
-
-        {/* Login */}
         <Route
           path="/login"
           element={userData ? <Navigate to="/" replace /> : <Login />}
         />
-
-        {/* Signup */}
         <Route
           path="/signup"
           element={userData ? <Navigate to="/" replace /> : <Registration />}
         />
-
-        {/* About */}
         <Route
           path="/about"
           element={
@@ -57,7 +58,6 @@ const App = () => {
             )
           }
         />
-
         <Route
           path="/collections"
           element={
@@ -68,8 +68,6 @@ const App = () => {
             )
           }
         />
-
-        {/* Product */}
         <Route
           path="/product"
           element={
@@ -80,8 +78,6 @@ const App = () => {
             )
           }
         />
-
-        {/* Contact */}
         <Route
           path="/contact"
           element={

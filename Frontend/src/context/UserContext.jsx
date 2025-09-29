@@ -6,28 +6,29 @@ export const userDataContext = createContext();
 
 const UserContextProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true); // ✅ loading state
   const { serverUrl } = useContext(authDataContext);
 
   // fetch current user from backend
   const getCurrentUser = async () => {
     try {
       const result = await axios.get(`${serverUrl}/api/user/getcurrentuser`, {
-        withCredentials: true, // very important for cookie-based auth
+        withCredentials: true, // cookie-based auth
       });
 
       setUserData(result.data);
       console.log("Current User:", result.data);
     } catch (error) {
-      // if 401 or any error, clear user
       setUserData(null);
       console.error(
         "getCurrentUser error:",
         error.response?.data?.message || error.message
       );
+    } finally {
+      setLoading(false); // ✅ stop loading after fetch
     }
   };
 
-  // run once on mount
   useEffect(() => {
     getCurrentUser();
   }, []);
@@ -36,6 +37,7 @@ const UserContextProvider = ({ children }) => {
     userData,
     setUserData,
     getCurrentUser,
+    loading, // ✅ expose loading state
   };
 
   return (
