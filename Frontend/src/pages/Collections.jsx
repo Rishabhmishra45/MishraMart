@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
+import { FaArrowRightToBracket } from "react-icons/fa6";
 import LoadingSpinner from "../components/LoadingSpinner";
+import Tittle from "../components/Tittle";
 
 const Collections = () => {
   const [showFilter, setShowFilter] = useState(false);
@@ -26,13 +28,15 @@ const Collections = () => {
   }
 
   return (
-    <div className="w-screen min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] flex pt-[60px] text-white overflow-hidden">
-      {/* Sidebar */}
+    <div className="w-screen h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] flex flex-col md:flex-row pt-[60px] text-white overflow-hidden">
+      
+      {/* ================= Sidebar ================= */}
       <div
-        className={`fixed md:static top-[60px] left-0 h-[calc(100vh-60px)] md:h-auto w-[70vw] md:w-[25vw] lg:w-[20vw] bg-[#0f1b1d]/95 backdrop-blur-md border-r border-gray-600 p-5 transform transition-transform duration-500 ease-in-out z-30 ${
-          showFilter ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        }`}
-        onClick={(e) => e.stopPropagation()} // prevent overlay click propagate
+        className={`fixed md:static top-[60px] left-0 h-[calc(100vh-60px)] 
+          w-[50vw] sm:w-[70vw] md:w-[25vw] lg:w-[18vw] max-w-[300px] bg-[#0f1b1d]/95 backdrop-blur-md 
+          border-r border-gray-600 p-5 transform transition-transform duration-500 ease-in-out z-30 
+          ${showFilter ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Close icon for mobile */}
         <div className="flex items-center justify-between mb-4 md:justify-start">
@@ -41,7 +45,7 @@ const Collections = () => {
             className="md:hidden text-[20px] p-1 hover:text-red-400"
             onClick={() => setShowFilter(false)}
           >
-            <FaTimes />
+            <FaTimes className="text-[25px] cursor-pointer" />
           </button>
         </div>
 
@@ -78,7 +82,7 @@ const Collections = () => {
         </div>
       </div>
 
-      {/* Overlay for mobile */}
+      {/* ================= Mobile overlay ================= */}
       {showFilter && (
         <div
           className="fixed inset-0 bg-black/50 z-20 md:hidden"
@@ -86,38 +90,33 @@ const Collections = () => {
         ></div>
       )}
 
-      {/* Main content */}
-      <div
-        className="flex-1 p-6 md:ml-[25vw] lg:ml-[20vw] relative z-0"
-        onClick={() => showFilter && setShowFilter(false)} // close sidebar on content click
-      >
-        {/* Mobile toggle button */}
-        <div className="md:hidden mb-4">
+      {/* ================= Mobile Filter Button ================= */}
+      {!showFilter && (
+        <div className="md:hidden fixed top-[90px] ml-[5px] left-4 z-40">
           <button
             onClick={() => setShowFilter(true)}
-            className="flex items-center gap-2 bg-[#0f1b1d]/80 p-2 rounded-md border border-gray-600 hover:bg-[#0f1b1d]/100 transition-colors duration-300 relative z-10"
+            className="flex items-center gap-2 bg-[#0f1b1d]/80 p-2 rounded-md border border-gray-600 hover:bg-[#0f1b1d]/100 transition-colors duration-300"
           >
             <span>Filters</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
+            <FaArrowRightToBracket className="text-[20px]" />
           </button>
         </div>
+      )}
 
-        {/* Placeholder for main content */}
-        <div className="text-white">
-          {/* Items or any dynamic content goes here */}
+      {/* ================= Main Content ================= */}
+      <div
+        className="flex-1 ml-[5px] lg:ml-[20px] md:ml-[15px] mt-[60px] md:mt-[25px] lg:mt-[25px] max-w-full relative z-0 h-[calc(100vh-60px)] overflow-y-auto p-4 sm:p-6"
+        onClick={() => showFilter && setShowFilter(false)}
+      >
+        {/* Page Title */}
+        <div className="flex items-center justify-between flex-wrap mt-2 md:mt-0">
+          <Tittle text1={"ALL"} text2={"COLLECTIONS"} />
+        </div>
+
+        {/* Products grid */}
+        <div className="mt-6 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+    
+          {/* Render product cards here */}
         </div>
       </div>
     </div>
