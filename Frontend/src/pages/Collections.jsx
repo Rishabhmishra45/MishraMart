@@ -98,7 +98,7 @@ const Collections = () => {
     <div className="w-full min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] flex pt-[60px] text-white overflow-x-hidden">
       {/* ================= Sidebar Filters ================= */}
       <div
-        className={`fixed md:fixed top-[60px] h-[calc(100vh-60px)]
+        className={`fixed top-[60px] h-[calc(100vh-60px)]
           w-[65vw] sm:w-[60vw] md:w-[25vw] lg:w-[18vw] bg-[#0f1b1d] border-r border-gray-600 p-5 pt-[35px]
           transition-transform duration-300 z-40 overflow-y-auto 
           ${showFilter ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
@@ -172,7 +172,7 @@ const Collections = () => {
       )}
 
       {/* ================= Main Content ================= */}
-      <div className="flex-1 relative min-h-[calc(100vh-60px)] overflow-y-auto overflow-x-hidden md:ml-[25vw] lg:ml-[20vw]">
+      <div className="flex-1 relative min-h-[calc(100vh-60px)] overflow-y-auto md:ml-[25vw] lg:ml-[20vw]">
         <div className="p-4 sm:p-6 lg:p-8">
           {/* Mobile Header */}
           <div className="md:hidden mb-6 mt-4">
@@ -226,11 +226,11 @@ const Collections = () => {
 
           {/* Products Grid */}
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 place-items-center overflow-x-hidden overflow-y-hidden">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pl-[30px] sm:pl-0">
               {filteredProducts.map((item, index) => (
                 <div
                   key={item._id}
-                  className="w-full max-w-[460px] sm:max-w-[300px] sm:max-h-[200px]"
+                  className="w-[100%] sm:w-full h-auto max-w-[500px] sm:max-w-[300px] mx-auto"
                 >
                   <Card
                     id={item._id}
