@@ -105,7 +105,7 @@ const Nav = () => {
             {/* Desktop Nav Links */}
             <div className="hidden md:flex space-x-8 mx-4">
               <Link to="/" className="text-gray-700 hover:text-[#00bcd4] font-medium">Home</Link>
-              <Link to="/collection" className="text-gray-700 hover:text-[#00bcd4] font-medium">Collection</Link>
+              <Link to="/collections" className="text-gray-700 hover:text-[#00bcd4] font-medium">Collection</Link>
               <Link to="/about" className="text-gray-700 hover:text-[#00bcd4] font-medium">About</Link>
               <Link to="/contact" className="text-gray-700 hover:text-[#00bcd4] font-medium">Contact</Link>
             </div>
@@ -338,7 +338,7 @@ const Nav = () => {
             <span className="text-xs">Home</span>
           </button>
           <Link
-            to="/collection"
+            to="/collections"
             className="flex flex-col items-center text-gray-700 hover:text-[#00bcd4]"
           >
             <FaThLarge className="text-xl" />
