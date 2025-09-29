@@ -33,7 +33,7 @@ const Collections = () => {
       {/* ================= Sidebar ================= */}
       <div
         className={`fixed md:static top-[60px] left-0 h-[calc(100vh-60px)] 
-          w-[50vw] sm:w-[70vw] md:w-[25vw] lg:w-[18vw] max-w-[300px] bg-[#0f1b1d]/95 backdrop-blur-md 
+          w-[65vw] sm:w-[70vw] md:w-[25vw] lg:w-[18vw] max-w-[300px] bg-[#0f1b1d]/95 backdrop-blur-md 
           border-r border-gray-600 p-5 transform transition-transform duration-500 ease-in-out z-30 
           ${showFilter ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
         onClick={(e) => e.stopPropagation()}
