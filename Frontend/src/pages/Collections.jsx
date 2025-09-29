@@ -7,6 +7,7 @@ import Tittle from "../components/Tittle";
 const Collections = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showFilterButton, setShowFilterButton] = useState(true); // track mobile button visibility
 
   // Simulate page loading
   useEffect(() => {
@@ -27,6 +28,19 @@ const Collections = () => {
     );
   }
 
+  // Handle opening sidebar
+  const handleOpenSidebar = () => {
+    setShowFilter(true);
+    setShowFilterButton(false); // hide button immediately
+  };
+
+  // Handle closing sidebar
+  const handleCloseSidebar = () => {
+    setShowFilter(false);
+    // Show button only after sidebar fully slides out (500ms)
+    setTimeout(() => setShowFilterButton(true), 300);
+  };
+
   return (
     <div className="w-screen h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] flex flex-col md:flex-row pt-[60px] text-white overflow-hidden">
       
@@ -43,7 +57,7 @@ const Collections = () => {
           <h2 className="text-[22px] font-semibold select-none">FILTERS</h2>
           <button
             className="md:hidden text-[20px] p-1 hover:text-red-400"
-            onClick={() => setShowFilter(false)}
+            onClick={handleCloseSidebar} // updated
           >
             <FaTimes className="text-[25px] cursor-pointer" />
           </button>
@@ -86,15 +100,15 @@ const Collections = () => {
       {showFilter && (
         <div
           className="fixed inset-0 bg-black/50 z-20 md:hidden"
-          onClick={() => setShowFilter(false)}
+          onClick={handleCloseSidebar} // updated
         ></div>
       )}
 
       {/* ================= Mobile Filter Button ================= */}
-      {!showFilter && (
+      {showFilterButton && (
         <div className="md:hidden fixed top-[90px] ml-[5px] left-4 z-40">
           <button
-            onClick={() => setShowFilter(true)}
+            onClick={handleOpenSidebar} // updated
             className="flex items-center gap-2 bg-[#0f1b1d]/80 p-2 rounded-md border border-gray-600 hover:bg-[#0f1b1d]/100 transition-colors duration-300"
           >
             <span>Filters</span>
@@ -106,7 +120,7 @@ const Collections = () => {
       {/* ================= Main Content ================= */}
       <div
         className="flex-1 ml-[5px] lg:ml-[20px] md:ml-[15px] mt-[60px] md:mt-[25px] lg:mt-[25px] max-w-full relative z-0 h-[calc(100vh-60px)] overflow-y-auto p-4 sm:p-6"
-        onClick={() => showFilter && setShowFilter(false)}
+        onClick={showFilter ? handleCloseSidebar : undefined} // updated
       >
         {/* Page Title */}
         <div className="flex items-center justify-between flex-wrap mt-2 md:mt-0">
@@ -115,7 +129,6 @@ const Collections = () => {
 
         {/* Products grid */}
         <div className="mt-6 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-    
           {/* Render product cards here */}
         </div>
       </div>
