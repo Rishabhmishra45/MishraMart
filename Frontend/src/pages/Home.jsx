@@ -4,7 +4,6 @@ import Product from "./Product";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const Home = () => {
-
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -15,7 +14,6 @@ const Home = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Use the reusable loading spinner
   if (isLoading) {
     return (
       <LoadingSpinner
@@ -25,7 +23,6 @@ const Home = () => {
       />
     );
   }
-
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] text-white overflow-x-hidden">

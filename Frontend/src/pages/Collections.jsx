@@ -9,7 +9,7 @@ import Card from "../components/Card";
 const Collections = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { products } = useContext(shopDataContext);
+  const { products, search } = useContext(shopDataContext);
   const [filteredProducts, setFilteredProducts] = useState([]);
 
   // Filter states
@@ -26,22 +26,32 @@ const Collections = () => {
     setFilteredProducts(products);
   }, [products]);
 
-  // Apply filters and sorting
+  // Apply filters, search and sorting
   useEffect(() => {
     let filtered = [...products];
 
+    // Apply search filter
+    if (search.trim()) {
+      filtered = filtered.filter((item) =>
+        item.name.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    // Apply category filters
     if (selectedCategories.length > 0) {
       filtered = filtered.filter((item) =>
         selectedCategories.includes(item.category)
       );
     }
 
+    // Apply subcategory filters
     if (selectedSubcategories.length > 0) {
       filtered = filtered.filter((item) =>
         selectedSubcategories.includes(item.subcategory)
       );
     }
 
+    // Apply sorting
     switch (sortType) {
       case "low-high":
         filtered.sort((a, b) => a.price - b.price);
@@ -54,7 +64,7 @@ const Collections = () => {
     }
 
     setFilteredProducts(filtered);
-  }, [products, selectedCategories, selectedSubcategories, sortType]);
+  }, [products, search, selectedCategories, selectedSubcategories, sortType]);
 
   const handleCategoryChange = (category) => {
     setSelectedCategories((prev) =>
@@ -95,10 +105,10 @@ const Collections = () => {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] flex pt-[60px] text-white overflow-x-hidden">
+    <div className="w-full min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] flex pt-[60px] text-white overflow-x-hidden pb-[100px]">
       {/* ================= Sidebar Filters ================= */}
       <div
-        className={`fixed top-[60px] h-[calc(100vh-60px)]
+        className={`fixed top-[65px] h-[calc(100vh-60px)]
           w-[65vw] sm:w-[60vw] md:w-[25vw] lg:w-[18vw] bg-[#0f1b1d] border-r border-gray-600 p-5 pt-[35px]
           transition-transform duration-300 z-40 overflow-y-auto 
           ${showFilter ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
@@ -108,13 +118,13 @@ const Collections = () => {
           <div className="flex items-center gap-2">
             {(selectedCategories.length > 0 ||
               selectedSubcategories.length > 0) && (
-              <button
-                onClick={clearAllFilters}
-                className="text-xs text-blue-400 hover:text-blue-300"
-              >
-                Clear All
-              </button>
-            )}
+                <button
+                  onClick={clearAllFilters}
+                  className="text-xs text-blue-400 hover:text-blue-300 cursor-pointer"
+                >
+                  Clear All
+                </button>
+              )}
             <button
               className="md:hidden p-1 hover:text-red-400"
               onClick={() => setShowFilter(false)}
@@ -123,6 +133,18 @@ const Collections = () => {
             </button>
           </div>
         </div>
+
+        {/* Search Results Info */}
+        {search && (
+          <div className="mb-4 p-3 bg-blue-900/20 rounded-lg border border-blue-700/30">
+            <p className="text-sm text-blue-300">
+              Search: "<span className="font-semibold">{search}</span>"
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              {filteredProducts.length} {filteredProducts.length === 1 ? "product" : "products"} found
+            </p>
+          </div>
+        )}
 
         {/* Categories */}
         <div className="mb-6">
@@ -177,6 +199,11 @@ const Collections = () => {
           {/* Mobile Header */}
           <div className="md:hidden mb-6 mt-4">
             <Tittle text1="ALL" text2="COLLECTIONS" />
+            {search && (
+              <p className="text-blue-300 text-sm mt-1">
+                Search results for: "{search}"
+              </p>
+            )}
             <p className="text-gray-300 text-sm mt-2">
               {filteredProducts.length}{" "}
               {filteredProducts.length === 1 ? "product" : "products"} found
@@ -196,7 +223,7 @@ const Collections = () => {
             <select
               value={sortType}
               onChange={(e) => setSortType(e.target.value)}
-              className="bg-[#0f1b1d] border border-gray-600 text-white px-3 py-2 rounded-lg text-sm"
+              className="bg-[#0f1b1d] border border-gray-600 text-white px-3 py-2 rounded-lg text-lg"
             >
               <option value="relevant">Relevant</option>
               <option value="low-high">Low to High</option>
@@ -206,7 +233,14 @@ const Collections = () => {
 
           {/* Desktop Header */}
           <div className="hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
-            <Tittle text1="ALL" text2="COLLECTIONS" />
+            <div>
+              <Tittle text1="ALL" text2="COLLECTIONS" />
+              {search && (
+                <p className="text-blue-300 text-sm mt-1">
+                  Search results for: "<span className="font-semibold">{search}</span>"
+                </p>
+              )}
+            </div>
             <div className="flex items-center gap-4">
               <p className="text-gray-300 text-sm">
                 {filteredProducts.length}{" "}
@@ -226,11 +260,11 @@ const Collections = () => {
 
           {/* Products Grid */}
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pl-[30px] sm:pl-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 sm:px-0">
               {filteredProducts.map((item, index) => (
                 <div
                   key={item._id}
-                  className="w-[100%] sm:w-full h-auto max-w-[500px] sm:max-w-[300px] mx-auto"
+                  className="w-full h-auto flex justify-center"
                 >
                   <Card
                     id={item._id}
@@ -246,8 +280,11 @@ const Collections = () => {
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="text-6xl mb-4 opacity-50">🛍️</div>
               <h3 className="text-xl font-semibold text-gray-300 mb-2">
-                No products found
+                {search ? "No products found for your search" : "No products found"}
               </h3>
+              <p className="text-gray-400 mb-4">
+                {search ? `No results for "${search}"` : "Try adjusting your filters"}
+              </p>
               <button
                 onClick={clearAllFilters}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"

@@ -3,36 +3,34 @@ import { FaSearch, FaUserCircle, FaHome, FaThLarge, FaInfoCircle, FaPhone } from
 import { MdOutlineShoppingCart } from "react-icons/md";
 import Logo from "../assets/logo.png";
 import { userDataContext } from '../context/UserContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Link } from "react-router-dom";
 import { authDataContext } from '../context/AuthContext';
+import { shopDataContext } from '../context/ShopContext';
 
 const Nav = () => {
   const [cartItems, setCartItems] = useState(10);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
+  const { search, setSearch, setShowSearch } = useContext(shopDataContext);
   const { userData, setUserData } = useContext(userDataContext);
   const { serverUrl } = useContext(authDataContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  //  Separate refs for Desktop & Mobile dropdowns
   const desktopDropdownRef = useRef(null);
   const mobileDropdownRef = useRef(null);
 
-  //  Close dropdown when clicked outside (fix for desktop issue)
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // agar click desktop ya mobile dropdown ke andar hai → ignore
       if (
         (desktopDropdownRef.current && desktopDropdownRef.current.contains(event.target)) ||
         (mobileDropdownRef.current && mobileDropdownRef.current.contains(event.target))
       ) {
         return;
       }
-      // otherwise dropdown band ho jaye
       setIsDropdownOpen(false);
     };
 
@@ -42,22 +40,47 @@ const Nav = () => {
     };
   }, []);
 
-  //  Toggle search box open/close
   const handleSearchToggle = () => {
     setSearchOpen(!searchOpen);
-    if (searchOpen) setSearchQuery('');
-  };
-
-  //  Handle search form submit
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      console.log("Searching for:", searchQuery);
-      // navigate(`/search?query=${searchQuery}`);
+    
+    // If we're on home page and opening search, navigate to collections
+    if (!searchOpen && location.pathname === '/') {
+      navigate('/collections');
+      // Small delay to ensure navigation completes before focusing
+      setTimeout(() => {
+        const searchInput = document.querySelector('input[type="text"]');
+        if (searchInput) searchInput.focus();
+      }, 100);
+    }
+    
+    if (searchOpen) {
+      setSearchQuery('');
+      setSearch('');
     }
   };
 
-  // Logout function
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setSearch(searchQuery);
+      // Navigate to collections if not already there
+      if (location.pathname !== '/collections') {
+        navigate('/collections');
+      }
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    setSearch(value);
+    
+    // If we're on home page and user starts typing, navigate to collections
+    if (value.trim() && location.pathname === '/') {
+      navigate('/collections');
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await axios.get(`${serverUrl}/api/auth/logout`, { withCredentials: true });
@@ -70,7 +93,6 @@ const Nav = () => {
     }
   };
 
-  // Handle dropdown actions
   const handleDropdownAction = (action) => {
     if (action === 'logout') {
       handleLogout();
@@ -86,7 +108,7 @@ const Nav = () => {
   return (
     <>
       {/* Top Navbar */}
-      <nav className="w-full bg-[#ecfafa] shadow-md shadow-[#0092B8] fixed top-0 left-0 z-50 h-[60px] flex items-center select-none pointer-events-auto ">
+      <nav className="w-full bg-[#ecfafa] shadow-md shadow-[#0092B8] fixed top-0 left-0 z-50 h-[60px] flex items-center select-none pointer-events-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="flex items-center justify-between">
 
@@ -97,10 +119,8 @@ const Nav = () => {
                 src={Logo}
                 alt="Logo"
                 draggable={false}
-                // onClick={() => navigate("/")}
               />
             </div>
-
 
             {/* Desktop Nav Links */}
             <div className="hidden md:flex space-x-8 mx-4">
@@ -109,7 +129,6 @@ const Nav = () => {
               <Link to="/about" className="text-gray-700 hover:text-[#00bcd4] font-medium">About</Link>
               <Link to="/contact" className="text-gray-700 hover:text-[#00bcd4] font-medium">Contact</Link>
             </div>
-
 
             {/* Right Side (Desktop) */}
             <div className="hidden md:flex items-center space-x-6">
@@ -121,9 +140,9 @@ const Nav = () => {
                     <input
                       type="text"
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search..."
-                      className="py-1 px-3 w-40 outline-none text-sm"
+                      onChange={handleSearchChange}
+                      placeholder="Search products..."
+                      className="py-1 px-3 w-40 outline-none text-sm rounded-l-full"
                       autoFocus
                     />
                     <button type="submit" className="p-2 text-gray-700 hover:text-[#00bcd4]">
@@ -228,7 +247,7 @@ const Nav = () => {
               </div>
             </div>
 
-            {/*  Mobile Right (Search + User) */}
+            {/* Mobile Right (Search + User) */}
             <div className="flex md:hidden items-center space-x-4">
 
               {/* Search */}
@@ -237,9 +256,9 @@ const Nav = () => {
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search..."
-                    className="py-1 px-3 w-32 outline-none text-sm"
+                    onChange={handleSearchChange}
+                    placeholder="Search products..."
+                    className="py-1 px-3 w-32 outline-none text-sm rounded-l-full"
                     autoFocus
                   />
                   <button type="submit" className="p-2 text-gray-700 hover:text-[#00bcd4]">
@@ -259,7 +278,7 @@ const Nav = () => {
                 </button>
               )}
 
-              {/*  User Dropdown (Mobile) */}
+              {/* User Dropdown (Mobile) */}
               <div className="relative" ref={mobileDropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -330,7 +349,7 @@ const Nav = () => {
         </div>
       </nav>
 
-      {/*  Bottom Navigation (Mobile only) */}
+      {/* Bottom Navigation (Mobile only) */}
       <div className="fixed bottom-0 left-0 w-full bg-[#ecfafa] shadow-md z-50 md:hidden">
         <div className="flex justify-around items-center py-2">
           <button onClick={() => navigate("/")} className="flex flex-col items-center text-gray-700 hover:text-[#00bcd4]">
