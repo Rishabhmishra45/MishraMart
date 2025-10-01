@@ -5,13 +5,13 @@ import { FaShoppingBag, FaArrowRight } from "react-icons/fa";
 const Hero = () => {
   return (
     <section className="relative w-full min-h-screen flex items-center bg-gradient-to-br from-[#0c2025] to-[#141414] text-white pt-[70px]">
-      
+
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
-          
+
           {/* Left Content */}
           <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6">
-            
+
             {/* Main Heading */}
             <div className="space-y-4">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold">
