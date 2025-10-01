@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { FaChevronLeft, FaChevronRight, FaPause, FaPlay } from "react-icons/fa";
 import image from "../assets1/image.png"
 import image1 from "../assets1/image1.png"
 import image2 from "../assets1/image2.png"
@@ -19,58 +20,127 @@ const images = [
 
 const Background = () => {
   const [current, setCurrent] = useState(0);
+  const [isAutoPlay, setIsAutoPlay] = useState(true);
 
-  // Auto-slide every 4s
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % images.length);
-    }, 4000);
-    return () => clearInterval(interval);
+  const nextSlide = useCallback(() => {
+    setCurrent((prev) => (prev + 1) % images.length);
   }, []);
 
+  const prevSlide = () => {
+    setCurrent((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const goToSlide = (index) => {
+    setCurrent(index);
+  };
+
+  // Auto-slide with pause/play functionality
+  useEffect(() => {
+    if (!isAutoPlay) return;
+
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [isAutoPlay, nextSlide]);
+
   return (
-    <div className="w-full h-full relative overflow-hidden rounded-lg">
-      {/* Slider Images */}
-      {images.map((img, idx) => (
-        <img
-          key={idx}
-          src={img}
-          alt={`slide-${idx}`}
-          draggable={false}
-          className={`mt-[60px] absolute w-full h-full  transition-opacity duration-1000 transform ${idx === current
-            ? "opacity-100 scale-100"
-            : "opacity-0 scale-110"
-            }`}
-        />
-      ))}
-
-      {/* Overlay for better text contrast */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/50 z-10"></div>
-
-      {/* Slide Indicators */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-20">
-        {images.map((_, idx) => (
+    <div className="w-full h-full relative overflow-hidden rounded-2xl lg:rounded-3xl shadow-2xl shadow-blue-900/20 group">
+      
+      {/* Slider Images with Enhanced Transitions */}
+      <div className="relative w-full h-full">
+        {images.map((img, idx) => (
           <div
             key={idx}
-            className={`w-3 h-3 rounded-full ${idx === current ? "bg-cyan-400 shadow-lg" : "bg-gray-400/50"
-              } transition-all duration-300`}
+            className={`absolute inset-0 w-full h-full transition-all duration-1000 transform ${
+              idx === current
+                ? "opacity-100 scale-100 z-10"
+                : "opacity-0 scale-105 z-0"
+            }`}
+          >
+            <img
+              src={img}
+              alt={`Fashion Collection ${idx + 1}`}
+              draggable={false}
+              className="w-full h-full object-cover"
+            />
+            
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent z-10"></div>
+            
+            {/* Image Indicator */}
+            <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm z-20 backdrop-blur-sm">
+              {idx + 1} / {images.length}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Navigation Arrows - Enhanced */}
+      <button
+        onClick={prevSlide}
+        className="absolute left-4 top-1/2 transform -translate-y-1/2 
+                   bg-black/30 hover:bg-black/60 text-white p-3 rounded-full 
+                   transition-all duration-300 z-20 backdrop-blur-sm
+                   opacity-0 group-hover:opacity-100 lg:opacity-100
+                   hover:scale-110 hover:shadow-2xl"
+        aria-label="Previous image"
+      >
+        <FaChevronLeft className="text-lg sm:text-xl" />
+      </button>
+      
+      <button
+        onClick={nextSlide}
+        className="absolute right-4 top-1/2 transform -translate-y-1/2 
+                   bg-black/30 hover:bg-black/60 text-white p-3 rounded-full 
+                   transition-all duration-300 z-20 backdrop-blur-sm
+                   opacity-0 group-hover:opacity-100 lg:opacity-100
+                   hover:scale-110 hover:shadow-2xl"
+        aria-label="Next image"
+      >
+        <FaChevronRight className="text-lg sm:text-xl" />
+      </button>
+
+      {/* Auto-play Toggle */}
+      <button
+        onClick={() => setIsAutoPlay(!isAutoPlay)}
+        className="absolute top-4 left-4 bg-black/30 hover:bg-black/60 text-white p-2 rounded-full 
+                   transition-all duration-300 z-20 backdrop-blur-sm
+                   opacity-0 group-hover:opacity-100 lg:opacity-100
+                   hover:scale-110"
+        aria-label={isAutoPlay ? "Pause slideshow" : "Play slideshow"}
+      >
+        {isAutoPlay ? <FaPause className="text-sm" /> : <FaPlay className="text-sm" />}
+      </button>
+
+      {/* Slide Indicators - Enhanced */}
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 sm:gap-3 z-20">
+        {images.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => goToSlide(idx)}
+            className={`w-3 h-3 rounded-full transition-all duration-300 transform hover:scale-125 ${
+              idx === current 
+                ? "bg-cyan-400 shadow-lg shadow-cyan-400/50 scale-125" 
+                : "bg-gray-400/50 hover:bg-gray-300"
+            }`}
+            aria-label={`Go to slide ${idx + 1}`}
           />
         ))}
       </div>
 
-      {/* Optional: Left/Right Arrows (Mobile & Desktop) */}
-      <button
-        onClick={() => setCurrent((current - 1 + images.length) % images.length)}
-        className="absolute cursor-pointer top-1/2 left-4 transform -translate-y-1/2 text-white bg-black/30 p-2 rounded-full hover:bg-black/50 transition z-20 hidden md:flex"
-      >
-        &#8592;
-      </button>
-      <button
-        onClick={() => setCurrent((current + 1) % images.length)}
-        className="absolute top-1/2 right-4 transform -translate-y-1/2 text-white bg-black/30 p-2 rounded-full hover:bg-black/50 transition z-20 hidden md:flex"
-      >
-        &#8594;
-      </button>
+      {/* Progress Bar */}
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-600/30 z-20">
+        <div 
+          className="h-full bg-gradient-to-r from-cyan-400 to-blue-400 transition-all duration-1000 ease-linear"
+          style={{ width: isAutoPlay ? '100%' : '0%' }}
+        />
+      </div>
+
+      {/* Decorative Elements */}
+      <div className="absolute -top-10 -right-10 w-20 h-20 bg-cyan-400 rounded-full blur-2xl opacity-20"></div>
+      <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-blue-400 rounded-full blur-2xl opacity-20"></div>
     </div>
   );
 };
