@@ -15,6 +15,10 @@ import About from "./pages/About";
 import Collections from "./pages/Collections";
 import Product from "./pages/Product";
 import Contact from "./pages/Contact";
+import ProductDetail from "./pages/ProductDetail";
+import Cart from "./pages/Cart";
+import PlaceOrder from "./pages/PlaceOrder";
+import Orders from "./pages/Orders";
 
 const App = () => {
   const { userData, loading } = useContext(userDataContext); // loading added
@@ -88,6 +92,11 @@ const App = () => {
             )
           }
         />
+
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/place-order" element={<PlaceOrder />} />
+        <Route path="/orders" element={<Orders />} />
       </Routes>
     </>
   );

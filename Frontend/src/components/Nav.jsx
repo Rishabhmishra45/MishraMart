@@ -8,6 +8,7 @@ import axios from 'axios';
 import { Link } from "react-router-dom";
 import { authDataContext } from '../context/AuthContext';
 import { shopDataContext } from '../context/ShopContext';
+import { useCart } from '../context/CartContext';
 
 const Nav = () => {
   const [cartItems, setCartItems] = useState(10);
@@ -17,6 +18,8 @@ const Nav = () => {
   const { search, setSearch, setShowSearch } = useContext(shopDataContext);
   const { userData, setUserData } = useContext(userDataContext);
   const { serverUrl } = useContext(authDataContext);
+  const { getCartItemsCount } = useCart();
+  const cartItemsCount = getCartItemsCount();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -42,7 +45,7 @@ const Nav = () => {
 
   const handleSearchToggle = () => {
     setSearchOpen(!searchOpen);
-    
+
     // If we're on home page and opening search, navigate to collections
     if (!searchOpen && location.pathname === '/') {
       navigate('/collections');
@@ -52,7 +55,7 @@ const Nav = () => {
         if (searchInput) searchInput.focus();
       }, 100);
     }
-    
+
     if (searchOpen) {
       setSearchQuery('');
       setSearch('');
@@ -74,7 +77,7 @@ const Nav = () => {
     const value = e.target.value;
     setSearchQuery(value);
     setSearch(value);
-    
+
     // If we're on home page and user starts typing, navigate to collections
     if (value.trim() && location.pathname === '/') {
       navigate('/collections');
@@ -128,6 +131,8 @@ const Nav = () => {
               <Link to="/collections" className="text-gray-700 hover:text-[#00bcd4] font-medium">Collection</Link>
               <Link to="/about" className="text-gray-700 hover:text-[#00bcd4] font-medium">About</Link>
               <Link to="/contact" className="text-gray-700 hover:text-[#00bcd4] font-medium">Contact</Link>
+              <Link to="/orders" className="text-gray-700 hover:text-[#00bcd4] font-medium">My Orders</Link>
+
             </div>
 
             {/* Right Side (Desktop) */}
@@ -238,9 +243,9 @@ const Nav = () => {
                   onClick={() => navigate("/cart")}
                 >
                   <MdOutlineShoppingCart className="text-2xl" />
-                  {cartItems > 0 && (
+                  {cartItemsCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-[#00bcd4] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-                      {cartItems}
+                      {cartItemsCount}
                     </span>
                   )}
                 </button>

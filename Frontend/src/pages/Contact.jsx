@@ -300,21 +300,26 @@ const Contact = () => {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20">
-              {/* Map Placeholder */}
-              <div className="w-full h-64 bg-gray-800 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <FaMapMarkerAlt className="text-3xl text-cyan-400 mx-auto mb-2" />
-                  <p className="text-gray-400">Interactive Map</p>
-                  <p className="text-sm text-gray-500">123 Fashion Street, Jaipur</p>
-                </div>
+            <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-4 sm:p-6 shadow-2xl shadow-blue-900/20">
+              {/* Responsive Map Embed */}
+              <div className="w-full aspect-[16/9] bg-gray-800 rounded-lg overflow-hidden">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d1578.8686839596908!2d75.8906791283195!3d27.030161559822965!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sin!4v1759379072422!5m2!1sen!2sin"
+                  className="w-full h-full"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                ></iframe>
               </div>
+
               <div className="mt-4 text-center">
                 <p className="text-gray-400 text-sm">
                   🎉 <strong>Special Offer:</strong> Mention this page and get 10% off on your first in-store purchase!
                 </p>
               </div>
             </div>
+
           </div>
         </div>
       </section>
