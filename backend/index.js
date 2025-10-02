@@ -32,12 +32,9 @@ const io = new Server(server, {
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
-
   socket.on('joinUserRoom', (userId) => {
     socket.join(userId);
-    console.log(`User ${userId} joined their room`);
   });
-
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });
@@ -49,27 +46,22 @@ app.use((req, res, next) => {
   next();
 });
 
+// SIMPLE CORS FIX
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://mishramarts.netlify.app",
+    "http://localhost:5174", 
+    "http://192.168.1.3:5174",
+  ],
+  credentials: true
+}));
+
 // Middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(morgan("dev"));
-
-// Allowed origins for CORS
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://mishramarts.netlify.app",
-  "http://localhost:5174",
-  "http://192.168.1.3:5174",
-];
-
-// CORS config
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  })
-);
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -77,47 +69,42 @@ app.use("/api/user", userRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/orders", orderRoutes);
 
-// Health check endpoint
+// Health check
 app.get("/health", (req, res) => {
   res.status(200).json({ 
     success: true,
-    message: "Server is running healthy",
-    timestamp: new Date().toISOString()
+    message: "Server is running"
   });
 });
 
-// Default root
+// Default
 app.get("/", (req, res) => res.json({ 
   success: true,
-  message: "MishraMart API is running",
-  version: "1.0.0"
+  message: "MishraMart API"
 }));
 
-// 404 handler - FIXED: Remove the problematic wildcard route
-app.use((req, res, next) => {
+// 404 handler
+app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: `Route ${req.originalUrl} not found`
+    message: "Route not found"
   });
 });
 
-// Error handling middleware
+// Error handler
 app.use((err, req, res, next) => {
-  console.error('Error:', err.stack);
+  console.error('Error:', err);
   res.status(500).json({
     success: false,
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'production' ? {} : err.message
+    message: 'Server error'
   });
 });
 
-// DB connect then start server
+// Start server
 connectDb()
   .then(() => {
     server.listen(port, () => {
       console.log(`🚀 Server running on port ${port}`);
-      console.log(`📱 API URL: http://localhost:${port}`);
-      console.log(`🔗 CORS enabled for: ${allowedOrigins.join(', ')}`);
     });
   })
   .catch((err) => {
