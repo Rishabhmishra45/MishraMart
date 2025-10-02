@@ -6,18 +6,25 @@ export const userDataContext = createContext();
 
 const UserContextProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true); // ✅ loading state
-  const { serverUrl } = useContext(authDataContext);
+  const [loading, setLoading] = useState(true);
+  const { serverUrl, isAuthenticated, user } = useContext(authDataContext);
 
-  // fetch current user from backend
+  // fetch current user from backend - UPDATED
   const getCurrentUser = async () => {
     try {
       const result = await axios.get(`${serverUrl}/api/user/getcurrentuser`, {
-        withCredentials: true, // cookie-based auth
+        withCredentials: true,
       });
 
-      setUserData(result.data);
-      console.log("Current User:", result.data);
+      console.log("User API Response:", result.data);
+
+      if (result.data.success) {
+        setUserData(result.data.user);
+        console.log("Current User:", result.data.user);
+      } else {
+        setUserData(null);
+        console.error("getCurrentUser error:", result.data.message);
+      }
     } catch (error) {
       setUserData(null);
       console.error(
@@ -25,19 +32,26 @@ const UserContextProvider = ({ children }) => {
         error.response?.data?.message || error.message
       );
     } finally {
-      setLoading(false); // ✅ stop loading after fetch
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    getCurrentUser();
-  }, []);
+    if (user) {
+      // If we have user from AuthContext, use it directly
+      setUserData(user);
+      setLoading(false);
+    } else {
+      // Otherwise fetch from API
+      getCurrentUser();
+    }
+  }, [user]);
 
   const value = {
     userData,
     setUserData,
     getCurrentUser,
-    loading, // ✅ expose loading state
+    loading,
   };
 
   return (

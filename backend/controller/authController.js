@@ -1,65 +1,15 @@
-import User from "../model/User.js";
+import User from "../model/UserModel.js";
 import validator from "validator";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken"; // ADD THIS IMPORT
+import { genToken, genToken1 } from "../config/token.js";
 
-// common cookie options for cross-site (Netlify <-> Render)
+// Common cookie options for cross-site (Netlify <-> Render)
 const cookieOptions = {
   httpOnly: true,
-  secure: true,        // always true for cross-site cookies
-  sameSite: "None",    // required for cross-site cookies
+  secure: true,
+  sameSite: "None",
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-};
-
-// Generate JWT token
-const genToken = (userId) => {
-  return jwt.sign(
-    { userId },
-    process.env.JWT_SECRET,
-    { expiresIn: '30d' }
-  );
-};
-
-// Generate admin token
-const genToken1 = (email) => {
-  return jwt.sign(
-    { email, isAdmin: true },
-    process.env.JWT_SECRET,
-    { expiresIn: '24h' }
-  );
-};
-
-// @desc    Get current logged in user
-// @route   GET /api/auth/me
-// @access  Private
-export const getCurrentUser = async (req, res) => {
-  try {
-    // User is already attached to req by protect middleware
-    const user = await User.findById(req.user._id).select('-password');
-    
-    if (!user) {
-      return res.status(404).json({ 
-        success: false,
-        message: "User not found" 
-      });
-    }
-
-    const userObj = user.toObject ? user.toObject() : user;
-    delete userObj.password;
-
-    return res.status(200).json({
-      success: true,
-      user: userObj
-    });
-
-  } catch (error) {
-    console.error("Get current user error:", error.message);
-    return res.status(500).json({ 
-      success: false,
-      message: "Failed to fetch user data",
-      error: error.message 
-    });
-  }
 };
 
 export const registration = async (req, res) => {
@@ -69,7 +19,7 @@ export const registration = async (req, res) => {
     if (!name || !email || !password) {
       return res.status(400).json({ 
         success: false,
-        message: "Name, email and password required" 
+        message: "Name, email and password are required" 
       });
     }
 
@@ -77,28 +27,30 @@ export const registration = async (req, res) => {
     if (existUser) {
       return res.status(400).json({ 
         success: false,
-        message: "User already exists" 
+        message: "User already exists with this email" 
       });
     }
 
     if (!validator.isEmail(email)) {
       return res.status(400).json({ 
         success: false,
-        message: "Enter valid email" 
+        message: "Please enter a valid email address" 
       });
     }
 
     if (password.length < 6) {
       return res.status(400).json({ 
         success: false,
-        message: "Password must be at least 6 characters" 
+        message: "Password must be at least 6 characters long" 
       });
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
       email: email.toLowerCase(),
-      password, // Password will be hashed by pre-save middleware
+      password: hashedPassword,
     });
 
     const token = genToken(user._id);
@@ -110,15 +62,15 @@ export const registration = async (req, res) => {
 
     return res.status(201).json({ 
       success: true,
-      message: "User registered successfully",
-      user: userObj,
-      token 
+      message: "Registration successful",
+      user: userObj 
     });
+    
   } catch (error) {
     console.error("Register error:", error.message);
     return res.status(500).json({ 
       success: false,
-      message: `Registration error: ${error.message}` 
+      message: `Registration failed: ${error.message}` 
     });
   }
 };
@@ -126,10 +78,11 @@ export const registration = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    
     if (!email || !password) {
       return res.status(400).json({ 
         success: false,
-        message: "Email and password required" 
+        message: "Email and password are required" 
       });
     }
 
@@ -137,11 +90,19 @@ export const login = async (req, res) => {
     if (!user) {
       return res.status(404).json({ 
         success: false,
-        message: "User not found" 
+        message: "User not found with this email" 
       });
     }
 
-    const isMatch = await user.comparePassword(password);
+    // Check if user has password (social login users might not have password)
+    if (!user.password) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Please use social login for this account" 
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ 
         success: false,
@@ -159,14 +120,14 @@ export const login = async (req, res) => {
     return res.status(200).json({ 
       success: true,
       message: "Login successful", 
-      user: userObj,
-      token 
+      user: userObj 
     });
+    
   } catch (error) {
     console.error("Login error:", error.message);
     return res.status(500).json({ 
       success: false,
-      message: `Login error: ${error.message}` 
+      message: `Login failed: ${error.message}` 
     });
   }
 };
@@ -178,15 +139,17 @@ export const logOut = async (req, res) => {
       secure: true,
       sameSite: "None",
     });
+    
     return res.status(200).json({ 
       success: true,
       message: "Logout successful" 
     });
+    
   } catch (error) {
-    console.error("logOut error:", error.message);
+    console.error("Logout error:", error.message);
     return res.status(500).json({ 
       success: false,
-      message: `Logout error: ${error.message}` 
+      message: `Logout failed: ${error.message}` 
     });
   }
 };
@@ -207,8 +170,7 @@ export const googleLogin = async (req, res) => {
     if (!user) {
       user = await User.create({ 
         name, 
-        email: email.toLowerCase(),
-        password: await bcrypt.hash(Math.random().toString(36), 10) // Random password for Google users
+        email: email.toLowerCase() 
       });
     }
 
@@ -222,33 +184,31 @@ export const googleLogin = async (req, res) => {
     return res.status(200).json({ 
       success: true,
       message: "Google login successful", 
-      user: userObj,
-      token 
+      user: userObj 
     });
+    
   } catch (error) {
-    console.error("googleLogin error:", error.message);
+    console.error("Google login error:", error.message);
     return res.status(500).json({ 
       success: false,
-      message: "Google login failed", 
-      error: error.message 
+      message: `Google login failed: ${error.message}` 
     });
   }
 };
 
 export const adminLogin = async (req, res) => {
   try {
-    let { email, password } = req.body;
+    const { email, password } = req.body;
     
     if (!email || !password) {
       return res.status(400).json({ 
         success: false,
-        message: "Email and password required" 
+        message: "Email and password are required" 
       });
     }
 
-    // Check if admin credentials match
     if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-      let token = genToken1(email);
+      const token = genToken1(email);
       
       res.cookie("token", token, {
         httpOnly: true,
@@ -260,26 +220,68 @@ export const adminLogin = async (req, res) => {
       return res.status(200).json({
         success: true,
         message: "Admin login successful",
-        token,
-        user: {
-          name: "Admin",
-          email: email,
-          role: "admin",
-          isAdmin: true
-        }
+        token
       });
     }
     
-    return res.status(400).json({ 
+    return res.status(401).json({ 
       success: false,
       message: "Invalid admin credentials" 
     });
+    
   } catch (error) {
-    console.error("AdminLogin error:", error.message);
+    console.error("Admin login error:", error.message);
     return res.status(500).json({ 
       success: false,
-      message: "Admin login failed", 
-      error: error.message 
+      message: `Admin login failed: ${error.message}` 
+    });
+  }
+};
+
+// Add this new endpoint for auth check
+export const checkAuth = async (req, res) => {
+  try {
+    const token = req.cookies.token || req.headers.authorization?.replace("Bearer ", "");
+    
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        isAuthenticated: false,
+        message: "Not authenticated"
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    if (decoded.userId) {
+      const user = await User.findById(decoded.userId).select("-password");
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          isAuthenticated: false,
+          message: "User not found"
+        });
+      }
+      
+      return res.status(200).json({
+        success: true,
+        isAuthenticated: true,
+        user: user
+      });
+    }
+    
+    return res.status(401).json({
+      success: false,
+      isAuthenticated: false,
+      message: "Invalid token"
+    });
+    
+  } catch (error) {
+    console.error("Auth check error:", error.message);
+    return res.status(401).json({
+      success: false,
+      isAuthenticated: false,
+      message: "Authentication failed"
     });
   }
 };

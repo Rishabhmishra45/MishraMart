@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { shopDataContext } from '../context/ShopContext';
 import { userDataContext } from '../context/UserContext';
-import { 
-    FaMapMarkerAlt, 
-    FaPhone, 
-    FaEnvelope, 
+import { authDataContext } from '../context/AuthContext';
+import {
+    FaMapMarkerAlt,
+    FaPhone,
+    FaEnvelope,
     FaUser,
     FaCreditCard,
     FaMoneyBillWave,
@@ -15,13 +16,15 @@ import {
     FaArrowLeft,
     FaCheck
 } from 'react-icons/fa';
+import axios from 'axios';
 
 const PlaceOrder = () => {
     const navigate = useNavigate();
     const { cartItems, getCartTotal, clearCart } = useCart();
     const { currency, delivery_fee } = useContext(shopDataContext);
     const { userData } = useContext(userDataContext);
-    
+    const { serverUrl } = useContext(authDataContext);
+
     const [isProcessing, setIsProcessing] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState('');
     const [orderPlaced, setOrderPlaced] = useState(false);
@@ -43,6 +46,7 @@ const PlaceOrder = () => {
     const subtotal = getCartTotal();
     const total = subtotal + delivery_fee;
     const tax = subtotal * 0.18; // 18% GST
+    const finalTotal = total + tax;
 
     useEffect(() => {
         if (cartItems.length === 0 && !orderPlaced) {
@@ -57,8 +61,50 @@ const PlaceOrder = () => {
         });
     };
 
-    const generateOrderId = () => {
-        return 'MM' + Date.now() + Math.floor(Math.random() * 1000);
+    const createOrderInDatabase = async () => {
+        try {
+            // Prepare order data for API
+            const orderData = {
+                items: cartItems.map(item => ({
+                    productId: item.id || item._id, // Use the correct product ID
+                    quantity: item.quantity,
+                    price: item.price,
+                    size: item.size || 'M'
+                })),
+                totalAmount: finalTotal,
+                shippingAddress: {
+                    name: `${formData.firstName} ${formData.lastName}`.trim(),
+                    email: formData.email,
+                    phone: formData.phone,
+                    address: formData.address,
+                    city: formData.city,
+                    state: formData.state,
+                    pincode: formData.pincode,
+                    landmark: formData.landmark
+                },
+                paymentMethod: selectedPayment,
+                paymentStatus: selectedPayment === 'cod' ? 'pending' : 'completed'
+            };
+
+            console.log('Sending order data:', orderData);
+
+            const response = await axios.post(`${serverUrl}/api/orders/create`, orderData, {
+                withCredentials: true,
+                timeout: 15000
+            });
+
+            console.log('Order creation response:', response.data);
+
+            if (response.data.success) {
+                return response.data.order;
+            } else {
+                throw new Error(response.data.message || 'Failed to create order');
+            }
+
+        } catch (error) {
+            console.error('Order creation error:', error);
+            throw error;
+        }
     };
 
     const handlePlaceOrder = async () => {
@@ -67,27 +113,27 @@ const PlaceOrder = () => {
             return;
         }
 
-        if (!formData.firstName || !formData.phone || !formData.address || !formData.city || !formData.pincode) {
-            alert('Please fill all required fields');
+        // Validate required fields
+        const requiredFields = ['firstName', 'phone', 'address', 'city', 'pincode'];
+        const missingFields = requiredFields.filter(field => !formData[field]);
+        
+        if (missingFields.length > 0) {
+            alert(`Please fill all required fields: ${missingFields.join(', ')}`);
             return;
         }
 
         setIsProcessing(true);
 
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            const newOrderId = generateOrderId();
-            setOrderId(newOrderId);
+            // For both COD and Razorpay, create order in database
+            const order = await createOrderInDatabase();
+            setOrderId(order.orderId);
             setOrderPlaced(true);
-            
-            // Clear cart after successful order
             clearCart();
-            
+
         } catch (error) {
             console.error('Order failed:', error);
-            alert('Order failed. Please try again.');
+            alert(`Order failed: ${error.response?.data?.message || error.message}`);
         } finally {
             setIsProcessing(false);
         }
@@ -110,34 +156,17 @@ const PlaceOrder = () => {
             return;
         }
 
-        const options = {
-            key: 'YOUR_RAZORPAY_KEY_ID', // Replace with your Razorpay key
-            amount: total * 100, // Amount in paise
-            currency: 'INR',
-            name: 'MishraMart',
-            description: 'Order Payment',
-            image: '/logo.png',
-            handler: function(response) {
-                // Handle successful payment
-                console.log('Payment successful:', response);
-                handlePlaceOrder();
-            },
-            prefill: {
-                name: `${formData.firstName} ${formData.lastName}`,
-                email: formData.email,
-                contact: formData.phone
-            },
-            theme: {
-                color: '#06b6d4'
-            }
-        };
-
-        const razorpayInstance = new window.Razorpay(options);
-        razorpayInstance.open();
+        // For testing, we'll use the same flow as COD
+        await handlePlaceOrder();
     };
 
     const handlePaymentSelection = (method) => {
         setSelectedPayment(method);
+    };
+
+    // Function to get product image from cart item
+    const getCartItemImage = (item) => {
+        return item.image || item.images?.[0] || 'https://images.unsplash.com/photo-1560769684-5507c64551f9?w=150';
     };
 
     if (orderPlaced) {
@@ -178,7 +207,7 @@ const PlaceOrder = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#141414] via-[#0c2025] to-[#141414] text-white pt-[70px]">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                
+
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                     <h1 className="text-3xl sm:text-4xl font-bold">Place Order</h1>
@@ -192,10 +221,10 @@ const PlaceOrder = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    
+
                     {/* Left Column - User Details */}
                     <div className="lg:col-span-2 space-y-6">
-                        
+
                         {/* Personal Information */}
                         <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20">
                             <h3 className="text-xl font-semibold mb-6 flex items-center gap-3">
@@ -345,18 +374,16 @@ const PlaceOrder = () => {
                             <div className="space-y-4">
                                 <button
                                     onClick={() => handlePaymentSelection('razorpay')}
-                                    className={`w-full p-4 border-2 rounded-2xl text-left transition-all duration-300 ${
-                                        selectedPayment === 'razorpay' 
-                                            ? 'border-cyan-400 bg-cyan-400/10' 
+                                    className={`w-full p-4 border-2 rounded-2xl text-left transition-all duration-300 ${selectedPayment === 'razorpay'
+                                            ? 'border-cyan-400 bg-cyan-400/10'
                                             : 'border-gray-600 hover:border-cyan-400'
-                                    }`}
+                                        }`}
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                                            selectedPayment === 'razorpay' 
-                                                ? 'border-cyan-400 bg-cyan-400' 
+                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedPayment === 'razorpay'
+                                                ? 'border-cyan-400 bg-cyan-400'
                                                 : 'border-gray-400'
-                                        }`}>
+                                            }`}>
                                             {selectedPayment === 'razorpay' && (
                                                 <div className="w-2 h-2 bg-white rounded-full"></div>
                                             )}
@@ -376,18 +403,16 @@ const PlaceOrder = () => {
 
                                 <button
                                     onClick={() => handlePaymentSelection('cod')}
-                                    className={`w-full p-4 border-2 rounded-2xl text-left transition-all duration-300 ${
-                                        selectedPayment === 'cod' 
-                                            ? 'border-cyan-400 bg-cyan-400/10' 
+                                    className={`w-full p-4 border-2 rounded-2xl text-left transition-all duration-300 ${selectedPayment === 'cod'
+                                            ? 'border-cyan-400 bg-cyan-400/10'
                                             : 'border-gray-600 hover:border-cyan-400'
-                                    }`}
+                                        }`}
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                                            selectedPayment === 'cod' 
-                                                ? 'border-cyan-400 bg-cyan-400' 
+                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedPayment === 'cod'
+                                                ? 'border-cyan-400 bg-cyan-400'
                                                 : 'border-gray-400'
-                                        }`}>
+                                            }`}>
                                             {selectedPayment === 'cod' && (
                                                 <div className="w-2 h-2 bg-white rounded-full"></div>
                                             )}
@@ -411,15 +436,18 @@ const PlaceOrder = () => {
                     <div className="lg:col-span-1">
                         <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 sticky top-24">
                             <h3 className="text-xl font-semibold mb-6">Order Summary</h3>
-                            
-                            {/* Order Items */}
+
+                            {/* Order Items - UPDATED IMAGE LOGIC */}
                             <div className="space-y-4 mb-6 max-h-64 overflow-y-auto">
                                 {cartItems.map((item) => (
                                     <div key={item.id} className="flex items-center gap-3 pb-4 border-b border-gray-700 last:border-b-0">
                                         <img
-                                            src={item.image}
+                                            src={getCartItemImage(item)}
                                             alt={item.name}
                                             className="w-12 h-12 object-cover rounded-lg"
+                                            onError={(e) => {
+                                                e.target.src = 'https://images.unsplash.com/photo-1560769684-5507c64551f9?w=150';
+                                            }}
                                         />
                                         <div className="flex-1">
                                             <p className="text-sm font-medium text-white truncate">{item.name}</p>
@@ -451,7 +479,7 @@ const PlaceOrder = () => {
                                 <div className="border-t border-gray-600 pt-3">
                                     <div className="flex justify-between text-lg font-semibold text-white">
                                         <span>Total Amount</span>
-                                        <span>{currency} {(total + tax).toFixed(2)}</span>
+                                        <span>{currency} {finalTotal.toFixed(2)}</span>
                                     </div>
                                 </div>
                             </div>

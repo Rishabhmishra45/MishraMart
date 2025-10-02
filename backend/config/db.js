@@ -2,17 +2,14 @@ import mongoose from "mongoose";
 
 const connectDb = async () => {
   try {
-    if (!process.env.MONGODB_URL) {
-      throw new Error("MONGODB_URL is not set in env");
-    }
+    const conn = await mongoose.connect(process.env.MONGODB_URL);
+    // Remove deprecated options
 
-    // Direct connect without deprecated options
-    await mongoose.connect(process.env.MONGODB_URL);
-
-    console.log("✅ MongoDB Connected...");
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    return conn;
   } catch (error) {
-    console.error("❌ DB connection error:", error.message);
-    process.exit(1);
+    console.error(`❌ MongoDB connection error: ${error.message}`);
+    throw error;
   }
 };
 

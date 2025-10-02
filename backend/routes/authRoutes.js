@@ -1,24 +1,21 @@
 import express from "express";
 import { 
-    adminLogin, 
-    googleLogin, 
-    login, 
-    logOut, 
-    registration, 
-    getCurrentUser 
+  adminLogin, 
+  googleLogin, 
+  login, 
+  logOut, 
+  registration 
 } from "../controller/authController.js";
-import { protect } from "../middleware/authMiddleware.js";
 
 const authRoutes = express.Router();
 
-// Public routes
 authRoutes.post("/registration", registration);
 authRoutes.post("/login", login);
+authRoutes.post("/logout", logOut);
 authRoutes.post("/googlelogin", googleLogin);
 authRoutes.post("/adminlogin", adminLogin);
 
-// Protected routes
-authRoutes.get("/me", protect, getCurrentUser);
-authRoutes.get("/logout", protect, logOut);
+// Remove this line - we'll use user/getcurrentuser instead
+// authRoutes.get("/check", isAuth, checkAuth);
 
 export default authRoutes;

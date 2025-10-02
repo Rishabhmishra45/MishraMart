@@ -1,26 +1,21 @@
-import express from "express";
-import { 
-    createOrder, 
-    getMyOrders, 
-    getOrderById, 
-    cancelOrder, 
-    downloadInvoice,
-    updateOrderStatus 
-} from "../controller/orderController.js";
-import { protect, admin } from "../middleware/authMiddleware.js";
+import express from 'express';
+import isAuth from '../middleware/isAuth.js';
+import {
+  createOrder,
+  getUserOrders,
+  getOrderById,
+  cancelOrder,
+  downloadInvoice,
+  updateOrderStatus
+} from '../controller/orderController.js';
 
-const router = express.Router();
+const orderRoutes = express.Router();
 
-// All routes are protected
-router.use(protect);
+orderRoutes.post("/create", isAuth, createOrder);
+orderRoutes.get("/my-orders", isAuth, getUserOrders);
+orderRoutes.get("/:orderId", isAuth, getOrderById);
+orderRoutes.put("/cancel/:orderId", isAuth, cancelOrder);
+orderRoutes.get("/invoice/:orderId", isAuth, downloadInvoice);
+orderRoutes.put("/status/:orderId", updateOrderStatus); // Admin route
 
-router.post("/create", createOrder);
-router.get("/my-orders", getMyOrders);
-router.get("/:id", getOrderById);
-router.put("/cancel/:id", cancelOrder);
-router.get("/invoice/:id", downloadInvoice);
-
-// Admin only routes
-router.put("/status/:id", admin, updateOrderStatus);
-
-export default router;
+export default orderRoutes;

@@ -8,7 +8,11 @@
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
-  "keywords": ["ecommerce", "mern", "backend"],
+  "keywords": [
+    "ecommerce",
+    "mern",
+    "backend"
+  ],
   "author": "Rishabh Mishra",
   "license": "ISC",
   "dependencies": {
@@ -23,6 +27,8 @@
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
     "nodemon": "^3.1.10",
+    "pdfkit": "^0.17.2",
+    "socket.io": "^4.8.1",
     "validator": "^13.15.15"
   }
 }

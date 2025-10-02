@@ -1,31 +1,28 @@
 import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
-// Context create
 export const authDataContext = createContext();
 
 function AuthContext({ children }) {
-  // take the URL from env; fallback to localhost if undefined
   const serverUrl = import.meta.env.VITE_SERVER_URL || "http://localhost:8000";
   
-  // Authentication state
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check authentication status on app start
   useEffect(() => {
     checkAuthStatus();
   }, []);
 
-  // Function to check if user is authenticated
   const checkAuthStatus = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get(`${serverUrl}/api/auth/me`, {
+      const response = await axios.get(`${serverUrl}/api/user/getcurrentuser`, {
         withCredentials: true,
         timeout: 5000
       });
+      
+      console.log("Auth check response:", response.data);
       
       if (response.data.success && response.data.user) {
         setUser(response.data.user);
@@ -35,7 +32,7 @@ function AuthContext({ children }) {
         setIsAuthenticated(false);
       }
     } catch (error) {
-      console.log('Auth check failed:', error.message);
+      console.log('Auth check failed (expected for new users):', error.message);
       setUser(null);
       setIsAuthenticated(false);
     } finally {
@@ -43,13 +40,11 @@ function AuthContext({ children }) {
     }
   };
 
-  // Login function
   const login = (userData) => {
     setUser(userData);
     setIsAuthenticated(true);
   };
 
-  // Logout function
   const logout = async () => {
     try {
       await axios.post(`${serverUrl}/api/auth/logout`, {}, {

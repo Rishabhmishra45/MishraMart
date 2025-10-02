@@ -21,18 +21,26 @@ import PlaceOrder from "./pages/PlaceOrder";
 import Orders from "./pages/Orders";
 
 const App = () => {
-  const { userData, loading } = useContext(userDataContext); // loading added
+  const { userData, loading } = useContext(userDataContext);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    if (!loading && !userData && window.location.pathname === "/") {
+    // Only redirect if not loading and no user data
+    if (!loading && !userData && location.pathname === "/") {
       navigate("/signup");
     }
-  }, [userData, navigate, loading]);
+  }, [userData, navigate, loading, location.pathname]);
 
   if (loading) {
-    return <div className="text-white p-10">Checking login...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#141414] via-[#0c2025] to-[#141414] text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-cyan-400">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
