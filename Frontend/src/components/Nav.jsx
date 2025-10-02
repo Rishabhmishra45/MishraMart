@@ -131,7 +131,7 @@ const Nav = () => {
               <Link to="/collections" className="text-gray-700 hover:text-[#00bcd4] font-medium">Collection</Link>
               <Link to="/about" className="text-gray-700 hover:text-[#00bcd4] font-medium">About</Link>
               <Link to="/contact" className="text-gray-700 hover:text-[#00bcd4] font-medium">Contact</Link>
-              <Link to="/orders" className="text-gray-700 hover:text-[#00bcd4] font-medium">My Orders</Link>
+              {/* <Link to="/orders" className="text-gray-700 hover:text-[#00bcd4] font-medium">My Orders</Link> */}
 
             </div>
 

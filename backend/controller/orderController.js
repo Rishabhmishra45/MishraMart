@@ -96,6 +96,28 @@ export const getUserOrders = async (req, res) => {
   }
 };
 
+// Get all orders (Admin only)
+export const getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate('items.productId', 'name images price image1 image2 image3 image4')
+      .populate('userId', 'name email')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      orders
+    });
+
+  } catch (error) {
+    console.error("Get all orders error:", error);
+    res.status(500).json({
+      success: false,
+      message: `Get all orders error: ${error.message}`
+    });
+  }
+};
+
 export const getOrderById = async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -215,7 +237,8 @@ export const updateOrderStatus = async (req, res) => {
     const { status, trackingNumber } = req.body;
 
     const order = await Order.findById(orderId)
-      .populate('items.productId', 'name images price image1 image2 image3 image4');
+      .populate('items.productId', 'name images price image1 image2 image3 image4')
+      .populate('userId', 'name email');
 
     if (!order) {
       return res.status(404).json({
@@ -233,13 +256,14 @@ export const updateOrderStatus = async (req, res) => {
 
     if (status === 'delivered') {
       order.deliveredAt = new Date();
+      order.paymentStatus = 'completed'; // Auto-complete payment for COD on delivery
     }
 
     await order.save();
 
-    // Emit real-time update
+    // Emit real-time update to the user
     if (req.io) {
-      req.io.to(order.userId.toString()).emit('orderUpdated', order);
+      req.io.to(order.userId._id.toString()).emit('orderUpdated', order);
     }
 
     res.status(200).json({
