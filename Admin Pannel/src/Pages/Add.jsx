@@ -99,8 +99,8 @@ const Add = () => {
       {/* content area with responsive margin and padding */}
       <div className="lg:ml-72 xl:ml-80 pt-16 lg:pt-20 px-3 xs:px-4 sm:px-6 lg:px-8 min-h-screen overflow-y-auto">
         <div className="max-w-5xl mx-auto pb-6 sm:pb-10">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 mt-4 sm:mt-[30px]">Add New Product</h1>
-          <p className="text-gray-300 mb-4 sm:mb-8 text-sm sm:text-base">Fill in the product details below</p>
+          <h1 className="text-2xl pt-[30px] sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-400 to-cyan-400 bg-clip-text text-transparent">Add New Product</h1>
+          <p className="text-gray-300 mt-2 mb-4 sm:mb-8 text-sm sm:text-base">Fill in the product details below</p>
 
           {message.text && (
             <div className="fixed top-16 lg:top-20 right-3 sm:right-4 z-50 max-w-xs sm:max-w-sm animate-slide-in">
