@@ -17,7 +17,8 @@ import {
     FaWhatsapp,
     FaLink,
     FaTelegram,
-    FaCheck
+    FaCheck,
+    FaRuler // Size icon ke liye
 } from 'react-icons/fa';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -35,6 +36,7 @@ const CartNotification = ({ product, isVisible }) => {
                     <div className="flex-1">
                         <p className="font-semibold text-sm">Added to Cart!</p>
                         <p className="text-white/90 text-xs">{product.name}</p>
+                        <p className="text-white/80 text-xs">Size: {product.size}</p>
                     </div>
                 </div>
                 <div className="mt-2 flex items-center gap-2 text-xs text-white/80">
@@ -57,6 +59,7 @@ const ProductDetail = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isWishlisted, setIsWishlisted] = useState(false);
     const [showShareOptions, setShowShareOptions] = useState(false);
+    const [selectedSize, setSelectedSize] = useState('');
 
     useEffect(() => {
         if (products.length === 0) {
@@ -76,22 +79,36 @@ const ProductDetail = () => {
         }
     };
 
-    // Updated addToCart function using CartContext
+    // Get sizes from product data - Admin panel se aaye hue sizes
+    const sizeOptions = product?.sizes || [];
+
+    // Updated addToCart function with size validation
     const handleAddToCart = () => {
         if (!product) return;
+        
+        // Size validation
+        if (!selectedSize) {
+            alert('Please select a size before adding to cart');
+            return;
+        }
 
         const productToAdd = {
             id: product._id,
             name: product.name,
             price: product.price,
             image: product.image1,
-            category: product.category
+            category: product.category,
+            size: selectedSize // Selected size add karein
         };
 
         addToCart(productToAdd, quantity);
     };
 
     const buyNow = () => {
+        if (!selectedSize) {
+            alert('Please select a size before buying');
+            return;
+        }
         handleAddToCart();
         navigate('/cart');
     };
@@ -288,6 +305,44 @@ const ProductDetail = () => {
                             </p>
                         </div>
 
+                        {/* Size Selector - Description ke niche add kiya */}
+                        {sizeOptions.length > 0 && (
+                            <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20">
+                                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                    <FaRuler className="text-cyan-400" />
+                                    Select Size
+                                </h3>
+                                <div className="flex flex-wrap gap-3">
+                                    {sizeOptions.map((size) => (
+                                        <button
+                                            key={size}
+                                            type="button"
+                                            onClick={() => setSelectedSize(size)}
+                                            className={`px-6 py-3 border-2 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${
+                                                selectedSize === size
+                                                    ? 'border-cyan-400 bg-cyan-400/10 text-cyan-400 scale-105 shadow-lg shadow-cyan-400/20'
+                                                    : 'border-gray-600 text-gray-400 hover:border-cyan-400 hover:text-cyan-400'
+                                            }`}
+                                        >
+                                            {size}
+                                        </button>
+                                    ))}
+                                </div>
+                                {!selectedSize && (
+                                    <p className="text-red-400 text-sm mt-3 flex items-center gap-2">
+                                        <span className="w-2 h-2 bg-red-400 rounded-full"></span>
+                                        Please select a size to continue
+                                    </p>
+                                )}
+                                {selectedSize && (
+                                    <p className="text-green-400 text-sm mt-3 flex items-center gap-2">
+                                        <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                                        Selected: <span className="font-semibold">{selectedSize}</span>
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
                         {/* Quantity Selector */}
                         <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20">
                             <h3 className="text-lg font-semibold mb-4">Quantity</h3>
@@ -315,20 +370,30 @@ const ProductDetail = () => {
                             </div>
                         </div>
 
-                        {/* Action Buttons - Updated to use CartContext */}
+                        {/* Action Buttons - Size validation ke saath */}
                         <div className="flex flex-col sm:flex-row gap-4">
                             <button
                                 onClick={handleAddToCart}
-                                className="flex-1 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold rounded-2xl transition-all duration-300 transform hover:-translate-y-1 shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-3"
+                                disabled={!selectedSize}
+                                className={`flex-1 px-8 py-4 font-semibold rounded-2xl transition-all duration-300 transform flex items-center justify-center gap-3 ${
+                                    selectedSize
+                                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white hover:-translate-y-1 shadow-lg shadow-cyan-500/20'
+                                        : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                                }`}
                             >
                                 <FaShoppingCart />
-                                Add to Cart
+                                {selectedSize ? 'Add to Cart' : 'Select Size First'}
                             </button>
                             <button
                                 onClick={buyNow}
-                                className="flex-1 px-8 py-4 bg-white hover:bg-gray-100 text-gray-900 font-semibold rounded-2xl transition-all duration-300 transform hover:-translate-y-1 shadow-lg flex items-center justify-center gap-3"
+                                disabled={!selectedSize}
+                                className={`flex-1 px-8 py-4 font-semibold rounded-2xl transition-all duration-300 transform flex items-center justify-center gap-3 ${
+                                    selectedSize
+                                        ? 'bg-white hover:bg-gray-100 text-gray-900 hover:-translate-y-1 shadow-lg'
+                                        : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                                }`}
                             >
-                                Buy Now
+                                {selectedSize ? 'Buy Now' : 'Select Size First'}
                             </button>
                         </div>
 
@@ -336,10 +401,11 @@ const ProductDetail = () => {
                         <div className="flex gap-4 relative">
                             <button
                                 onClick={() => setIsWishlisted(!isWishlisted)}
-                                className={`px-6 py-3 border rounded-2xl transition-all duration-300 flex items-center gap-2 ${isWishlisted
+                                className={`px-6 py-3 border rounded-2xl transition-all duration-300 flex items-center gap-2 ${
+                                    isWishlisted
                                         ? 'border-red-500 text-red-500 bg-red-500/10'
                                         : 'border-gray-600 text-gray-400 hover:border-red-500 hover:text-red-500'
-                                    }`}
+                                }`}
                             >
                                 <FaHeart className={isWishlisted ? 'fill-current' : ''} />
                                 {isWishlisted ? 'Wishlisted' : 'Add to Wishlist'}
@@ -409,8 +475,8 @@ const ProductDetail = () => {
                                 <span className="text-white">Machine Wash</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-700 pb-2">
-                                <span className="text-gray-400">Color</span>
-                                <span className="text-white">As shown in images</span>
+                                <span className="text-gray-400">Available Sizes</span>
+                                <span className="text-white">{sizeOptions.join(', ')}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-gray-400">SKU</span>
