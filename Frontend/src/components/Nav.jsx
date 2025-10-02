@@ -26,6 +26,38 @@ const Nav = () => {
   const desktopDropdownRef = useRef(null);
   const mobileDropdownRef = useRef(null);
 
+  // Profile image state - load from localStorage
+  const [profileImage, setProfileImage] = useState(null);
+
+  useEffect(() => {
+    // Load profile image from localStorage when userData changes
+    if (userData) {
+      const savedImage = localStorage.getItem(`userProfileImage_${userData.id}`);
+      if (savedImage) {
+        setProfileImage(savedImage);
+      }
+    }
+  }, [userData]);
+
+  // Listen for storage changes to update profile image in real-time
+  useEffect(() => {
+    const handleStorageChange = () => {
+      if (userData) {
+        const savedImage = localStorage.getItem(`userProfileImage_${userData.id}`);
+        setProfileImage(savedImage);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    // Also check for changes periodically (for same tab updates)
+    const interval = setInterval(handleStorageChange, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [userData]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -92,6 +124,11 @@ const Nav = () => {
     } finally {
       setUserData(null);
       setIsDropdownOpen(false);
+      // Clear profile image from localStorage on logout
+      if (userData) {
+        localStorage.removeItem(`userProfileImage_${userData.id}`);
+      }
+      setProfileImage(null);
       navigate('/signup');
     }
   };
@@ -122,6 +159,7 @@ const Nav = () => {
                 src={Logo}
                 alt="Logo"
                 draggable={false}
+                onClick={() => navigate('/')}
               />
             </div>
 
@@ -131,7 +169,6 @@ const Nav = () => {
               <Link to="/collections" className="text-gray-700 hover:text-[#00bcd4] font-medium">Collection</Link>
               <Link to="/about" className="text-gray-700 hover:text-[#00bcd4] font-medium">About</Link>
               <Link to="/contact" className="text-gray-700 hover:text-[#00bcd4] font-medium">Contact</Link>
-
             </div>
 
             {/* Right Side (Desktop) */}
@@ -176,8 +213,18 @@ const Nav = () => {
                   {!userData ? (
                     <FaUserCircle className="text-2xl cursor-pointer" />
                   ) : (
-                    <div className="w-[30px] h-[30px] bg-[#080808] text-white rounded-full flex items-center justify-center cursor-pointer">
-                      {userData?.name?.slice(0, 1) || 'U'}
+                    <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center cursor-pointer overflow-hidden border border-gray-300 shadow-sm">
+                      {profileImage ? (
+                        <img 
+                          src={profileImage} 
+                          alt="Profile" 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-[#080808] text-white rounded-full flex items-center justify-center text-sm font-medium">
+                          {userData?.name?.slice(0, 1)?.toUpperCase() || 'U'}
+                        </div>
+                      )}
                     </div>
                   )}
                 </button>
@@ -291,8 +338,18 @@ const Nav = () => {
                   {!userData ? (
                     <FaUserCircle className="text-2xl cursor-pointer" />
                   ) : (
-                    <div className="w-[30px] h-[30px] bg-[#080808] text-white rounded-full flex items-center justify-center cursor-pointer">
-                      {userData?.name?.slice(0, 1) || 'U'}
+                    <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center cursor-pointer overflow-hidden border border-gray-300 shadow-sm">
+                      {profileImage ? (
+                        <img 
+                          src={profileImage} 
+                          alt="Profile" 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-[#080808] text-white rounded-full flex items-center justify-center text-sm font-medium">
+                          {userData?.name?.slice(0, 1)?.toUpperCase() || 'U'}
+                        </div>
+                      )}
                     </div>
                   )}
                 </button>
@@ -386,9 +443,9 @@ const Nav = () => {
           <button onClick={() => navigate("/cart")} className="relative flex flex-col items-center text-gray-700 hover:text-[#00bcd4]">
             <MdOutlineShoppingCart className="text-xl" />
             <span className="text-xs">Cart</span>
-            {cartItems > 0 && (
+            {cartItemsCount > 0 && (
               <span className="absolute -top-1 right-2 bg-[#00bcd4] text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
-                {cartItems}
+                {cartItemsCount}
               </span>
             )}
           </button>
