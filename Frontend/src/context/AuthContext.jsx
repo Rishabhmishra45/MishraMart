@@ -7,7 +7,7 @@ function AuthContext({ children }) {
   // Environment variables se URL lo
   const serverUrl = import.meta.env.VITE_SERVER_URL;
   
-  console.log("Server URL:", serverUrl); // Debugging ke liye
+  console.log("Server URL:", serverUrl); 
 
   // Authentication state
   const [user, setUser] = useState(null);

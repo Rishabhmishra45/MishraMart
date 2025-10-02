@@ -1,4 +1,3 @@
-// model/UserModel.js
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
@@ -20,6 +19,36 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: false,
+    },
+
+    phone: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    address: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    city: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    state: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    pincode: {
+      type: String,
+      default: "",
+      trim: true,
     },
 
     cardData: {
