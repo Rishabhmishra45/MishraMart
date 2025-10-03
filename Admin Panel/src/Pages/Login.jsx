@@ -17,20 +17,48 @@ const Login = () => {
 
   const AdminLogin = async (e) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      alert("Please enter both email and password");
+      return;
+    }
+    
     setLoading(true);
     try {
       const result = await axios.post(
         `${serverUrl}/api/auth/adminlogin`,
         { email, password },
-        { withCredentials: true }
+        { 
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
       );
-      console.log(result.data);
-      // refresh admin data
-      await getAdmin();
-      navigate("/");
+      
+      console.log("Login successful:", result.data);
+      
+      // Set flag to show notification
+      sessionStorage.setItem('showLoginNotification', 'true');
+      
+      // Refresh admin data - this will trigger re-render in App.jsx
+      if (getAdmin) {
+        await getAdmin();
+      }
+      
+      // Navigation will happen automatically via App.jsx re-render
+      
     } catch (error) {
       console.log("Login error:", error);
-      alert("Login failed. Please check credentials.");
+      let errorMessage = "Login failed. Please check credentials.";
+      
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.request) {
+        errorMessage = "Network error. Please try again.";
+      }
+      
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -41,10 +69,9 @@ const Login = () => {
       {/* Navbar / Logo */}
       <div className="w-full h-[70px] sm:h-[80px] flex items-center justify-start px-4 sm:px-8">
         <img
-          className="h-[120px] sm:h-[160px] w-auto object-contain cursor-pointer hover:scale-105 transition-transform"
+          className="h-[120px] sm:h-[160px] w-auto object-contain"
           src={Logo}
           alt="Logo"
-          onClick={() => navigate("/")}
         />
       </div>
 
@@ -117,7 +144,14 @@ const Login = () => {
                     : "bg-[#4aa4b5] hover:bg-[#3a8c9a] hover:shadow-lg"
                 }`}
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Signing in...
+                </div>
+              ) : (
+                "Sign In"
+              )}
             </button>
           </form>
 

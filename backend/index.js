@@ -23,7 +23,7 @@ const io = new Server(server, {
     origin: [
       "http://localhost:5173",
       "https://mishramarts.netlify.app",
-      "https://mishramart-admin.netlify.app/",
+      "https://mishramart-admin.netlify.app",
       "http://localhost:5174",
       "http://192.168.1.3:5174",
     ],

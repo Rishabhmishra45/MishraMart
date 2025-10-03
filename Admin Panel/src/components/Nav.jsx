@@ -8,20 +8,39 @@ import { adminDataContext } from '../context/AdminContext';
 const Nav = () => {
   const navigate = useNavigate();
   const { serverUrl } = useContext(authDataContext);
-  const { getAdmin } = useContext(adminDataContext);
+  const { clearAdmin } = useContext(adminDataContext);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const logOut = async () => {
     try {
       setIsLoggingOut(true);
-      const result = await axios.get(serverUrl + '/api/auth/logout', {
-        withCredentials: true,
-      });
-      console.log(result.data);
-      getAdmin();
+      
+      // Clear admin data immediately
+      if (clearAdmin) {
+        clearAdmin();
+      }
+      
+      // Make logout API call
+      await axios.post(
+        serverUrl + '/api/auth/logout',
+        {},
+        {
+          withCredentials: true,
+        }
+      );
+      
+      console.log("Logout successful");
+      
+      // Navigate to login page
       navigate('/login');
+      
     } catch (error) {
       console.error('Logout error:', error);
+      // Even if API call fails, clear admin data and redirect
+      if (clearAdmin) {
+        clearAdmin();
+      }
+      navigate('/login');
     } finally {
       setIsLoggingOut(false);
     }
@@ -31,7 +50,7 @@ const Nav = () => {
     <nav className="w-full h-16 lg:h-20 bg-white/95 backdrop-blur-sm fixed top-0 left-0 z-50 shadow-lg border-b border-gray-200">
       <div className="h-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
 
-        {/* Logo Section - Left - Only show logo on mobile */}
+        {/* Logo Section - Left */}
         <div
           className="flex items-center gap-2 cursor-pointer group"
           onClick={() => navigate('/')}
@@ -40,14 +59,14 @@ const Nav = () => {
             <img
               src={logo}
               alt="Company Logo"
-              className="h-10 w-10 sm:h-12 sm:w-12 lg:h-[135px] lg:w-[135px] object-contain transition-transform group-hover:scale-105"
+              className="h-10 w-10 sm:h-12 sm:w-12 lg:h-14 lg:w-14 object-contain transition-transform group-hover:scale-105"
             />
           </div>
 
           {/* Brand Name - Hidden on mobile, show from sm breakpoint */}
           <div className="hidden sm:block">
-            <h1 className="text-lg lg:text-[15px] font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-xs text-gray-600 hidden lg:block">Product Management</p>
+            <h1 className="text-lg lg:text-xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p className="text-xs lg:text-sm text-gray-600 hidden lg:block">Product Management</p>
           </div>
         </div>
 
@@ -80,7 +99,6 @@ const Nav = () => {
             <>
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               <span className="hidden sm:inline">Logging Out</span>
-              <span className="sm:hidden">Logging Out</span>
             </>
           ) : (
             <>
@@ -88,7 +106,6 @@ const Nav = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
               <span className="hidden sm:inline">Logout</span>
-              <span className="sm:hidden">Logout</span>
             </>
           )}
         </button>
