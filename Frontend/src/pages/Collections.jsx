@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { FaTimes } from "react-icons/fa";
 import { FaArrowRightToBracket } from "react-icons/fa6";
-import LoadingSpinner from "../components/LoadingSpinner";
+// import LoadingSpinner from "../components/LoadingSpinner";
 import Tittle from "../components/Tittle";
 import { shopDataContext } from "../context/ShopContext";
 import Card from "../components/Card";
@@ -94,15 +94,15 @@ const Collections = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  if (isLoading) {
-    return (
-      <LoadingSpinner
-        message="Loading Collection page..."
-        spinnerColor="#aaf5fa"
-        textColor="#aaf5fa"
-      />
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <LoadingSpinner
+  //       message="Loading Collection page..."
+  //       spinnerColor="#aaf5fa"
+  //       textColor="#aaf5fa"
+  //     />
+  //   );
+  // }
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] flex pt-[60px] text-white overflow-x-hidden pb-[100px]">
