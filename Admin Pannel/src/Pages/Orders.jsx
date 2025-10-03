@@ -19,7 +19,7 @@ import {
     FaCheckDouble
 } from 'react-icons/fa';
 import axios from 'axios';
-import OrderNotification from '../components/OrderNotification'; 
+import OrderNotification from '../components/OrderNotification';
 
 const Orders = () => {
     const { serverUrl } = useContext(authDataContext);
@@ -436,10 +436,10 @@ const Orders = () => {
                                             key={index}
                                             onClick={() => startStatusUpdate(order, action.status)}
                                             className={`px-3 sm:px-4 py-2 ${action.color === 'blue'
-                                                    ? 'bg-blue-500 hover:bg-blue-600'
-                                                    : action.color === 'green'
-                                                        ? 'bg-green-500 hover:bg-green-600'
-                                                        : 'bg-red-500 hover:bg-red-600'
+                                                ? 'bg-blue-500 hover:bg-blue-600'
+                                                : action.color === 'green'
+                                                    ? 'bg-green-500 hover:bg-green-600'
+                                                    : 'bg-red-500 hover:bg-red-600'
                                                 } text-white rounded-lg transition-all duration-300 flex items-center gap-2 text-xs sm:text-base flex-1 sm:flex-none justify-center`}
                                         >
                                             <FaEdit className="text-xs sm:text-sm" />
@@ -596,7 +596,7 @@ const Orders = () => {
                                             <div className="flex justify-between">
                                                 <span className="text-gray-400">Payment Status:</span>
                                                 <span className={`font-semibold ${selectedOrder.paymentStatus === 'completed' ? 'text-green-400' :
-                                                        selectedOrder.paymentStatus === 'pending' ? 'text-yellow-400' : 'text-red-400'
+                                                    selectedOrder.paymentStatus === 'pending' ? 'text-yellow-400' : 'text-red-400'
                                                     }`}>
                                                     {selectedOrder.paymentStatus?.charAt(0)?.toUpperCase() + selectedOrder.paymentStatus?.slice(1)}
                                                 </span>

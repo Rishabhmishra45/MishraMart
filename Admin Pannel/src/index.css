@@ -24,11 +24,11 @@
 }
 
 .order-notification-slide-in {
-  animation: orderNotificationSlideIn 0.3s ease-out forwards;
+  animation: orderNotificationSlideIn 0.4s ease-out forwards;
 }
 
 .order-notification-slide-out {
-  animation: orderNotificationSlideOut 0.3s ease-in forwards;
+  animation: orderNotificationSlideOut 0.4s ease-in forwards;
 }
 
 /* Upload Notification Animations */

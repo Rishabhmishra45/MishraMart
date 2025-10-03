@@ -14,7 +14,8 @@ import {
     FaVolumeUp,
     FaVolumeMute,
     FaExpand,
-    FaPaperclip
+    FaPaperclip,
+    FaCompress
 } from 'react-icons/fa';
 import axios from 'axios';
 
@@ -49,6 +50,17 @@ const Chatbot = () => {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    // Close on escape key
+    useEffect(() => {
+        const handleEscape = (e) => {
+            if (e.key === 'Escape' && isOpen) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
+        return () => document.removeEventListener('keydown', handleEscape);
+    }, [isOpen]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -169,7 +181,6 @@ const Chatbot = () => {
     const handleFileUpload = (event) => {
         const file = event.target.files[0];
         if (file) {
-            // Here you can handle file upload logic
             const userMessage = {
                 id: Date.now(),
                 text: `Attached file: ${file.name}`,
@@ -178,7 +189,6 @@ const Chatbot = () => {
                 attachment: file
             };
             setMessages(prev => [...prev, userMessage]);
-            // Reset file input
             event.target.value = '';
         }
     };
@@ -188,53 +198,62 @@ const Chatbot = () => {
             {/* Chat Bot Button */}
             <button
                 onClick={() => setIsOpen(true)}
-                className="fixed bottom-7 right-6 z-40 w-14 h-14 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-full shadow-2xl shadow-cyan-500/30 flex items-center justify-center transition-all duration-300 hover:scale-110 mb-[30px] sm:mb-0"
+                className="fixed bottom-6 right-4 xs:right-5 sm:right-6 z-40 w-12 h-12 xs:w-14 xs:h-14 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-full shadow-2xl shadow-cyan-500/30 flex items-center justify-center transition-all duration-300 hover:scale-110 mb-[30px] sm:mb-0"
+                aria-label="Open chatbot"
             >
-                <FaCommentDots className="text-xl" />
+                <FaCommentDots className="text-lg xs:text-xl" />
             </button>
 
             {/* Chat Bot Modal */}
             {isOpen && (
-                <div className={`fixed z-50 flex items-end justify-end ${isExpanded ? 'inset-0' : 'bottom-6 right-6'} transition-all duration-300`}>
+                <div className={`fixed z-50 flex items-end justify-end ${isExpanded ? 'inset-0 p-0' : 'bottom-4 right-4 xs:bottom-5 xs:right-5 sm:bottom-6 sm:right-6'} transition-all duration-300`}>
+
+                    {/* Backdrop for mobile */}
+                    <div
+                        className={`fixed inset-0 bg-black/50 ${isExpanded ? 'block' : 'hidden sm:block'}`}
+                        onClick={() => setIsOpen(false)}
+                    />
 
                     {/* Chat Window */}
-                    <div className={`relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl border border-gray-700 flex flex-col transition-all duration-300 ${isExpanded ? 'w-full h-full m-4' : 'w-full max-w-md h-[600px]'
+                    <div className={`relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl border border-gray-700 flex flex-col transition-all duration-300 ${isExpanded
+                            ? 'w-full h-full m-0 rounded-none'
+                            : 'w-[95vw] max-w-md h-[85vh] max-h-[600px] xs:w-[90vw] sm:w-full'
                         }`}>
 
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-3 rounded-t-2xl flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                                    <FaRobot className="text-cyan-600 text-xl" />
+                        <div className="bg-gradient-to-r from-cyan-600 to-blue-600 px-3 xs:px-4 py-3 rounded-t-2xl flex items-center justify-between">
+                            <div className="flex items-center gap-2 xs:gap-3">
+                                <div className="w-8 h-8 xs:w-10 xs:h-10 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+                                    <FaRobot className="text-cyan-600 text-base xs:text-xl" />
                                 </div>
-                                <div>
-                                    <h3 className="text-white font-semibold">MishraMart Assistant</h3>
-                                    <p className="text-cyan-100 text-xs">Online • Ready to help</p>
+                                <div className="min-w-0">
+                                    <h3 className="text-white font-semibold text-sm xs:text-base truncate">MishraMart Assistant</h3>
+                                    <p className="text-cyan-100 text-xs truncate">Online • Ready to help</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 xs:gap-3 flex-shrink-0">
                                 {/* Sound Toggle */}
                                 <button
                                     onClick={toggleSound}
-                                    className="text-white hover:text-cyan-200 transition"
+                                    className="text-white hover:text-cyan-200 transition p-1"
                                     title={soundOn ? 'Sound On' : 'Sound Off'}
                                 >
-                                    {soundOn ? <FaVolumeUp className="text-sm" /> : <FaVolumeMute className="text-sm" />}
+                                    {soundOn ? <FaVolumeUp className="text-xs xs:text-sm" /> : <FaVolumeMute className="text-xs xs:text-sm" />}
                                 </button>
 
                                 {/* Expand Toggle */}
                                 <button
                                     onClick={toggleExpand}
-                                    className="text-white hover:text-cyan-200 transition"
+                                    className="text-white hover:text-cyan-200 transition p-1"
                                     title={isExpanded ? 'Minimize' : 'Expand'}
                                 >
-                                    <FaExpand className="text-sm" />
+                                    {isExpanded ? <FaCompress className="text-xs xs:text-sm" /> : <FaExpand className="text-xs xs:text-sm" />}
                                 </button>
 
                                 {/* Download Transcript */}
                                 <button
                                     onClick={downloadChatTranscript}
-                                    className="text-white hover:text-cyan-200 transition text-sm"
+                                    className="text-white hover:text-cyan-200 transition text-xs xs:text-sm p-1"
                                     title="Download Chat Transcript"
                                 >
                                     Export
@@ -242,15 +261,15 @@ const Chatbot = () => {
 
                                 <button
                                     onClick={clearChat}
-                                    className="text-white hover:text-cyan-200 transition text-sm"
+                                    className="text-white hover:text-cyan-200 transition text-xs xs:text-sm p-1"
                                 >
                                     Clear
                                 </button>
                                 <button
                                     onClick={() => setIsOpen(false)}
-                                    className="text-white hover:text-cyan-200 transition"
+                                    className="text-white hover:text-cyan-200 transition p-1"
                                 >
-                                    <FaTimes className="text-lg" />
+                                    <FaTimes className="text-base xs:text-lg" />
                                 </button>
                             </div>
                         </div>
@@ -258,7 +277,7 @@ const Chatbot = () => {
                         {/* Messages Container */}
                         <div
                             ref={chatContainerRef}
-                            className="flex-1 overflow-y-auto p-4 space-y-4"
+                            className="flex-1 overflow-y-auto p-3 xs:p-4 space-y-3 xs:space-y-4"
                         >
                             {messages.map((message) => (
                                 <div
@@ -266,19 +285,19 @@ const Chatbot = () => {
                                     className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     <div
-                                        className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.sender === 'user'
-                                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-br-none'
-                                            : 'bg-gray-700 text-gray-100 rounded-bl-none'
+                                        className={`max-w-[85%] xs:max-w-[80%] rounded-2xl px-3 py-2 xs:px-4 xs:py-3 ${message.sender === 'user'
+                                                ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-br-none'
+                                                : 'bg-gray-700 text-gray-100 rounded-bl-none'
                                             }`}
                                     >
-                                        <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                                        <p className="text-xs xs:text-sm whitespace-pre-wrap break-words">{message.text}</p>
                                         {message.attachment && (
-                                            <div className="mt-2 p-2 bg-black bg-opacity-30 rounded-lg">
-                                                <FaPaperclip className="inline mr-2" />
+                                            <div className="mt-1 xs:mt-2 p-1 xs:p-2 bg-black bg-opacity-30 rounded-lg">
+                                                <FaPaperclip className="inline mr-1 xs:mr-2 text-xs" />
                                                 <span className="text-xs">{message.attachment.name}</span>
                                             </div>
                                         )}
-                                        <p className="text-xs opacity-70 mt-1">
+                                        <p className="text-xs opacity-70 mt-1 xs:mt-1">
                                             {message.timestamp.toLocaleTimeString([], {
                                                 hour: '2-digit',
                                                 minute: '2-digit'
@@ -290,11 +309,11 @@ const Chatbot = () => {
 
                             {isLoading && (
                                 <div className="flex justify-start">
-                                    <div className="bg-gray-700 text-gray-100 rounded-2xl rounded-bl-none px-4 py-3">
-                                        <div className="flex space-x-2">
-                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                                    <div className="bg-gray-700 text-gray-100 rounded-2xl rounded-bl-none px-3 py-2 xs:px-4 xs:py-3">
+                                        <div className="flex space-x-1 xs:space-x-2">
+                                            <div className="w-1.5 h-1.5 xs:w-2 xs:h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                                            <div className="w-1.5 h-1.5 xs:w-2 xs:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                            <div className="w-1.5 h-1.5 xs:w-2 xs:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
                                         </div>
                                     </div>
                                 </div>
@@ -304,19 +323,19 @@ const Chatbot = () => {
 
                         {/* Quick Actions */}
                         {messages.length <= 2 && (
-                            <div className="px-4 pb-3">
-                                <p className="text-gray-400 text-sm mb-2">Quick help:</p>
-                                <div className="grid grid-cols-3 gap-2">
+                            <div className="px-3 xs:px-4 pb-2 xs:pb-3">
+                                <p className="text-gray-400 text-xs xs:text-sm mb-1 xs:mb-2">Quick help:</p>
+                                <div className="grid grid-cols-3 gap-1 xs:gap-2">
                                     {quickActions.map((action, index) => {
                                         const IconComponent = action.icon;
                                         return (
                                             <button
                                                 key={index}
                                                 onClick={() => handleQuickAction(action.query)}
-                                                className="bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg p-2 text-xs transition duration-200 flex flex-col items-center gap-1"
+                                                className="bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg p-1 xs:p-2 text-xs transition duration-200 flex flex-col items-center gap-0.5 xs:gap-1"
                                             >
-                                                <IconComponent className="text-cyan-400" />
-                                                <span>{action.text}</span>
+                                                <IconComponent className="text-cyan-400 text-xs xs:text-sm" />
+                                                <span className="text-[10px] xs:text-xs">{action.text}</span>
                                             </button>
                                         );
                                     })}
@@ -326,15 +345,15 @@ const Chatbot = () => {
 
                         {/* Suggestions */}
                         {suggestions.length > 0 && messages.length > 1 && (
-                            <div className="px-4 pb-3">
-                                <div className="flex flex-wrap gap-2">
-                                    {suggestions.slice(0, 4).map((suggestion, index) => (
+                            <div className="px-3 xs:px-4 pb-2 xs:pb-3">
+                                <div className="flex flex-wrap gap-1 xs:gap-2">
+                                    {suggestions.slice(0, 3).map((suggestion, index) => (
                                         <button
                                             key={index}
                                             onClick={() => handleSuggestionClick(suggestion)}
-                                            className="bg-cyan-900/30 hover:bg-cyan-800/50 text-cyan-300 rounded-full px-3 py-1 text-xs transition duration-200 border border-cyan-700/30"
+                                            className="bg-cyan-900/30 hover:bg-cyan-800/50 text-cyan-300 rounded-full px-2 py-1 text-[10px] xs:text-xs transition duration-200 border border-cyan-700/30"
                                         >
-                                            {suggestion}
+                                            {suggestion.length > 20 ? suggestion.substring(0, 20) + '...' : suggestion}
                                         </button>
                                     ))}
                                 </div>
@@ -342,11 +361,11 @@ const Chatbot = () => {
                         )}
 
                         {/* Input Area */}
-                        <div className="border-t border-gray-700 p-4">
+                        <div className="border-t border-gray-700 p-3 xs:p-4">
                             <form onSubmit={handleSubmit} className="flex gap-2">
                                 {/* File Attachment Button */}
-                                <label className="bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-full w-12 h-12 flex items-center justify-center transition duration-300 cursor-pointer">
-                                    <FaPaperclip className="text-sm" />
+                                <label className="bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-full w-10 h-10 xs:w-12 xs:h-12 flex items-center justify-center transition duration-300 cursor-pointer flex-shrink-0">
+                                    <FaPaperclip className="text-xs xs:text-sm" />
                                     <input
                                         type="file"
                                         className="hidden"
@@ -360,15 +379,15 @@ const Chatbot = () => {
                                     value={inputMessage}
                                     onChange={(e) => setInputMessage(e.target.value)}
                                     placeholder="Type your message..."
-                                    className="flex-1 bg-gray-700 border border-gray-600 rounded-full px-4 py-3 text-white placeholder-gray-400 outline-none focus:border-cyan-500 transition duration-300"
+                                    className="flex-1 bg-gray-700 border border-gray-600 rounded-full px-3 xs:px-4 py-2 xs:py-3 text-white placeholder-gray-400 outline-none focus:border-cyan-500 transition duration-300 text-xs xs:text-sm"
                                     disabled={isLoading}
                                 />
                                 <button
                                     type="submit"
                                     disabled={isLoading || !inputMessage.trim()}
-                                    className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 disabled:from-gray-600 disabled:to-gray-600 text-white rounded-full w-12 h-12 flex items-center justify-center transition duration-300 disabled:cursor-not-allowed"
+                                    className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 disabled:from-gray-600 disabled:to-gray-600 text-white rounded-full w-10 h-10 xs:w-12 xs:h-12 flex items-center justify-center transition duration-300 disabled:cursor-not-allowed flex-shrink-0"
                                 >
-                                    <FaPaperPlane className="text-sm" />
+                                    <FaPaperPlane className="text-xs xs:text-sm" />
                                 </button>
                             </form>
                         </div>
