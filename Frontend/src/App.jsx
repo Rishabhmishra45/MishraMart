@@ -20,6 +20,7 @@ import Cart from "./pages/Cart";
 import PlaceOrder from "./pages/PlaceOrder";
 import Orders from "./pages/Orders";
 import Profile from "./pages/Profile";
+import Chatbot from "./components/Chatbot"; // Add this import
 
 const App = () => {
   const { userData, loading } = useContext(userDataContext);
@@ -27,7 +28,6 @@ const App = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Only redirect if not loading and no user data
     if (!loading && !userData && location.pathname === "/") {
       navigate("/signup");
     }
@@ -47,7 +47,7 @@ const App = () => {
   return (
     <>
       {userData && <Nav />}
-
+      
       <Routes>
         <Route
           path="/"
@@ -101,13 +101,15 @@ const App = () => {
             )
           }
         />
-
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/place-order" element={<PlaceOrder />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/profile" element={<Profile />} />
       </Routes>
+
+      {/* Add Chatbot Component */}
+      {userData && <Chatbot />}
     </>
   );
 };

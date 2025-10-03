@@ -5,6 +5,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import OurPolicy from "../components/OurPolicy";
 import NewLetterBox from "../components/NewLetterBox";
 import Footer from "../components/Footer";
+import Chatbot from "../components/Chatbot";
 
 const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +35,7 @@ const Home = () => {
       <OurPolicy />
       <NewLetterBox />
       <Footer />
+      <Chatbot />
     </div>
   );
 };

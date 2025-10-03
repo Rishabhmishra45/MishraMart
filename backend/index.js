@@ -10,6 +10,7 @@ import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import chatbotRoutes from './routes/chatbotRoutes.js';
 
 dotenv.config();
 const port = process.env.PORT || 8000;
@@ -68,6 +69,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/chatbot", chatbotRoutes);
 
 // Health check
 app.get("/health", (req, res) => {
