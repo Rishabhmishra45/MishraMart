@@ -19,6 +19,7 @@ import {
     FaCheckDouble
 } from 'react-icons/fa';
 import axios from 'axios';
+import OrderNotification from '../components/OrderNotification'; 
 
 const Orders = () => {
     const { serverUrl } = useContext(authDataContext);
@@ -32,11 +33,35 @@ const Orders = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [updatingOrder, setUpdatingOrder] = useState(null);
     const [trackingNumber, setTrackingNumber] = useState('');
+    const [notification, setNotification] = useState({
+        isVisible: false,
+        type: '',
+        message: ''
+    });
 
     // Fetch all orders
     useEffect(() => {
         fetchAllOrders();
     }, []);
+
+    // Auto-hide notification
+    useEffect(() => {
+        if (!notification.isVisible) return;
+
+        const timer = setTimeout(() => {
+            setNotification({ isVisible: false, type: '', message: '' });
+        }, 4000);
+
+        return () => clearTimeout(timer);
+    }, [notification]);
+
+    const showNotification = (type, message) => {
+        setNotification({
+            isVisible: true,
+            type,
+            message
+        });
+    };
 
     const fetchAllOrders = async () => {
         try {
@@ -48,10 +73,11 @@ const Orders = () => {
             if (response.data.success) {
                 setOrders(response.data.orders);
                 setFilteredOrders(response.data.orders);
+                showNotification('success', 'Orders loaded successfully');
             }
         } catch (error) {
             console.error('Error fetching orders:', error);
-            alert('Failed to load orders');
+            showNotification('error', 'Failed to load orders');
         } finally {
             setIsLoading(false);
         }
@@ -146,11 +172,33 @@ const Orders = () => {
                 );
                 setUpdatingOrder(null);
                 setTrackingNumber('');
-                alert('Order status updated successfully');
+
+                // Show success notification based on status
+                const orderNumber = response.data.order.orderId;
+                let message = '';
+
+                switch (newStatus) {
+                    case 'processing':
+                        message = `Order #${orderNumber} marked as Processing`;
+                        break;
+                    case 'shipped':
+                        message = `Order #${orderNumber} has been shipped! Tracking: ${trackingNumber}`;
+                        break;
+                    case 'delivered':
+                        message = `Order #${orderNumber} has been delivered successfully!`;
+                        break;
+                    case 'cancelled':
+                        message = `Order #${orderNumber} has been cancelled`;
+                        break;
+                    default:
+                        message = `Order #${orderNumber} status updated to ${newStatus}`;
+                }
+
+                showNotification(newStatus, message);
             }
         } catch (error) {
             console.error('Error updating order:', error);
-            alert('Failed to update order status');
+            showNotification('error', 'Failed to update order status');
         }
     };
 
@@ -231,7 +279,15 @@ const Orders = () => {
     return (
         <div className="px-3 xs:px-4 sm:px-6 lg:px-8 min-h-screen overflow-y-auto">
             <div className="max-w-5xl mx-auto pb-6 sm:pb-10 mt-4 sm:mt-[30px]">
-                
+
+                {/* Order Notification Component */}
+                <OrderNotification
+                    isVisible={notification.isVisible}
+                    type={notification.type}
+                    message={notification.message}
+                    onClose={() => setNotification({ isVisible: false, type: '', message: '' })}
+                />
+
                 {/* Header - Lists section jaisa */}
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-400 to-cyan-400 bg-clip-text text-transparent">
                     Order Management
@@ -252,7 +308,7 @@ const Orders = () => {
                                 className="w-full pl-10 pr-4 py-2 sm:py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 outline-none focus:border-cyan-400 transition duration-300 text-sm sm:text-base"
                             />
                         </div>
-                        
+
                         {/* Status Filter */}
                         <div className="flex gap-2">
                             <select
@@ -286,8 +342,8 @@ const Orders = () => {
                                 {searchTerm || statusFilter !== 'all' ? 'No orders found' : 'No orders yet'}
                             </h3>
                             <p className="text-gray-400 text-sm sm:text-base">
-                                {searchTerm || statusFilter !== 'all' 
-                                    ? 'Try adjusting your search or filters' 
+                                {searchTerm || statusFilter !== 'all'
+                                    ? 'Try adjusting your search or filters'
                                     : 'Orders will appear here when customers place them'
                                 }
                             </p>
@@ -333,7 +389,7 @@ const Orders = () => {
                                                     {order.status?.charAt(0)?.toUpperCase() + order.status?.slice(1)}
                                                 </span>
                                             </div>
-                                            
+
                                             {/* Customer Info */}
                                             <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-3 text-xs sm:text-sm text-gray-300 mb-2">
                                                 <div className="flex items-center gap-1">
@@ -379,7 +435,12 @@ const Orders = () => {
                                         <button
                                             key={index}
                                             onClick={() => startStatusUpdate(order, action.status)}
-                                            className={`px-3 sm:px-4 py-2 bg-${action.color}-500 hover:bg-${action.color}-600 text-white rounded-lg transition-all duration-300 flex items-center gap-2 text-xs sm:text-base flex-1 sm:flex-none justify-center`}
+                                            className={`px-3 sm:px-4 py-2 ${action.color === 'blue'
+                                                    ? 'bg-blue-500 hover:bg-blue-600'
+                                                    : action.color === 'green'
+                                                        ? 'bg-green-500 hover:bg-green-600'
+                                                        : 'bg-red-500 hover:bg-red-600'
+                                                } text-white rounded-lg transition-all duration-300 flex items-center gap-2 text-xs sm:text-base flex-1 sm:flex-none justify-center`}
                                         >
                                             <FaEdit className="text-xs sm:text-sm" />
                                             {action.label}
@@ -534,10 +595,9 @@ const Orders = () => {
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-gray-400">Payment Status:</span>
-                                                <span className={`font-semibold ${
-                                                    selectedOrder.paymentStatus === 'completed' ? 'text-green-400' : 
-                                                    selectedOrder.paymentStatus === 'pending' ? 'text-yellow-400' : 'text-red-400'
-                                                }`}>
+                                                <span className={`font-semibold ${selectedOrder.paymentStatus === 'completed' ? 'text-green-400' :
+                                                        selectedOrder.paymentStatus === 'pending' ? 'text-yellow-400' : 'text-red-400'
+                                                    }`}>
                                                     {selectedOrder.paymentStatus?.charAt(0)?.toUpperCase() + selectedOrder.paymentStatus?.slice(1)}
                                                 </span>
                                             </div>

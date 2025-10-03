@@ -1,1 +1,63 @@
 @import "tailwindcss";
+
+/* Order Notification Animations */
+@keyframes orderNotificationSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes orderNotificationSlideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.order-notification-slide-in {
+  animation: orderNotificationSlideIn 0.3s ease-out forwards;
+}
+
+.order-notification-slide-out {
+  animation: orderNotificationSlideOut 0.3s ease-in forwards;
+}
+
+/* Upload Notification Animations */
+@keyframes uploadNotificationSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes uploadNotificationSlideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.upload-notification-slide-in {
+  animation: uploadNotificationSlideIn 0.3s ease-out forwards;
+}
+
+.upload-notification-slide-out {
+  animation: uploadNotificationSlideOut 0.3s ease-in forwards;
+}
