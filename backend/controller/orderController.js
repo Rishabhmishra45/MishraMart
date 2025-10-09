@@ -209,24 +209,30 @@ export const downloadInvoice = async (req, res) => {
       });
     }
 
-    if (order.status !== 'delivered') {
+    // Allow invoice download for all statuses except cancelled
+    if (order.status === 'cancelled') {
       return res.status(400).json({
         success: false,
-        message: "Invoice is only available for delivered orders"
+        message: "Invoice is not available for cancelled orders"
       });
     }
 
+    console.log("Generating MODERN invoice for order:", order.orderId);
+    
     const pdfBuffer = await generateInvoice(order);
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=invoice-${order.orderId}.pdf`);
+    res.setHeader('Content-Length', pdfBuffer.length);
+    
+    console.log("PDF generated successfully, sending to client...");
     res.send(pdfBuffer);
 
   } catch (error) {
     console.error("Download invoice error:", error);
     res.status(500).json({
       success: false,
-        message: `Download invoice error: ${error.message}`
+      message: `Download invoice error: ${error.message}`
     });
   }
 };

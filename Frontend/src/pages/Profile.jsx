@@ -2,13 +2,13 @@ import React, { useState, useContext, useEffect } from 'react';
 import { userDataContext } from '../context/UserContext';
 import { authDataContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { 
-    FaUser, 
-    FaEnvelope, 
-    FaPhone, 
-    FaMapMarkerAlt, 
-    FaEdit, 
-    FaSave, 
+import {
+    FaUser,
+    FaEnvelope,
+    FaPhone,
+    FaMapMarkerAlt,
+    FaEdit,
+    FaSave,
     FaTimes,
     FaShoppingBag,
     FaBox,
@@ -25,7 +25,7 @@ const Profile = () => {
     const { userData, setUserData } = useContext(userDataContext);
     const { serverUrl } = useContext(authDataContext);
     const navigate = useNavigate();
-    
+
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [userOrders, setUserOrders] = useState([]);
@@ -80,7 +80,7 @@ const Profile = () => {
                 withCredentials: true,
                 timeout: 10000
             });
-            
+
             if (response.data.success) {
                 setUserOrders(response.data.orders || []);
             }
@@ -99,7 +99,7 @@ const Profile = () => {
     const handleSaveProfile = async () => {
         try {
             setIsLoading(true);
-            
+
             // Basic validation
             if (!formData.name.trim()) {
                 alert('Name is required');
@@ -116,7 +116,7 @@ const Profile = () => {
                     state: formData.state,
                     pincode: formData.pincode
                 },
-                { 
+                {
                     withCredentials: true,
                     timeout: 10000
                 }
@@ -166,7 +166,7 @@ const Profile = () => {
             }
 
             setSelectedImage(file);
-            
+
             // Create preview
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -184,15 +184,15 @@ const Profile = () => {
 
         try {
             setIsImageLoading(true);
-            
+
             // Save to localStorage and trigger storage event
             if (userData) {
                 localStorage.setItem(`userProfileImage_${userData.id}`, imagePreview);
                 setProfileImage(imagePreview);
-                
+
                 // Trigger storage event to update navbar in real-time
                 window.dispatchEvent(new Event('storage'));
-                
+
                 alert('Profile image updated successfully!');
                 setIsImageUploadOpen(false);
                 setSelectedImage(null);
@@ -211,10 +211,10 @@ const Profile = () => {
             setProfileImage(null);
             setImagePreview(null);
             setSelectedImage(null);
-            
+
             // Trigger storage event to update navbar in real-time
             window.dispatchEvent(new Event('storage'));
-            
+
             alert('Profile image removed');
         }
     };
@@ -288,13 +288,13 @@ const Profile = () => {
                 <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
                     <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 w-full max-w-md">
                         <h3 className="text-xl font-bold mb-4 text-white">Update Profile Image</h3>
-                        
+
                         <div className="flex flex-col items-center mb-6">
                             {imagePreview ? (
                                 <div className="relative mb-4">
-                                    <img 
-                                        src={imagePreview} 
-                                        alt="Profile Preview" 
+                                    <img
+                                        src={imagePreview}
+                                        alt="Profile Preview"
                                         className="w-32 h-32 rounded-full object-cover border-4 border-cyan-400 shadow-lg"
                                     />
                                     <button
@@ -305,14 +305,14 @@ const Profile = () => {
                                     </button>
                                 </div>
                             ) : (
-                                <div 
+                                <div
                                     className="w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer border-4 border-dashed border-gray-500 hover:border-cyan-400 transition duration-300 mb-4"
                                     onClick={triggerFileInput}
                                 >
                                     <FaCamera className="text-gray-400 text-3xl" />
                                 </div>
                             )}
-                            
+
                             <input
                                 type="file"
                                 id="profileImageInput"
@@ -320,7 +320,7 @@ const Profile = () => {
                                 accept="image/*"
                                 className="hidden"
                             />
-                            
+
                             <button
                                 onClick={triggerFileInput}
                                 className="text-cyan-400 hover:text-cyan-300 text-sm font-medium transition duration-300"
@@ -341,7 +341,7 @@ const Profile = () => {
                                 <FaTimes />
                                 Cancel
                             </button>
-                            
+
                             <div className="flex gap-2">
                                 {imagePreview && (
                                     <button
@@ -351,7 +351,7 @@ const Profile = () => {
                                         <FaTrash />
                                     </button>
                                 )}
-                                
+
                                 <button
                                     onClick={handleImageUpload}
                                     disabled={isImageLoading || (!selectedImage && !profileImage)}
@@ -377,7 +377,7 @@ const Profile = () => {
 
             <div className="min-h-screen bg-gradient-to-br from-[#141414] via-[#0c2025] to-[#141414] text-white pt-[70px]">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    
+
                     {/* Header with Back Button */}
                     <div className="flex items-center justify-between mb-8">
                         <div>
@@ -397,22 +397,20 @@ const Profile = () => {
                     <div className="flex border-b border-gray-700 mb-8 overflow-x-auto">
                         <button
                             onClick={() => setActiveTab('profile')}
-                            className={`px-6 py-3 font-medium transition duration-300 border-b-2 whitespace-nowrap ${
-                                activeTab === 'profile'
+                            className={`px-6 py-3 font-medium transition duration-300 border-b-2 whitespace-nowrap ${activeTab === 'profile'
                                     ? 'border-cyan-400 text-cyan-400'
                                     : 'border-transparent text-gray-400 hover:text-white'
-                            }`}
+                                }`}
                         >
                             <FaUser className="inline mr-2 mb-1" />
                             Profile
                         </button>
                         <button
                             onClick={() => setActiveTab('orders')}
-                            className={`px-6 py-3 font-medium transition duration-300 border-b-2 whitespace-nowrap ${
-                                activeTab === 'orders'
+                            className={`px-6 py-3 font-medium transition duration-300 border-b-2 whitespace-nowrap ${activeTab === 'orders'
                                     ? 'border-cyan-400 text-cyan-400'
                                     : 'border-transparent text-gray-400 hover:text-white'
-                            }`}
+                                }`}
                         >
                             <FaShoppingBag className="inline mr-2 mb-1" />
                             My Orders ({userOrders.length})
@@ -427,9 +425,9 @@ const Profile = () => {
                                 <div className="relative">
                                     <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-cyan-400 shadow-lg">
                                         {profileImage ? (
-                                            <img 
-                                                src={profileImage} 
-                                                alt="Profile" 
+                                            <img
+                                                src={profileImage}
+                                                alt="Profile"
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
@@ -743,7 +741,7 @@ const Profile = () => {
                                             >
                                                 View Details
                                             </button>
-                                            
+
                                             {order.status === 'delivered' && (
                                                 <button
                                                     onClick={() => navigate('/orders')}

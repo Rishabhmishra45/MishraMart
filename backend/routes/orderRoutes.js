@@ -22,6 +22,6 @@ orderRoutes.get("/invoice/:orderId", isAuth, downloadInvoice);
 
 // Admin routes
 orderRoutes.get("/admin/all-orders", adminAuth, getAllOrders);
-orderRoutes.put("/status/:orderId", updateOrderStatus); 
+orderRoutes.put("/status/:orderId", adminAuth, updateOrderStatus);
 
 export default orderRoutes;

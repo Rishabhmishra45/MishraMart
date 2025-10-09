@@ -20,7 +20,8 @@ import Cart from "./pages/Cart";
 import PlaceOrder from "./pages/PlaceOrder";
 import Orders from "./pages/Orders";
 import Profile from "./pages/Profile";
-import Chatbot from "./components/Chatbot"; // Add this import
+import Invoice from "./pages/Invoice";
+import Chatbot from "./components/Chatbot";
 
 const App = () => {
   const { userData, loading } = useContext(userDataContext);
@@ -47,7 +48,7 @@ const App = () => {
   return (
     <>
       {userData && <Nav />}
-      
+
       <Routes>
         <Route
           path="/"
@@ -106,6 +107,8 @@ const App = () => {
         <Route path="/place-order" element={<PlaceOrder />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/profile" element={<Profile />} />
+        {/* Add Invoice Route */}
+        <Route path="/invoice/:orderId" element={<Invoice />} />
       </Routes>
 
       {/* Add Chatbot Component */}
