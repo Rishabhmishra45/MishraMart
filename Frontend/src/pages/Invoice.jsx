@@ -2,11 +2,11 @@ import React, { useState, useContext, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { authDataContext } from '../context/AuthContext';
 import Logo from '../assets/logo.png';
-import { 
-    FaDownload, 
-    FaPrint, 
-    FaShare, 
-    FaArrowLeft, 
+import {
+    FaDownload,
+    FaPrint,
+    FaShare,
+    FaArrowLeft,
     FaCheckCircle,
     FaTruck,
     FaMapMarkerAlt,
@@ -24,10 +24,11 @@ const Invoice = () => {
     const { orderId } = useParams();
     const navigate = useNavigate();
     const { serverUrl } = useContext(authDataContext);
-    
+
     const [order, setOrder] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
     // Fetch order details
     useEffect(() => {
@@ -58,27 +59,39 @@ const Invoice = () => {
     }, [orderId, serverUrl]);
 
     const handleDownload = async () => {
+        if (!order) return;
+
         try {
+            setIsGeneratingPDF(true);
+
             const response = await axios.get(`${serverUrl}/api/orders/invoice/${orderId}`, {
                 withCredentials: true,
                 responseType: 'blob',
-                timeout: 15000
+                timeout: 30000
             });
 
             const blob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `invoice-${order?.orderId || orderId}.pdf`;
-            
+            link.download = `invoice-${order.orderId || orderId}.pdf`;
+
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
-            
+
         } catch (error) {
             console.error('Error downloading invoice:', error);
-            alert('Failed to download invoice. Please try again.');
+            if (error.response?.status === 400) {
+                alert(error.response.data.message || 'Invoice not available for this order.');
+            } else if (error.response?.status === 404) {
+                alert('Invoice not found for this order.');
+            } else {
+                alert('Failed to download invoice. Please try again.');
+            }
+        } finally {
+            setIsGeneratingPDF(false);
         }
     };
 
@@ -86,15 +99,52 @@ const Invoice = () => {
         window.print();
     };
 
-    const handleShare = () => {
-        if (navigator.share) {
-            navigator.share({
-                title: `Invoice - ${order?.orderId}`,
-                text: `Invoice for your order ${order?.orderId} from Mishra Mart`,
-                url: window.location.href,
+    const handleShare = async () => {
+        if (!order) return;
+
+        try {
+            setIsGeneratingPDF(true);
+
+            // Generate PDF from your backend for sharing
+            const response = await axios.get(`${serverUrl}/api/orders/invoice/${orderId}`, {
+                withCredentials: true,
+                responseType: 'blob',
+                timeout: 30000
             });
-        } else {
-            alert('Web Share API not supported in your browser');
+
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const file = new File([blob], `invoice-${order.orderId}.pdf`, { type: 'application/pdf' });
+
+            // Check if Web Share API is available and can share files
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    title: `Invoice - ${order.orderId}`,
+                    text: `Invoice for your order ${order.orderId} from Mishra Mart`,
+                    files: [file]
+                });
+            } else {
+                // Fallback to download if sharing is not supported
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `invoice-${order.orderId}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+
+                alert('PDF downloaded. You can share the downloaded file.');
+            }
+
+        } catch (error) {
+            console.error('Error sharing PDF:', error);
+
+            // If sharing fails or user cancels, fallback to download
+            if (!error.toString().includes('AbortError')) {
+                handleDownload();
+            }
+        } finally {
+            setIsGeneratingPDF(false);
         }
     };
 
@@ -137,27 +187,27 @@ const Invoice = () => {
         const productImage2 = item.productId?.image2;
         const productImage3 = item.productId?.image3;
         const productImage4 = item.productId?.image4;
-        
+
         // Check if item has direct image property
         const directImage = item.image || item.productId?.image;
-        
+
         // Return first available image with priority
-        return directImage || 
-               productImages[0] || 
-               productImage1 || 
-               productImage2 || 
-               productImage3 || 
-               productImage4 || 
-               'https://images.unsplash.com/photo-1560769684-5507c64551f9?w=150';
+        return directImage ||
+            productImages[0] ||
+            productImage1 ||
+            productImage2 ||
+            productImage3 ||
+            productImage4 ||
+            'https://images.unsplash.com/photo-1560769684-5507c64551f9?w=150';
     };
 
     if (isLoading) {
         return (
             <div className="min-h-screen bg-gray-50 pt-16 flex items-center justify-center">
-                <LoadingSpinner 
-                    message="Loading invoice..." 
-                    spinnerColor="#06b6d4" 
-                    textColor="#06b6d4" 
+                <LoadingSpinner
+                    message="Loading invoice..."
+                    spinnerColor="#06b6d4"
+                    textColor="#06b6d4"
                 />
             </div>
         );
@@ -213,15 +263,13 @@ const Invoice = () => {
                     <div className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white p-6 lg:p-8">
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                             <div className="flex items-center gap-4">
-                                {/* Company Logo */}
-                                <div className="bg-white rounded-xl p-3 shadow-lg">
-                                    <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
-                                        <span className="text-white font-bold text-xl">Logo</span>
-                                    </div>
-                                </div>
-                                <div className="text-center lg:text-left">
-                                    <h1 className="text-2xl lg:text-3xl font-bold">MISHRA MART</h1>
-                                    <p className="text-cyan-100 text-sm lg:text-base mt-1">Your Trusted Shopping Partner</p>
+                                {/* Company Logo - Big Size, No Text */}
+                                <div className="bg-white rounded-xl p-4 shadow-lg">
+                                    <img
+                                        src={Logo}
+                                        alt="Mishra Mart"
+                                        className="w-20 h-20 lg:w-24 lg:h-24 object-contain"
+                                    />
                                 </div>
                             </div>
                             <div className="text-center lg:text-right w-full lg:w-auto">
@@ -238,26 +286,28 @@ const Invoice = () => {
                             <span>Payment Successful • Order {order.status}</span>
                         </div>
                         <div className="flex space-x-3">
-                            <button 
+                            <button
                                 onClick={handleDownload}
-                                className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition text-sm font-medium"
+                                disabled={isGeneratingPDF}
+                                className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <FaDownload className="mr-2" />
-                                Download PDF
+                                {isGeneratingPDF ? 'Generating...' : 'Download PDF'}
                             </button>
-                            <button 
+                            <button
                                 onClick={handlePrint}
                                 className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition text-sm font-medium"
                             >
                                 <FaPrint className="mr-2" />
                                 Print
                             </button>
-                            <button 
+                            <button
                                 onClick={handleShare}
-                                className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition text-sm font-medium"
+                                disabled={isGeneratingPDF}
+                                className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <FaShare className="mr-2" />
-                                Share
+                                Share PDF
                             </button>
                         </div>
                     </div>
@@ -272,7 +322,14 @@ const Invoice = () => {
                                     From:
                                 </h3>
                                 <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 space-y-3">
-                                    <p className="font-semibold text-gray-900 text-lg">MISHRA MART</p>
+                                    <div className="flex items-center gap-3">
+                                        <img
+                                            src={Logo}
+                                            alt="Mishra Mart"
+                                            className="w-12 h-12 object-contain"
+                                        />
+                                        <p className="font-semibold text-gray-900 text-lg">MISHRA MART</p>
+                                    </div>
                                     <div className="space-y-1">
                                         <p className="text-gray-600">123 Business Avenue, Tech Park</p>
                                         <p className="text-gray-600">Mumbai, Maharashtra - 400001</p>
@@ -284,7 +341,7 @@ const Invoice = () => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div className="space-y-4">
                                 <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-3">
                                     <FaMapMarkerAlt className="text-cyan-600 text-xl" />
@@ -330,7 +387,7 @@ const Invoice = () => {
                             </div>
                         </div>
 
-                        {/* Order Status & Payment - FIXED OVERLAPPING */}
+                        {/* Order Status & Payment */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="bg-green-50 p-5 rounded-xl border border-green-200">
                                 <h4 className="font-semibold text-gray-800 mb-4 text-lg">Order Status</h4>
@@ -338,12 +395,11 @@ const Invoice = () => {
                                     {order.status === 'delivered' && <FaCheckCircle className="text-green-500 text-xl mt-1 flex-shrink-0" />}
                                     {order.status === 'shipped' && <FaTruck className="text-blue-500 text-xl mt-1 flex-shrink-0" />}
                                     <div className="min-w-0 flex-1">
-                                        <span className={`font-bold text-lg block ${
-                                            order.status === 'delivered' ? 'text-green-600' :
-                                            order.status === 'shipped' ? 'text-blue-600' :
-                                            order.status === 'processing' ? 'text-yellow-600' :
-                                            'text-red-600'
-                                        }`}>
+                                        <span className={`font-bold text-lg block ${order.status === 'delivered' ? 'text-green-600' :
+                                                order.status === 'shipped' ? 'text-blue-600' :
+                                                    order.status === 'processing' ? 'text-yellow-600' :
+                                                        'text-red-600'
+                                            }`}>
                                             {order.status?.charAt(0)?.toUpperCase() + order.status?.slice(1)}
                                         </span>
                                         {order.deliveredAt && (
@@ -354,7 +410,7 @@ const Invoice = () => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div className="bg-blue-50 p-5 rounded-xl border border-blue-200">
                                 <h4 className="font-semibold text-gray-800 mb-4 text-lg">Payment Status</h4>
                                 <div className="flex items-start gap-4">
@@ -371,10 +427,10 @@ const Invoice = () => {
                             </div>
                         </div>
 
-                        {/* Items Table - FIXED IMAGES & OVERLAPPING */}
+                        {/* Items Table */}
                         <div className="space-y-6">
                             <h3 className="text-xl font-bold text-gray-900 border-b border-gray-200 pb-3">Order Items</h3>
-                            
+
                             {/* Desktop Table */}
                             <div className="hidden lg:block bg-white border border-gray-200 rounded-xl overflow-hidden">
                                 <table className="min-w-full">
@@ -391,8 +447,8 @@ const Invoice = () => {
                                             <tr key={item._id || index} className="hover:bg-gray-50 transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center space-x-4 min-w-0">
-                                                        <img 
-                                                            src={getProductImage(item)} 
+                                                        <img
+                                                            src={getProductImage(item)}
                                                             alt={item.productId?.name}
                                                             className="w-16 h-16 object-cover rounded-lg border border-gray-200 flex-shrink-0"
                                                             onError={(e) => {
@@ -434,8 +490,8 @@ const Invoice = () => {
                                 {order.items?.map((item, index) => (
                                     <div key={item._id || index} className="bg-white border border-gray-200 rounded-xl p-4">
                                         <div className="flex items-start space-x-4">
-                                            <img 
-                                                src={getProductImage(item)} 
+                                            <img
+                                                src={getProductImage(item)}
                                                 alt={item.productId?.name}
                                                 className="w-20 h-20 object-cover rounded-lg border border-gray-200 flex-shrink-0"
                                                 onError={(e) => {
@@ -475,7 +531,7 @@ const Invoice = () => {
                             </div>
                         </div>
 
-                        {/* Totals - FIXED OVERLAPPING */}
+                        {/* Totals */}
                         <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-6 border border-cyan-200">
                             <div className="max-w-md ml-auto space-y-4">
                                 <div className="flex justify-between items-center py-2">
@@ -520,14 +576,15 @@ const Invoice = () => {
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
-                                <button 
+                                <button
                                     onClick={handleDownload}
-                                    className="flex items-center justify-center px-4 py-4 bg-cyan-500 text-white rounded-xl font-semibold transition hover:bg-cyan-600 text-base"
+                                    disabled={isGeneratingPDF}
+                                    className="flex items-center justify-center px-4 py-4 bg-cyan-500 text-white rounded-xl font-semibold transition hover:bg-cyan-600 text-base disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <FaDownload className="mr-2" />
-                                    Download
+                                    {isGeneratingPDF ? 'Generating...' : 'Download'}
                                 </button>
-                                <button 
+                                <button
                                     onClick={handlePrint}
                                     className="flex items-center justify-center px-4 py-4 bg-white border border-gray-300 text-gray-700 rounded-xl font-semibold transition hover:bg-gray-50 text-base"
                                 >
@@ -535,13 +592,21 @@ const Invoice = () => {
                                     Print
                                 </button>
                             </div>
+                            <button
+                                onClick={handleShare}
+                                disabled={isGeneratingPDF}
+                                className="w-full flex items-center justify-center px-4 py-4 bg-green-500 text-white rounded-xl font-semibold transition hover:bg-green-600 text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <FaShare className="mr-2" />
+                                Share PDF
+                            </button>
                         </div>
 
                         {/* Thank You Message */}
                         <div className="text-center p-8 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl">
                             <h3 className="text-2xl font-bold text-white mb-3">Thank You for Your Order!</h3>
                             <p className="text-cyan-100 text-lg max-w-2xl mx-auto leading-relaxed">
-                                We appreciate your business and trust in Mishra Mart. If you have any questions about your order, 
+                                We appreciate your business and trust in Mishra Mart. If you have any questions about your order,
                                 please don't hesitate to contact our customer support team.
                             </p>
                             <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center items-center">

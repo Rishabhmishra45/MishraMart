@@ -1,347 +1,279 @@
 import PDFDocument from 'pdfkit';
+import axios from 'axios';
 
-export const generateInvoice = (order) => {
-    return new Promise((resolve, reject) => {
-        try {
-            const doc = new PDFDocument({ 
-                margin: 30,
-                size: 'A4',
-                bufferPages: true
-            });
-            const buffers = [];
+// Function to download and convert image to base64
+const getImageBase64 = async (imageUrl) => {
+   try {
+      if (
+         imageUrl.includes('unsplash.com') ||
+         imageUrl.includes('via.placeholder.com') ||
+         imageUrl.startsWith('data:')
+      ) {
+         return null;
+      }
 
-            doc.on('data', buffers.push.bind(buffers));
-            doc.on('end', () => {
-                const pdfData = Buffer.concat(buffers);
-                resolve(pdfData);
-            });
+      const response = await axios.get(imageUrl, {
+         responseType: 'arraybuffer',
+         timeout: 10000
+      });
 
-            // Calculate amounts
-            const subtotal = order.items?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0;
-            const tax = subtotal * 0.18;
-            const shipping = 50;
-            const total = order.totalAmount || (subtotal + tax + shipping);
+      const base64 = Buffer.from(response.data).toString('base64');
+      return `data:image/jpeg;base64,${base64}`;
+   } catch (error) {
+      console.error('Error converting image to base64:', error);
+      return null;
+   }
+};
 
-            // Header with modern design
-            doc.fillColor('#06b6d4')
-               .rect(0, 0, doc.page.width, 100)
-               .fill();
-            
-            // Company Logo Area
-            doc.fillColor('#ffffff')
-               .rect(35, 20, 50, 50)
-               .fill();
-            
-            doc.fillColor('#06b6d4')
-               .fontSize(14)
-               .font('Helvetica-Bold')
-               .text('MM', 45, 35);
-            
-            // Company Name
-            doc.fillColor('#ffffff')
-               .fontSize(20)
-               .font('Helvetica-Bold')
-               .text('MISHRA MART', 100, 25);
-            
-            doc.fillColor('#e0f2fe')
-               .fontSize(9)
-               .font('Helvetica')
-               .text('Your Trusted Shopping Partner', 100, 50);
+export const generateInvoice = async (order) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         const doc = new PDFDocument({
+            margin: 30,
+            size: 'A4',
+            bufferPages: true
+         });
 
-            // Invoice Header
-            doc.fillColor('#ffffff')
-               .fontSize(18)
-               .font('Helvetica-Bold')
-               .text('INVOICE', 400, 25, { align: 'right' });
-            
-            doc.fontSize(9)
-               .text(`Invoice #: ${order.orderId}`, 400, 50, { align: 'right' })
-               .text(`Date: ${new Date(order.createdAt).toLocaleDateString('en-IN')}`, 400, 65, { align: 'right' });
+         const buffers = [];
+         doc.on('data', buffers.push.bind(buffers));
+         doc.on('end', () => {
+            const pdfData = Buffer.concat(buffers);
+            resolve(pdfData);
+         });
 
-            // Company and Customer Details
-            const detailsY = 120;
-            
-            // Company Details
-            doc.fillColor('#000000')
-               .fontSize(11)
-               .font('Helvetica-Bold')
-               .text('FROM:', 35, detailsY);
-            
-            doc.font('Helvetica')
-               .fontSize(9)
-               .text('MISHRA MART', 35, detailsY + 15)
-               .text('123 Business Avenue, Tech Park', 35, detailsY + 30)
-               .text('Mumbai, Maharashtra - 400001', 35, detailsY + 45)
-               .text('Phone: +91 98765 43210', 35, detailsY + 60)
-               .text('Email: support@mishramart.com', 35, detailsY + 75)
-               .text('GSTIN: 27AABCU9603R1ZM', 35, detailsY + 90);
+         doc.font('Helvetica');
 
-            // Customer Details
-            doc.font('Helvetica-Bold')
-               .text('BILL TO:', 280, detailsY);
-            
-            doc.font('Helvetica')
-               .text(order.shippingAddress.name, 280, detailsY + 15)
-               .text(order.shippingAddress.address, 280, detailsY + 30, { width: 250 })
-               .text(`${order.shippingAddress.city}, ${order.shippingAddress.state} - ${order.shippingAddress.pincode}`, 280, detailsY + 45, { width: 250 })
-               .text(`Phone: ${order.shippingAddress.phone}`, 280, detailsY + 60)
-               .text(`Email: ${order.shippingAddress.email}`, 280, detailsY + 75);
+         const subtotal = order.items?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0;
+         const tax = subtotal * 0.18;
+         const shipping = 50;
+         const total = order.totalAmount || (subtotal + tax + shipping);
 
-            // Invoice Details in Cards
-            const cardsY = detailsY + 110;
-            const cardWidth = 115;
-            const cardHeight = 40;
-            const cardGap = 15;
-            
-            // Invoice Number Card
-            doc.fillColor('#f0f9ff')
-               .rect(35, cardsY, cardWidth, cardHeight)
-               .fill();
-            
+         // HEADER
+         doc.fillColor('#06b6d4').rect(0, 0, doc.page.width, 70).fill();
+
+         doc.fillColor('#ffffff')
+            .fontSize(18)
+            .font('Helvetica-Bold')
+            .text('MISHRA MART', 40, 25);
+
+         doc.fontSize(14)
+            .text('INVOICE', doc.page.width - 130, 25, { align: 'right' });
+
+         doc.fontSize(8)
+            .text(`#${order.orderId}`, doc.page.width - 130, 45, { align: 'right' })
+            .text(new Date(order.createdAt).toLocaleDateString('en-IN'), doc.page.width - 130, 55, { align: 'right' });
+
+         // COMPANY & CUSTOMER DETAILS
+         const detailsY = 90;
+
+         doc.fillColor('#000000')
+            .fontSize(10)
+            .font('Helvetica-Bold')
+            .text('FROM:', 40, detailsY);
+
+         doc.font('Helvetica')
+            .fontSize(8)
+            .text('MISHRA MART', 40, detailsY + 15)
+            .text('123 Business Avenue, Tech Park', 40, detailsY + 25)
+            .text('Mumbai, Maharashtra - 400001', 40, detailsY + 35)
+            .text('GSTIN: 27AABCU9603R1ZM', 40, detailsY + 45);
+
+         doc.font('Helvetica-Bold')
+            .text('BILL TO:', 320, detailsY);
+
+         const customer = order.shippingAddress;
+         doc.font('Helvetica')
+            .text(customer.name, 320, detailsY + 15)
+            .text(customer.address, 320, detailsY + 25, { width: 200 })
+            .text(`${customer.city}, ${customer.state} - ${customer.pincode}`, 320, detailsY + 35, { width: 200 })
+            .text(`Phone: ${customer.phone}`, 320, detailsY + 45);
+
+         // COMPACT CARDS
+         const cardsY = detailsY + 65;
+
+         const drawCompactCard = (x, y, title, content) => {
+            doc.fillColor('#f0f9ff').rect(x, y, 120, 26).fill();
+
             doc.fillColor('#0369a1')
+               .fontSize(6)
+               .font('Helvetica-Bold')
+               .text(title, x + 6, y + 5);
+
+            doc.fillColor('#000000')
                .fontSize(7)
                .font('Helvetica-Bold')
-               .text('INVOICE NUMBER', 45, cardsY + 8);
-            
-            doc.fillColor('#000000')
-               .fontSize(9)
-               .font('Helvetica-Bold')
-               .text(order.orderId, 45, cardsY + 22, { width: 95 });
+               .text(content, x + 6, y + 14, { width: 110 });
+         };
 
-            // Invoice Date Card
-            doc.fillColor('#f0f9ff')
-               .rect(35 + cardWidth + cardGap, cardsY, cardWidth, cardHeight)
-               .fill();
-            
-            doc.fillColor('#0369a1')
-               .fontSize(7)
-               .font('Helvetica-Bold')
-               .text('INVOICE DATE', 45 + cardWidth + cardGap, cardsY + 8);
-            
-            doc.fillColor('#000000')
-               .fontSize(9)
-               .font('Helvetica-Bold')
-               .text(new Date(order.createdAt).toLocaleDateString('en-IN'), 45 + cardWidth + cardGap, cardsY + 22);
+         drawCompactCard(40, cardsY, 'INVOICE NUMBER', order.orderId);
+         drawCompactCard(170, cardsY, 'INVOICE DATE', new Date(order.createdAt).toLocaleDateString('en-IN'));
+         drawCompactCard(300, cardsY, 'ORDER DATE', new Date(order.createdAt).toLocaleDateString('en-IN'));
+         drawCompactCard(430, cardsY, 'PAYMENT METHOD', order.paymentMethod === 'cod' ? 'COD' : 'Online');
 
-            // Order Date Card
-            doc.fillColor('#f0f9ff')
-               .rect(35 + (cardWidth + cardGap) * 2, cardsY, cardWidth, cardHeight)
-               .fill();
-            
-            doc.fillColor('#0369a1')
-               .fontSize(7)
-               .font('Helvetica-Bold')
-               .text('ORDER DATE', 45 + (cardWidth + cardGap) * 2, cardsY + 8);
-            
-            doc.fillColor('#000000')
-               .fontSize(9)
-               .font('Helvetica-Bold')
-               .text(new Date(order.createdAt).toLocaleDateString('en-IN'), 45 + (cardWidth + cardGap) * 2, cardsY + 22);
+         // STATUS BADGES
+         const statusY = cardsY + 35;
 
-            // Payment Method Card
-            doc.fillColor('#f0f9ff')
-               .rect(35 + (cardWidth + cardGap) * 3, cardsY, cardWidth, cardHeight)
-               .fill();
-            
-            doc.fillColor('#0369a1')
-               .fontSize(7)
-               .font('Helvetica-Bold')
-               .text('PAYMENT METHOD', 45 + (cardWidth + cardGap) * 3, cardsY + 8);
-            
-            doc.fillColor('#000000')
-               .fontSize(9)
-               .font('Helvetica-Bold')
-               .text(order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment', 
-                    45 + (cardWidth + cardGap) * 3, cardsY + 22, { width: 95 });
+         doc.fillColor(order.status === 'delivered' ? '#dcfce7' : '#fef3c7')
+            .rect(40, statusY, 130, 20)
+            .fill();
 
-            // Order Status & Payment Status
-            const statusY = cardsY + cardHeight + 25;
-            
-            // Order Status
-            doc.fillColor('#dcfce7')
-               .rect(35, statusY, 250, 45)
-               .fill();
-            
-            doc.fillColor('#000000')
-               .fontSize(11)
-               .font('Helvetica-Bold')
-               .text('ORDER STATUS', 45, statusY + 8);
-            
-            doc.fillColor('#166534')
-               .fontSize(12)
-               .text(order.status?.charAt(0)?.toUpperCase() + order.status?.slice(1), 45, statusY + 25);
+         doc.fillColor('#000000')
+            .fontSize(6)
+            .font('Helvetica-Bold')
+            .text('ORDER STATUS', 45, statusY + 4);
 
-            if (order.deliveredAt) {
-                doc.fillColor('#666666')
-                   .fontSize(7)
-                   .text(`Delivered on ${new Date(order.deliveredAt).toLocaleDateString('en-IN')}`, 45, statusY + 40);
+         doc.fillColor(order.status === 'delivered' ? '#166534' : '#92400e')
+            .fontSize(7)
+            .text(order.status?.charAt(0)?.toUpperCase() + order.status?.slice(1), 45, statusY + 11);
+
+         doc.fillColor('#dbeafe').rect(190, statusY, 130, 20).fill();
+
+         doc.fillColor('#000000')
+            .fontSize(6)
+            .font('Helvetica-Bold')
+            .text('PAYMENT STATUS', 195, statusY + 4);
+
+         doc.fillColor('#1e40af')
+            .fontSize(7)
+            .text('Paid', 195, statusY + 11);
+
+         // ITEMS TABLE HEADER
+         const tableY = statusY + 35;
+
+         doc.fillColor('#f8fafc').rect(40, tableY, doc.page.width - 80, 14).fill();
+
+         doc.fillColor('#475569')
+            .fontSize(7)
+            .font('Helvetica-Bold')
+            .text('PRODUCT', 45, tableY + 4)
+            .text('PRICE', 330, tableY + 4, { width: 50, align: 'right' })
+            .text('QTY', 390, tableY + 4, { width: 30, align: 'right' })
+            .text('TOTAL', doc.page.width - 85, tableY + 4, { align: 'right' });
+
+         let currentY = tableY + 18;
+         let itemCount = 0;
+
+         for (const item of order.items || []) {
+            if (currentY > 640) break;
+
+            const rowHeight = 34;
+
+            if (itemCount % 2 === 0) {
+               doc.fillColor('#fafafa')
+                  .rect(40, currentY, doc.page.width - 80, rowHeight)
+                  .fill();
             }
 
-            // Payment Status
-            doc.fillColor('#dbeafe')
-               .rect(305, statusY, 250, 45)
-               .fill();
-            
-            doc.fillColor('#000000')
-               .fontSize(11)
-               .font('Helvetica-Bold')
-               .text('PAYMENT STATUS', 315, statusY + 8);
-            
-            doc.fillColor('#1e40af')
-               .fontSize(12)
-               .text(order.paymentStatus?.charAt(0)?.toUpperCase() + order.paymentStatus?.slice(1), 315, statusY + 25);
-            
-            doc.fillColor('#666666')
-               .fontSize(7)
-               .text(`Paid via ${order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}`, 315, statusY + 40);
+            const productImages = item.productId?.images || [];
+            const imageUrl =
+               item.image ||
+               productImages[0] ||
+               item.productId?.image1 ||
+               item.productId?.image2 ||
+               item.productId?.image3 ||
+               item.productId?.image4;
 
-            // Items Table Header
-            let yPosition = statusY + 70;
-            
-            // Check if we need a new page
-            if (yPosition > 600) {
-                doc.addPage();
-                yPosition = 50;
+            if (imageUrl && !imageUrl.includes('unsplash.com') && !imageUrl.includes('via.placeholder.com')) {
+               try {
+                  const imageBase64 = await getImageBase64(imageUrl);
+                  if (imageBase64) {
+                     doc.image(imageBase64, 45, currentY + 5, {
+                        width: 26,
+                        height: 26
+                     });
+                  }
+               } catch {
+                  doc.fillColor('#e5e7eb').rect(45, currentY + 5, 26, 26).fill();
+               }
+            } else {
+               doc.fillColor('#e5e7eb').rect(45, currentY + 5, 26, 26).fill();
             }
 
-            // Table Header
-            doc.fillColor('#f8fafc')
-               .rect(35, yPosition, doc.page.width - 70, 20)
-               .fill();
-            
+            const textStartX = 78;
+
+            doc.fillColor('#000000')
+               .fontSize(7)
+               .font('Helvetica-Bold')
+               .text(item.productId?.name || 'Product', textStartX, currentY + 6, {
+                  width: 200,
+                  ellipsis: true
+               });
+
+            if (item.size) {
+               doc.fontSize(6)
+                  .fillColor('#666666')
+                  .text(`Size: ${item.size}`, textStartX, currentY + 18);
+            }
+
+            doc.fillColor('#000000')
+               .fontSize(7)
+               .text(`Rs. ${item.price.toLocaleString('en-IN')}`, 330, currentY + 10, { width: 50, align: 'right' })
+               .text(item.quantity.toString(), 390, currentY + 10, { width: 30, align: 'right' })
+               .text(`Rs. ${(item.price * item.quantity).toLocaleString('en-IN')}`, doc.page.width - 85, currentY + 10, { align: 'right' });
+
+            currentY += rowHeight;
+            itemCount++;
+
+            if (itemCount < order.items.length) {
+               doc.moveTo(40, currentY)
+                  .lineTo(doc.page.width - 40, currentY)
+                  .strokeColor('#f1f5f9')
+                  .lineWidth(0.5)
+                  .stroke();
+               currentY += 3;
+            }
+         }
+
+         // ✅ FIXED: Declare totalsY only ONCE!
+         const totalsY = Math.min(currentY + 15, 690);
+
+         doc.fillColor('#f0f9ff')
+            .rect(doc.page.width - 270, totalsY, 240, 75)
+            .fill();
+
+         doc.fillColor('#000000')
+            .fontSize(8)
+            .text('Subtotal:', doc.page.width - 260, totalsY + 10)
+            .text('Shipping Fee:', doc.page.width - 260, totalsY + 22)
+            .text('Tax (18% GST):', doc.page.width - 260, totalsY + 34)
+            .font('Helvetica-Bold')
+            .text('Total Amount:', doc.page.width - 260, totalsY + 50);
+
+         doc.font('Helvetica')
+            .text(`Rs. ${subtotal.toLocaleString('en-IN')}`, doc.page.width - 85, totalsY + 10, { align: 'right' })
+            .text(`Rs. ${shipping.toLocaleString('en-IN')}`, doc.page.width - 85, totalsY + 22, { align: 'right' })
+            .text(`Rs. ${tax.toFixed(2)}`, doc.page.width - 85, totalsY + 34, { align: 'right' })
+            .font('Helvetica-Bold')
+            .text(`Rs. ${total.toLocaleString('en-IN')}`, doc.page.width - 85, totalsY + 50, { align: 'right' });
+
+         // THANK YOU SECTION
+         const thankYouY = totalsY + 90;
+
+         if (thankYouY < 770) {
             doc.fillColor('#06b6d4')
+               .rect(40, thankYouY, doc.page.width - 80, 24)
+               .fill();
+
+            doc.fillColor('#ffffff')
                .fontSize(9)
                .font('Helvetica-Bold')
-               .text('PRODUCT', 45, yPosition + 6)
-               .text('PRICE', 350, yPosition + 6)
-               .text('QTY', 420, yPosition + 6)
-               .text('TOTAL', 480, yPosition + 6);
+               .text('Thank You for Your Order!', 50, thankYouY + 8);
+         }
 
-            yPosition += 25;
+         // FOOTER
+         const footerY = doc.page.height - 40;
 
-            // Items
-            order.items.forEach((item, index) => {
-                const productName = item.productId?.name || 'Product';
-                const quantity = item.quantity;
-                const price = item.price;
-                const itemTotal = price * quantity;
-
-                // Check if we need a new page
-                if (yPosition > 700) {
-                    doc.addPage();
-                    yPosition = 50;
-                    
-                    // Add table header on new page
-                    doc.fillColor('#f8fafc')
-                       .rect(35, yPosition, doc.page.width - 70, 20)
-                       .fill();
-                    
-                    doc.fillColor('#06b6d4')
-                       .fontSize(9)
-                       .font('Helvetica-Bold')
-                       .text('PRODUCT', 45, yPosition + 6)
-                       .text('PRICE', 350, yPosition + 6)
-                       .text('QTY', 420, yPosition + 6)
-                       .text('TOTAL', 480, yPosition + 6);
-                    
-                    yPosition += 25;
-                }
-
-                // Alternate row background
-                if (index % 2 === 0) {
-                    doc.fillColor('#fafafa')
-                       .rect(35, yPosition - 5, doc.page.width - 70, 25)
-                       .fill();
-                }
-
-                doc.fillColor('#000000')
-                   .font('Helvetica')
-                   .fontSize(8)
-                   .text(productName.substring(0, 40), 45, yPosition, { width: 280 })
-                   .text(`₹${price.toLocaleString('en-IN')}`, 350, yPosition)
-                   .text(quantity.toString(), 420, yPosition)
-                   .text(`₹${itemTotal.toLocaleString('en-IN')}`, 480, yPosition);
-
-                // Add size if available
-                if (item.size) {
-                    doc.fillColor('#666666')
-                       .fontSize(7)
-                       .text(`Size: ${item.size}`, 45, yPosition + 12);
-                    yPosition += 8;
-                }
-
-                yPosition += 20;
-                
-                // Add separator line
-                if (index < order.items.length - 1) {
-                    doc.moveTo(35, yPosition - 2).lineTo(doc.page.width - 35, yPosition - 2).strokeColor('#e5e7eb').stroke();
-                    yPosition += 5;
-                }
+         doc.fontSize(7)
+            .fillColor('#9ca3af')
+            .text('Mishra Mart © 2025. All rights reserved.', 50, footerY, {
+               align: 'center',
+               width: doc.page.width - 100,
             });
 
-            // Check if we need a new page for totals
-            if (yPosition > 650) {
-                doc.addPage();
-                yPosition = 50;
-            }
-
-            // Totals
-            yPosition += 20;
-            
-            doc.fillColor('#f0f9ff')
-               .rect(35, yPosition, doc.page.width - 70, 100)
-               .fill();
-            
-            doc.fillColor('#000000')
-               .fontSize(9)
-               .text('Subtotal:', 400, yPosition + 15, { align: 'right' })
-               .text(`₹${subtotal.toLocaleString('en-IN')}`, 500, yPosition + 15, { align: 'right' });
-            
-            doc.text('Shipping Fee:', 400, yPosition + 30, { align: 'right' })
-               .text(`₹${shipping.toLocaleString('en-IN')}`, 500, yPosition + 30, { align: 'right' });
-            
-            doc.text('Tax (18% GST):', 400, yPosition + 45, { align: 'right' })
-               .text(`₹${tax.toFixed(2)}`, 500, yPosition + 45, { align: 'right' });
-            
-            doc.strokeColor('#06b6d4')
-               .moveTo(400, yPosition + 60).lineTo(550, yPosition + 60).stroke();
-            
-            doc.font('Helvetica-Bold')
-               .fontSize(11)
-               .text('Total Amount:', 400, yPosition + 75, { align: 'right' })
-               .text(`₹${total.toLocaleString('en-IN')}`, 500, yPosition + 75, { align: 'right' });
-
-            // Thank You Message
-            yPosition += 120;
-            doc.fillColor('#06b6d4')
-               .fontSize(12)
-               .font('Helvetica-Bold')
-               .text('Thank You for Your Order!', 35, yPosition, { align: 'center' });
-            
-            yPosition += 15;
-            doc.fillColor('#666666')
-               .fontSize(8)
-               .font('Helvetica')
-               .text('We appreciate your business and trust in Mishra Mart. For any queries, contact support@mishramart.com', 
-                    35, yPosition, { 
-                        align: 'center',
-                        width: doc.page.width - 70 
-                    });
-
-            // Footer
-            yPosition += 30;
-            doc.fillColor('#9ca3af')
-               .fontSize(7)
-               .text('MISHRA MART • 123 Business Avenue, Tech Park, Mumbai, Maharashtra - 400001', 
-                    35, yPosition, { align: 'center' })
-               .text('GSTIN: 27AABCU9603R1ZM • support@mishramart.com • +91 98765 43210', 
-                    35, yPosition + 10, { align: 'center' });
-
-            doc.end();
-
-        } catch (error) {
-            console.error('PDF Generation Error:', error);
-            reject(error);
-        }
-    });
+         doc.end();
+      } catch (error) {
+         console.error('PDF Generation Error:', error);
+         reject(error);
+      }
+   });
 };

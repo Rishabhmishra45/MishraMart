@@ -41,6 +41,7 @@ const Orders = () => {
     const [error, setError] = useState('');
     const [retryCount, setRetryCount] = useState(0);
     const [socket, setSocket] = useState(null);
+    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
     // Socket.IO setup with error handling
     useEffect(() => {
@@ -222,10 +223,12 @@ const Orders = () => {
 
     const downloadInvoice = async (orderId) => {
         try {
+            setIsGeneratingPDF(true);
+            
             const response = await axios.get(`${serverUrl}/api/orders/invoice/${orderId}`, {
                 withCredentials: true,
                 responseType: 'blob',
-                timeout: 15000
+                timeout: 30000 // Increased timeout for PDF generation
             });
 
             const blob = new Blob([response.data], { type: 'application/pdf' });
@@ -250,6 +253,45 @@ const Orders = () => {
             } else {
                 alert('Failed to download invoice. Please try again.');
             }
+        } finally {
+            setIsGeneratingPDF(false);
+        }
+    };
+
+    const shareInvoice = async (orderId) => {
+        try {
+            setIsGeneratingPDF(true);
+            
+            const response = await axios.get(`${serverUrl}/api/orders/invoice/${orderId}`, {
+                withCredentials: true,
+                responseType: 'blob',
+                timeout: 30000
+            });
+
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const file = new File([blob], `invoice-${orderId}.pdf`, { type: 'application/pdf' });
+            
+            // Check if Web Share API is available and can share files
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    title: `Invoice - ${orderId}`,
+                    text: `Invoice for your order from Mishra Mart`,
+                    files: [file]
+                });
+            } else {
+                // Fallback to download if sharing is not supported
+                downloadInvoice(orderId);
+            }
+            
+        } catch (error) {
+            console.error('Error sharing PDF:', error);
+            
+            // If sharing fails or user cancels, fallback to download
+            if (!error.toString().includes('AbortError')) {
+                downloadInvoice(orderId);
+            }
+        } finally {
+            setIsGeneratingPDF(false);
         }
     };
 
@@ -299,6 +341,8 @@ const Orders = () => {
 
             if (response.data.success) {
                 alert('Order cancelled successfully');
+                // Refresh orders to update status
+                fetchOrders();
             } else {
                 alert(response.data.message || 'Failed to cancel order');
             }
@@ -406,7 +450,7 @@ const Orders = () => {
                                 <button
                                     onClick={handleStartShopping}
                                     className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition duration-300 text-sm"
-                                >
+                                    >
                                     Start Shopping
                                 </button>
                             </div>
@@ -555,15 +599,29 @@ const Orders = () => {
                                                 </button>
                                                 <button
                                                     onClick={() => downloadInvoice(order._id)}
-                                                    className="px-3 lg:px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition duration-300 flex items-center gap-2 text-sm flex-1 lg:flex-none justify-center"
+                                                    disabled={isGeneratingPDF}
+                                                    className="px-3 lg:px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition duration-300 flex items-center gap-2 text-sm flex-1 lg:flex-none justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
                                                     <FaDownload className="text-xs lg:text-sm" />
-                                                    <span className="hidden lg:inline">Download PDF</span>
-                                                    <span className="lg:hidden">PDF</span>
+                                                    <span className="hidden lg:inline">
+                                                        {isGeneratingPDF ? 'Generating...' : 'Download PDF'}
+                                                    </span>
+                                                    <span className="lg:hidden">
+                                                        {isGeneratingPDF ? 'Generating...' : 'PDF'}
+                                                    </span>
+                                                </button>
+                                                <button
+                                                    onClick={() => shareInvoice(order._id)}
+                                                    disabled={isGeneratingPDF}
+                                                    className="px-3 lg:px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition duration-300 flex items-center gap-2 text-sm flex-1 lg:flex-none justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    <FaStar className="text-xs lg:text-sm" />
+                                                    <span className="hidden lg:inline">Share PDF</span>
+                                                    <span className="lg:hidden">Share</span>
                                                 </button>
                                                 <button
                                                     onClick={() => reorder(order)}
-                                                    className="px-3 lg:px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition duration-300 flex items-center gap-2 text-sm flex-1 lg:flex-none justify-center"
+                                                    className="px-3 lg:px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition duration-300 flex items-center gap-2 text-sm flex-1 lg:flex-none justify-center"
                                                 >
                                                     <FaStar className="text-xs lg:text-sm" />
                                                     <span className="hidden lg:inline">Reorder</span>
@@ -709,16 +767,25 @@ const Orders = () => {
                                                     </button>
                                                     <button
                                                         onClick={() => downloadInvoice(selectedOrder._id)}
-                                                        className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition duration-300 flex items-center gap-2 text-sm"
+                                                        disabled={isGeneratingPDF}
+                                                        className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition duration-300 flex items-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
                                                         <FaDownload />
-                                                        Download PDF
+                                                        {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => shareInvoice(selectedOrder._id)}
+                                                        disabled={isGeneratingPDF}
+                                                        className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition duration-300 flex items-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        <FaStar />
+                                                        Share PDF
                                                     </button>
                                                 </>
                                             )}
                                             <button
                                                 onClick={() => reorder(selectedOrder)}
-                                                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition duration-300 flex items-center gap-2 text-sm"
+                                                className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition duration-300 flex items-center gap-2 text-sm"
                                             >
                                                 <FaStar />
                                                 Reorder All Items

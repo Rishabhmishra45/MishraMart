@@ -199,6 +199,8 @@ export const downloadInvoice = async (req, res) => {
     const { orderId } = req.params;
     const userId = req.userId;
 
+    console.log("Downloading invoice for order:", orderId);
+
     const order = await Order.findOne({ _id: orderId, userId })
       .populate('items.productId', 'name images price image1 image2 image3 image4');
 
@@ -217,12 +219,12 @@ export const downloadInvoice = async (req, res) => {
       });
     }
 
-    console.log("Generating MODERN invoice for order:", order.orderId);
+    console.log("Generating FIXED invoice for order:", order.orderId);
     
     const pdfBuffer = await generateInvoice(order);
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=invoice-${order.orderId}.pdf`);
+    res.setHeader('Content-Disposition', `attachment; filename=invoice-${order?.orderId || orderId}.pdf`);
     res.setHeader('Content-Length', pdfBuffer.length);
     
     console.log("PDF generated successfully, sending to client...");
