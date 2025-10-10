@@ -1,14 +1,12 @@
 import PDFDocument from 'pdfkit';
 import axios from 'axios';
+import path from 'path';
 
-// Function to download and convert image to base64
 const getImageBase64 = async (imageUrl) => {
    try {
-      if (
-         imageUrl.includes('unsplash.com') ||
+      if (imageUrl.includes('unsplash.com') ||
          imageUrl.includes('via.placeholder.com') ||
-         imageUrl.startsWith('data:')
-      ) {
+         imageUrl.startsWith('data:')) {
          return null;
       }
 
@@ -28,6 +26,9 @@ const getImageBase64 = async (imageUrl) => {
 export const generateInvoice = async (order) => {
    return new Promise(async (resolve, reject) => {
       try {
+         // Absolute path to logo.png in your public folder
+         const logoPath = path.resolve(process.cwd(), 'public', 'logo.png');
+
          const doc = new PDFDocument({
             margin: 30,
             size: 'A4',
@@ -48,20 +49,27 @@ export const generateInvoice = async (order) => {
          const shipping = 50;
          const total = order.totalAmount || (subtotal + tax + shipping);
 
-         // HEADER
-         doc.fillColor('#06b6d4').rect(0, 0, doc.page.width, 70).fill();
+         // HEADER with logo
+         doc.fillColor('#06b6d4')
+            .rect(0, 0, doc.page.width, 70)
+            .fill();
 
+         // Center the logo vertically
+         const logoHeight = 130;
+         const logoY = (70 - logoHeight) / 2;
+
+         doc.image(logoPath, 40, logoY, { width: 110, height: logoHeight });
+
+         // Invoice text on right side
          doc.fillColor('#ffffff')
-            .fontSize(18)
+            .fontSize(14)
             .font('Helvetica-Bold')
-            .text('MISHRA MART', 40, 25);
-
-         doc.fontSize(14)
             .text('INVOICE', doc.page.width - 130, 25, { align: 'right' });
 
          doc.fontSize(8)
             .text(`#${order.orderId}`, doc.page.width - 130, 45, { align: 'right' })
             .text(new Date(order.createdAt).toLocaleDateString('en-IN'), doc.page.width - 130, 55, { align: 'right' });
+
 
          // COMPANY & CUSTOMER DETAILS
          const detailsY = 90;
@@ -92,7 +100,9 @@ export const generateInvoice = async (order) => {
          const cardsY = detailsY + 65;
 
          const drawCompactCard = (x, y, title, content) => {
-            doc.fillColor('#f0f9ff').rect(x, y, 120, 26).fill();
+            doc.fillColor('#f0f9ff')
+               .rect(x, y, 120, 26)
+               .fill();
 
             doc.fillColor('#0369a1')
                .fontSize(6)
@@ -126,7 +136,9 @@ export const generateInvoice = async (order) => {
             .fontSize(7)
             .text(order.status?.charAt(0)?.toUpperCase() + order.status?.slice(1), 45, statusY + 11);
 
-         doc.fillColor('#dbeafe').rect(190, statusY, 130, 20).fill();
+         doc.fillColor('#dbeafe')
+            .rect(190, statusY, 130, 20)
+            .fill();
 
          doc.fillColor('#000000')
             .fontSize(6)
@@ -140,7 +152,9 @@ export const generateInvoice = async (order) => {
          // ITEMS TABLE HEADER
          const tableY = statusY + 35;
 
-         doc.fillColor('#f8fafc').rect(40, tableY, doc.page.width - 80, 14).fill();
+         doc.fillColor('#f8fafc')
+            .rect(40, tableY, doc.page.width - 80, 14)
+            .fill();
 
          doc.fillColor('#475569')
             .fontSize(7)
@@ -165,8 +179,7 @@ export const generateInvoice = async (order) => {
             }
 
             const productImages = item.productId?.images || [];
-            const imageUrl =
-               item.image ||
+            const imageUrl = item.image ||
                productImages[0] ||
                item.productId?.image1 ||
                item.productId?.image2 ||
@@ -183,10 +196,14 @@ export const generateInvoice = async (order) => {
                      });
                   }
                } catch {
-                  doc.fillColor('#e5e7eb').rect(45, currentY + 5, 26, 26).fill();
+                  doc.fillColor('#e5e7eb')
+                     .rect(45, currentY + 5, 26, 26)
+                     .fill();
                }
             } else {
-               doc.fillColor('#e5e7eb').rect(45, currentY + 5, 26, 26).fill();
+               doc.fillColor('#e5e7eb')
+                  .rect(45, currentY + 5, 26, 26)
+                  .fill();
             }
 
             const textStartX = 78;
@@ -224,11 +241,11 @@ export const generateInvoice = async (order) => {
             }
          }
 
-         // ✅ FIXED: Declare totalsY only ONCE!
+         // TOTALS SECTION
          const totalsY = Math.min(currentY + 15, 690);
 
          doc.fillColor('#f0f9ff')
-            .rect(doc.page.width - 270, totalsY, 240, 75)
+            .rect(doc.page.width - 270, totalsY, 240, 100)
             .fill();
 
          doc.fillColor('#000000')
@@ -237,17 +254,19 @@ export const generateInvoice = async (order) => {
             .text('Shipping Fee:', doc.page.width - 260, totalsY + 22)
             .text('Tax (18% GST):', doc.page.width - 260, totalsY + 34)
             .font('Helvetica-Bold')
-            .text('Total Amount:', doc.page.width - 260, totalsY + 50);
+            .text('Total Amount:', doc.page.width - 260, totalsY + 80);
 
          doc.font('Helvetica')
-            .text(`Rs. ${subtotal.toLocaleString('en-IN')}`, doc.page.width - 85, totalsY + 10, { align: 'right' })
-            .text(`Rs. ${shipping.toLocaleString('en-IN')}`, doc.page.width - 85, totalsY + 22, { align: 'right' })
-            .text(`Rs. ${tax.toFixed(2)}`, doc.page.width - 85, totalsY + 34, { align: 'right' })
+            .text(`Rs. ${subtotal.toLocaleString('en-IN')}`, doc.page.width - 260, totalsY + 10, { align: 'right' })
+            .text(`Rs. ${shipping.toLocaleString('en-IN')}`, doc.page.width - 260, totalsY + 22, { align: 'right' })
+            .text(`Rs. ${tax.toFixed(2)}`, doc.page.width - 260, totalsY + 34, { align: 'right' })
             .font('Helvetica-Bold')
-            .text(`Rs. ${total.toLocaleString('en-IN')}`, doc.page.width - 85, totalsY + 50, { align: 'right' });
+            .text(`Rs. ${total.toLocaleString('en-IN')}`, doc.page.width - 260, totalsY + 80, { align: 'right' });
+         // shifted left by 20px
+
 
          // THANK YOU SECTION
-         const thankYouY = totalsY + 90;
+         const thankYouY = totalsY + 150;
 
          if (thankYouY < 770) {
             doc.fillColor('#06b6d4')
@@ -260,7 +279,7 @@ export const generateInvoice = async (order) => {
                .text('Thank You for Your Order!', 50, thankYouY + 8);
          }
 
-         // FOOTER
+         // FOOTER SECTION
          const footerY = doc.page.height - 40;
 
          doc.fontSize(7)
@@ -271,6 +290,7 @@ export const generateInvoice = async (order) => {
             });
 
          doc.end();
+
       } catch (error) {
          console.error('PDF Generation Error:', error);
          reject(error);
