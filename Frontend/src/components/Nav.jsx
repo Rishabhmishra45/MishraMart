@@ -17,7 +17,7 @@ const Nav = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { search, setSearch, setShowSearch } = useContext(shopDataContext);
   const { userData, setUserData } = useContext(userDataContext);
-  const { serverUrl } = useContext(authDataContext);
+  const { serverUrl, logout } = useContext(authDataContext);
   const { getCartItemsCount } = useCart();
   const cartItemsCount = getCartItemsCount();
   const navigate = useNavigate();
@@ -116,19 +116,31 @@ const Nav = () => {
     }
   };
 
+  // ✅ IMPROVED: Handle logout function
   const handleLogout = async () => {
     try {
-      await axios.get(`${serverUrl}/api/auth/logout`, { withCredentials: true });
+      // ✅ FIXED: POST request use karein GET ki jagah
+      await axios.post(`${serverUrl}/api/auth/logout`, {}, {
+        withCredentials: true
+      });
     } catch (err) {
       console.error("Logout error:", err.message);
     } finally {
+      // ✅ IMPORTANT: Sabhi states clear karein
       setUserData(null);
       setIsDropdownOpen(false);
-      // Clear profile image from localStorage on logout
+      
+      // ✅ AuthContext ka logout function bhi call karein
+      logout();
+      
+      // ✅ LocalStorage clear karein
       if (userData) {
         localStorage.removeItem(`userProfileImage_${userData.id}`);
       }
+      localStorage.removeItem('cart'); // ✅ Cart bhi clear karein
       setProfileImage(null);
+      
+      // ✅ Redirect karein
       navigate('/signup');
     }
   };

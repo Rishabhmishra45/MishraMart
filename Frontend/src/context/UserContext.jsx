@@ -7,11 +7,13 @@ export const userDataContext = createContext();
 const UserContextProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { serverUrl, isAuthenticated, user } = useContext(authDataContext);
+  const [userChecked, setUserChecked] = useState(false); // ✅ NEW: Track if user check completed
+  const { serverUrl, isAuthenticated, user, authChecked } = useContext(authDataContext);
 
   // fetch current user from backend - UPDATED
   const getCurrentUser = async () => {
     try {
+      setLoading(true);
       const result = await axios.get(`${serverUrl}/api/user/getcurrentuser`, {
         withCredentials: true,
       });
@@ -33,25 +35,31 @@ const UserContextProvider = ({ children }) => {
       );
     } finally {
       setLoading(false);
+      setUserChecked(true); // ✅ Mark user check as completed
     }
   };
 
   useEffect(() => {
+    // ✅ Wait for auth check to complete first
+    if (!authChecked) return;
+
     if (user) {
       // If we have user from AuthContext, use it directly
       setUserData(user);
       setLoading(false);
+      setUserChecked(true);
     } else {
       // Otherwise fetch from API
       getCurrentUser();
     }
-  }, [user]);
+  }, [user, authChecked]); // ✅ Add authChecked as dependency
 
   const value = {
     userData,
     setUserData,
     getCurrentUser,
     loading,
+    userChecked, // ✅ NEW: Export userChecked
   };
 
   return (
