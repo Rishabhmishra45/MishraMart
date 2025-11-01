@@ -399,7 +399,7 @@ const Orders = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 pt-[70px]">
             {/* Mobile Header */}
             <div className="bg-white shadow-sm border-b lg:hidden fixed top-0 left-0 right-0 z-40">
                 <div className="px-4 py-3">

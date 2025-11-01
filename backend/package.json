@@ -6,7 +6,10 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "build": "npm install",
+    "test": "echo \"No tests specified\" && exit 0",
+    "prod": "NODE_ENV=production node index.js"
   },
   "keywords": [
     "ecommerce",
@@ -19,6 +22,7 @@
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.7.0",
+    "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
@@ -29,6 +33,7 @@
     "mongoose": "^8.18.1",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
+    "nodemailer": "^7.0.9",
     "nodemon": "^3.1.10",
     "pdfkit": "^0.17.2",
     "socket.io": "^4.8.1",
