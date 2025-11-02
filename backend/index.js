@@ -11,6 +11,7 @@ import orderRoutes from "./routes/orderRoutes.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import chatbotRoutes from './routes/chatbotRoutes.js';
+import wishlistRoutes from './routes/wishlistRoutes.js';
 import compression from 'compression';
 
 // Load env first
@@ -117,6 +118,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/chatbot", chatbotRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 
 // Root endpoint
 app.get("/", (req, res) => res.json({

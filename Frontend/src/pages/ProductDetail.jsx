@@ -1,8 +1,9 @@
-// ProductDetail.jsx - Dynamic Discount from Card
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { shopDataContext } from '../context/ShopContext';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
+import { useAuth } from '../context/AuthContext';
 import {
     FaStar,
     FaHeart,
@@ -59,15 +60,18 @@ const ProductDetail = () => {
     const location = useLocation();
     const { products, currency, getProducts } = useContext(shopDataContext);
     const { addToCart, showCartNotification, notificationProduct } = useCart();
+    const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+    const { isAuthenticated } = useAuth();
+    
     const [product, setProduct] = useState(null);
     const [selectedImage, setSelectedImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
     const [isWishlisted, setIsWishlisted] = useState(false);
+    const [wishlistLoading, setWishlistLoading] = useState(false);
     const [showShareOptions, setShowShareOptions] = useState(false);
     const [selectedSize, setSelectedSize] = useState('');
     const [zoomImage, setZoomImage] = useState(false);
-    const [discountPercentage, setDiscountPercentage] = useState(20); // Default fallback
     const imageRef = useRef(null);
 
     useEffect(() => {
@@ -77,31 +81,17 @@ const ProductDetail = () => {
             const foundProduct = products.find(p => p._id === id);
             setProduct(foundProduct);
             
-            // Get discount from navigation state or generate fixed discount
-            if (location.state?.discountPercentage) {
-                setDiscountPercentage(location.state.discountPercentage);
-            } else if (foundProduct) {
-                // Generate same fixed discount as in Card component
-                const generatedDiscount = generateFixedDiscount(foundProduct._id);
-                setDiscountPercentage(generatedDiscount);
+            // Check if product is in wishlist
+            if (foundProduct) {
+                setIsWishlisted(isInWishlist(foundProduct._id));
             }
             
             setIsLoading(false);
         }
-    }, [products, id, getProducts, location.state]);
+    }, [products, id, getProducts, isInWishlist]);
 
-    // Same discount generation function as in Card component
-    const generateFixedDiscount = (productId) => {
-        const hash = productId.split('').reduce((a, b) => {
-            a = ((a << 5) - a) + b.charCodeAt(0);
-            return a & a;
-        }, 0);
-        
-        const discounts = [15, 20, 25, 30, 35, 40, 45, 50];
-        const index = Math.abs(hash) % discounts.length;
-        return discounts[index];
-    };
-
+    // Get discount from navigation state or use fixed 20%
+    const discountPercentage = location.state?.discountPercentage || 20;
     const discountedPrice = product ? product.price - (product.price * discountPercentage / 100) : 0;
 
     const handleQuantityChange = (action) => {
@@ -126,8 +116,8 @@ const ProductDetail = () => {
         const productToAdd = {
             id: product._id,
             name: product.name,
-            price: discountedPrice, // Use discounted price
-            originalPrice: product.price, // Store original price
+            price: discountedPrice,
+            originalPrice: product.price,
             image: product.image1,
             category: product.category,
             size: selectedSize,
@@ -144,6 +134,36 @@ const ProductDetail = () => {
         }
         handleAddToCart();
         navigate('/cart');
+    };
+
+    // Wishlist functionality
+    const handleWishlistToggle = async () => {
+        if (!isAuthenticated) {
+            navigate('/login');
+            return;
+        }
+
+        setWishlistLoading(true);
+        
+        try {
+            if (isWishlisted) {
+                await removeFromWishlist(product._id);
+                setIsWishlisted(false);
+            } else {
+                await addToWishlist({
+                    id: product._id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image1,
+                    category: product.category
+                });
+                setIsWishlisted(true);
+            }
+        } catch (error) {
+            console.error('Wishlist error:', error);
+        } finally {
+            setWishlistLoading(false);
+        }
     };
 
     const shareProduct = () => {
@@ -349,13 +369,19 @@ const ProductDetail = () => {
                                     {product.name}
                                 </h1>
                                 <button
-                                    onClick={() => setIsWishlisted(!isWishlisted)}
-                                    className={`p-2 rounded-full transition-all duration-300 ${isWishlisted
+                                    onClick={handleWishlistToggle}
+                                    disabled={wishlistLoading}
+                                    className={`p-2 rounded-full transition-all duration-300 ${
+                                        isWishlisted
                                             ? 'text-red-500 bg-red-500/10 border border-red-500/30'
                                             : 'text-gray-400 bg-gray-700/50 border border-gray-600 hover:text-red-400'
-                                        }`}
+                                    } ${wishlistLoading ? 'opacity-50' : ''}`}
                                 >
-                                    <FaHeart className={isWishlisted ? 'fill-current' : ''} />
+                                    {wishlistLoading ? (
+                                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                                    ) : (
+                                        <FaHeart className={isWishlisted ? 'fill-current' : ''} />
+                                    )}
                                 </button>
                             </div>
                             

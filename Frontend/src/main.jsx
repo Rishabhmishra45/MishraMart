@@ -7,6 +7,7 @@ import AuthContextProvider from "./context/AuthContext.jsx";
 import UserContextProvider from "./context/UserContext.jsx";
 import ShopContext from "./context/ShopContext.jsx";
 import { CartProvider } from './context/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -15,7 +16,9 @@ createRoot(document.getElementById("root")).render(
         <UserContextProvider>
           <ShopContext>
             <CartProvider>
-              <App />
+              <WishlistProvider>
+                <App />
+              </WishlistProvider>
             </CartProvider>
           </ShopContext>
         </UserContextProvider>

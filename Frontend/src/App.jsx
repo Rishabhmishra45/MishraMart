@@ -24,6 +24,7 @@ import Invoice from "./pages/Invoice";
 import Chatbot from "./components/Chatbot";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import Wishlist from './pages/Wishlist';
 import { authDataContext } from "./context/AuthContext";
 
 const App = () => {
@@ -35,7 +36,7 @@ const App = () => {
   // Public routes - accessible without authentication
   const publicRoutes = [
     "/login",
-    "/signup", 
+    "/signup",
     "/forgot-password",
     "/reset-password"
   ];
@@ -53,7 +54,7 @@ const App = () => {
     if (!userData && !isPublicRoute) {
       navigate("/signup", { replace: true });
     }
-    
+
     // ✅ FIX: If user is logged in and on a public route, redirect to home
     if (userData && isPublicRoute) {
       navigate("/", { replace: true });
@@ -126,51 +127,57 @@ const App = () => {
             userData ? <Contact /> : <Navigate to="/login" replace />
           }
         />
-        <Route 
-          path="/product/:id" 
+        <Route
+          path="/wishlist"
+          element={
+            userData ? <Wishlist /> : <Navigate to="/login" replace />
+          }
+        />
+        <Route
+          path="/product/:id"
           element={
             userData ? <ProductDetail /> : <Navigate to="/login" replace />
-          } 
+          }
         />
-        <Route 
-          path="/cart" 
+        <Route
+          path="/cart"
           element={
             userData ? <Cart /> : <Navigate to="/login" replace />
-          } 
+          }
         />
-        <Route 
-          path="/place-order" 
+        <Route
+          path="/place-order"
           element={
             userData ? <PlaceOrder /> : <Navigate to="/login" replace />
-          } 
+          }
         />
-        <Route 
-          path="/orders" 
+        <Route
+          path="/orders"
           element={
             userData ? <Orders /> : <Navigate to="/login" replace />
-          } 
+          }
         />
-        <Route 
-          path="/profile" 
+        <Route
+          path="/profile"
           element={
             userData ? <Profile /> : <Navigate to="/login" replace />
-          } 
+          }
         />
-        <Route 
-          path="/invoice/:orderId" 
+        <Route
+          path="/invoice/:orderId"
           element={
             userData ? <Invoice /> : <Navigate to="/login" replace />
-          } 
+          }
         />
 
         {/* Catch all route - redirect to appropriate page */}
-        <Route 
-          path="*" 
+        <Route
+          path="*"
           element={
-            userData ? 
-              <Navigate to="/" replace /> : 
+            userData ?
+              <Navigate to="/" replace /> :
               <Navigate to="/signup" replace />
-          } 
+          }
         />
       </Routes>
 

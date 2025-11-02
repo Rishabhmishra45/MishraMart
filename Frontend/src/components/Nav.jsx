@@ -1,36 +1,35 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
-import { FaSearch, FaUserCircle, FaHome, FaThLarge, FaInfoCircle, FaPhone } from 'react-icons/fa';
+import { FaSearch, FaUserCircle, FaHome, FaThLarge, FaInfoCircle, FaPhone, FaHeart } from 'react-icons/fa';
 import { MdOutlineShoppingCart } from "react-icons/md";
 import Logo from "../assets/logo.png";
 import { userDataContext } from '../context/UserContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Link } from "react-router-dom";
-import { authDataContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { shopDataContext } from '../context/ShopContext';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 
 const Nav = () => {
-  const [cartItems, setCartItems] = useState(10);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { search, setSearch, setShowSearch } = useContext(shopDataContext);
+  const { search, setSearch } = useContext(shopDataContext);
   const { userData, setUserData } = useContext(userDataContext);
-  const { serverUrl, logout } = useContext(authDataContext);
+  const { serverUrl, logout } = useAuth();
   const { getCartItemsCount } = useCart();
+  const { getWishlistCount } = useWishlist();
   const cartItemsCount = getCartItemsCount();
+  const wishlistCount = getWishlistCount();
   const navigate = useNavigate();
   const location = useLocation();
 
   const desktopDropdownRef = useRef(null);
   const mobileDropdownRef = useRef(null);
-
-  // Profile image state - load from localStorage
   const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
-    // Load profile image from localStorage when userData changes
     if (userData) {
       const savedImage = localStorage.getItem(`userProfileImage_${userData.id}`);
       if (savedImage) {
@@ -39,7 +38,6 @@ const Nav = () => {
     }
   }, [userData]);
 
-  // Listen for storage changes to update profile image in real-time
   useEffect(() => {
     const handleStorageChange = () => {
       if (userData) {
@@ -49,7 +47,6 @@ const Nav = () => {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    // Also check for changes periodically (for same tab updates)
     const interval = setInterval(handleStorageChange, 1000);
 
     return () => {
@@ -78,10 +75,8 @@ const Nav = () => {
   const handleSearchToggle = () => {
     setSearchOpen(!searchOpen);
 
-    // If we're on home page and opening search, navigate to collections
-    if (!searchOpen && location.pathname === '/') {
+    if (!searchOpen && location.pathname !== '/collections') {
       navigate('/collections');
-      // Small delay to ensure navigation completes before focusing
       setTimeout(() => {
         const searchInput = document.querySelector('input[type="text"]');
         if (searchInput) searchInput.focus();
@@ -98,7 +93,6 @@ const Nav = () => {
     e.preventDefault();
     if (searchQuery.trim()) {
       setSearch(searchQuery);
-      // Navigate to collections if not already there
       if (location.pathname !== '/collections') {
         navigate('/collections');
       }
@@ -110,50 +104,56 @@ const Nav = () => {
     setSearchQuery(value);
     setSearch(value);
 
-    // If we're on home page and user starts typing, navigate to collections
-    if (value.trim() && location.pathname === '/') {
+    if (value.trim() && location.pathname !== '/collections') {
       navigate('/collections');
     }
   };
 
-  // ✅ IMPROVED: Handle logout function
+  const handleSearchInputClick = () => {
+    if (location.pathname !== '/collections') {
+      navigate('/collections');
+    }
+  };
+
   const handleLogout = async () => {
     try {
-      // ✅ FIXED: POST request use karein GET ki jagah
       await axios.post(`${serverUrl}/api/auth/logout`, {}, {
         withCredentials: true
       });
     } catch (err) {
       console.error("Logout error:", err.message);
     } finally {
-      // ✅ IMPORTANT: Sabhi states clear karein
       setUserData(null);
       setIsDropdownOpen(false);
-      
-      // ✅ AuthContext ka logout function bhi call karein
       logout();
-      
-      // ✅ LocalStorage clear karein
       if (userData) {
         localStorage.removeItem(`userProfileImage_${userData.id}`);
       }
-      localStorage.removeItem('cart'); // ✅ Cart bhi clear karein
+      localStorage.removeItem('cart');
       setProfileImage(null);
-      
-      // ✅ Redirect karein
       navigate('/signup');
     }
   };
 
   const handleDropdownAction = (action) => {
-    if (action === 'logout') {
-      handleLogout();
-    } else if (action === 'orders') {
-      navigate('/orders');
-      setIsDropdownOpen(false);
-    } else if (action === 'profile') {
-      navigate('/profile');
-      setIsDropdownOpen(false);
+    switch (action) {
+      case 'logout':
+        handleLogout();
+        break;
+      case 'orders':
+        navigate('/orders');
+        setIsDropdownOpen(false);
+        break;
+      case 'profile':
+        navigate('/profile');
+        setIsDropdownOpen(false);
+        break;
+      case 'wishlist':
+        navigate('/wishlist');
+        setIsDropdownOpen(false);
+        break;
+      default:
+        break;
     }
   };
 
@@ -194,8 +194,9 @@ const Nav = () => {
                       type="text"
                       value={searchQuery}
                       onChange={handleSearchChange}
+                      onClick={handleSearchInputClick}
                       placeholder="Search products..."
-                      className="py-1 px-3 w-40 outline-none text-sm rounded-l-full"
+                      className="py-1 px-3 w-40 outline-none text-sm rounded-l-full cursor-pointer"
                       autoFocus
                     />
                     <button type="submit" className="p-2 text-gray-700 hover:text-[#00bcd4]">
@@ -214,6 +215,21 @@ const Nav = () => {
                     <FaSearch className="text-2xl" />
                   </button>
                 )}
+              </div>
+
+              {/* Wishlist (Desktop) */}
+              <div className="relative">
+                <button
+                  className="text-gray-700 hover:text-[#00bcd4] p-2 relative"
+                  onClick={() => navigate("/wishlist")}
+                >
+                  <FaHeart className="text-2xl" />
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </button>
               </div>
 
               {/* User Dropdown (Desktop) */}
@@ -253,17 +269,23 @@ const Nav = () => {
                           onClick={() => handleDropdownAction('orders')}
                           className="block w-full text-left px-3 py-2 rounded hover:bg-gray-700 cursor-pointer"
                         >
-                          Orders
+                          My Orders
+                        </button>
+                        <button
+                          onClick={() => handleDropdownAction('wishlist')}
+                          className="block w-full text-left px-3 py-2 rounded hover:bg-gray-700 cursor-pointer"
+                        >
+                          My Wishlist
                         </button>
                         <button
                           onClick={() => handleDropdownAction('profile')}
                           className="block w-full text-left px-3 py-2 rounded hover:bg-gray-700 cursor-pointer"
                         >
-                          Profile
+                          My Profile
                         </button>
                         <button
                           onClick={() => handleDropdownAction('logout')}
-                          className="block w-full text-left px-3 py-2 rounded hover:bg-gray-700 cursor-pointer"
+                          className="block w-full text-left px-3 py-2 rounded hover:bg-gray-700 cursor-pointer text-red-400 hover:text-red-300"
                         >
                           Logout
                         </button>
@@ -320,8 +342,9 @@ const Nav = () => {
                     type="text"
                     value={searchQuery}
                     onChange={handleSearchChange}
+                    onClick={handleSearchInputClick}
                     placeholder="Search products..."
-                    className="py-1 px-3 w-32 outline-none text-sm rounded-l-full"
+                    className="py-1 px-3 w-32 outline-none text-sm rounded-l-full cursor-pointer"
                     autoFocus
                   />
                   <button type="submit" className="p-2 text-gray-700 hover:text-[#00bcd4]">
@@ -377,17 +400,23 @@ const Nav = () => {
                           onClick={() => handleDropdownAction('orders')}
                           className="block w-full text-left px-3 py-2 rounded hover:bg-gray-700 cursor-pointer"
                         >
-                          Orders
+                          My Orders
+                        </button>
+                        <button
+                          onClick={() => handleDropdownAction('wishlist')}
+                          className="block w-full text-left px-3 py-2 rounded hover:bg-gray-700 cursor-pointer"
+                        >
+                          My Wishlist
                         </button>
                         <button
                           onClick={() => handleDropdownAction('profile')}
                           className="block w-full text-left px-3 py-2 rounded hover:bg-gray-700 cursor-pointer"
                         >
-                          Profile
+                          My Profile
                         </button>
                         <button
                           onClick={() => handleDropdownAction('logout')}
-                          className="block w-full text-left px-3 py-2 rounded hover:bg-gray-700 cursor-pointer"
+                          className="block w-full text-left px-3 py-2 rounded hover:bg-gray-700 cursor-pointer text-red-400 hover:text-red-300"
                         >
                           Logout
                         </button>
@@ -452,6 +481,19 @@ const Nav = () => {
             <FaPhone className="text-xl" />
             <span className="text-xs">Contact</span>
           </Link>
+          
+          {/* Wishlist Mobile */}
+          <button onClick={() => navigate("/wishlist")} className="relative flex flex-col items-center text-gray-700 hover:text-[#00bcd4]">
+            <FaHeart className="text-xl" />
+            <span className="text-xs">Wishlist</span>
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1 right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
+                {wishlistCount}
+              </span>
+            )}
+          </button>
+
+          {/* Cart Mobile */}
           <button onClick={() => navigate("/cart")} className="relative flex flex-col items-center text-gray-700 hover:text-[#00bcd4]">
             <MdOutlineShoppingCart className="text-xl" />
             <span className="text-xs">Cart</span>

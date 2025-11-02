@@ -1,10 +1,18 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 
 export const authDataContext = createContext();
 
-function AuthContext({ children }) {
-  // Environment variables se URL lo
+// useAuth hook for easy context consumption
+export const useAuth = () => {
+  const context = useContext(authDataContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthContextProvider');
+  }
+  return context;
+};
+
+const AuthContext = ({ children }) => {
   const serverUrl = import.meta.env.VITE_SERVER_URL;
   
   console.log("Server URL:", serverUrl); 
@@ -13,7 +21,7 @@ function AuthContext({ children }) {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [authChecked, setAuthChecked] = useState(false); // ✅ NEW: Track if auth check completed
+  const [authChecked, setAuthChecked] = useState(false);
 
   // Check authentication status on app start
   useEffect(() => {
@@ -23,7 +31,7 @@ function AuthContext({ children }) {
   const checkAuthStatus = async () => {
     try {
       setIsLoading(true);
-      setAuthChecked(false); // ✅ Reset before checking
+      setAuthChecked(false);
       
       if (!serverUrl) {
         console.error('Server URL not configured');
@@ -34,7 +42,7 @@ function AuthContext({ children }) {
 
       const response = await axios.get(`${serverUrl}/api/user/getcurrentuser`, {
         withCredentials: true,
-        timeout: 10000 // Reduced timeout for better UX
+        timeout: 10000
       });
       
       console.log("Auth check response:", response.data);
@@ -52,7 +60,7 @@ function AuthContext({ children }) {
       setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
-      setAuthChecked(true); // ✅ Mark auth check as completed
+      setAuthChecked(true);
     }
   };
 
@@ -61,7 +69,6 @@ function AuthContext({ children }) {
     setIsAuthenticated(true);
   };
 
-  // ✅ IMPROVED: Logout function
   const logout = async () => {
     try {
       await axios.post(`${serverUrl}/api/auth/logout`, {}, {
@@ -71,12 +78,9 @@ function AuthContext({ children }) {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // ✅ IMPORTANT: Sabhi states clear karein
       setUser(null);
       setIsAuthenticated(false);
-      setAuthChecked(true); // ✅ Ensure auth checked is true after logout
-      
-      // ✅ Additional: LocalStorage clear karein
+      setAuthChecked(true);
       localStorage.clear();
       sessionStorage.clear();
     }
@@ -89,7 +93,7 @@ function AuthContext({ children }) {
     isAuthenticated, 
     setIsAuthenticated,
     isLoading,
-    authChecked, // ✅ NEW: Export authChecked
+    authChecked,
     checkAuthStatus,
     login,
     logout
@@ -100,6 +104,6 @@ function AuthContext({ children }) {
       {children}
     </authDataContext.Provider>
   );
-}
+};
 
 export default AuthContext;
