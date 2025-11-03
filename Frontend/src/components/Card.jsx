@@ -5,15 +5,16 @@ import { FaHeart, FaShoppingCart, FaStar, FaFire, FaRuler } from 'react-icons/fa
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { userDataContext } from '../context/UserContext';
 import ReactDOM from 'react-dom';
 
-// Size Selector Modal Component (Separate Component)
-const SizeSelectorModal = ({ 
-  isOpen, 
-  onClose, 
-  onSizeSelect, 
-  sizes, 
-  productName 
+// Size Selector Modal Component
+const SizeSelectorModal = ({
+  isOpen,
+  onClose,
+  onSizeSelect,
+  sizes,
+  productName
 }) => {
   const modalRef = useRef(null);
 
@@ -82,6 +83,7 @@ const SizeSelectorModal = ({
 // Main Card Component
 const Card = ({ name, image, id, price, category, index }) => {
   let { currency, products } = useContext(shopDataContext);
+  const { userData } = useContext(userDataContext);
   const navigate = useNavigate();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { isAuthenticated, authChecked } = useAuth();
@@ -92,6 +94,11 @@ const Card = ({ name, image, id, price, category, index }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [showSizeSelector, setShowSizeSelector] = useState(false);
   const [selectedSize, setSelectedSize] = useState('');
+  const [wishlistNotification, setWishlistNotification] = useState({
+    show: false,
+    message: "",
+    type: "" // 'info', 'success', 'error'
+  });
   const cardRef = useRef(null);
 
   // Generate or retrieve persistent discount for this product
@@ -151,8 +158,19 @@ const Card = ({ name, image, id, price, category, index }) => {
 
     if (!authChecked) return;
 
-    if (!isAuthenticated) {
-      navigate('/login');
+    if (!isAuthenticated || !userData) {
+      // Guest user - show notification instead of confirm
+      setWishlistNotification({
+        show: true,
+        message: "Login to add items to your wishlist",
+        type: "info"
+      });
+
+      // Auto hide after 3 seconds
+      setTimeout(() => {
+        setWishlistNotification({ show: false, message: "", type: "" });
+      }, 2000);
+
       return;
     }
 
@@ -161,6 +179,12 @@ const Card = ({ name, image, id, price, category, index }) => {
     try {
       if (isInWishlist(id)) {
         await removeFromWishlist(id);
+        // Show success notification for removal
+        setWishlistNotification({
+          show: true,
+          message: "Removed from wishlist",
+          type: "success"
+        });
       } else {
         await addToWishlist({
           id,
@@ -171,9 +195,31 @@ const Card = ({ name, image, id, price, category, index }) => {
           category,
           discountPercentage
         });
+        // Show success notification for addition
+        setWishlistNotification({
+          show: true,
+          message: "Added to wishlist!",
+          type: "success"
+        });
       }
+
+      // Auto hide success notifications after 2 seconds
+      setTimeout(() => {
+        setWishlistNotification({ show: false, message: "", type: "" });
+      }, 2000);
+
     } catch (error) {
       console.error('Wishlist operation failed:', error);
+      // Show error notification
+      setWishlistNotification({
+        show: true,
+        message: "Failed to update wishlist",
+        type: "error"
+      });
+
+      setTimeout(() => {
+        setWishlistNotification({ show: false, message: "", type: "" });
+      }, 3000);
     } finally {
       setWishlistLoading(false);
     }
@@ -185,12 +231,7 @@ const Card = ({ name, image, id, price, category, index }) => {
 
     if (!authChecked) return;
 
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-
-    // If product has sizes, show size selector
+    // If product has sizes, show size selector for both guest and logged-in users
     if (hasSizes && !selectedSize) {
       setShowSizeSelector(true);
       return;
@@ -207,7 +248,7 @@ const Card = ({ name, image, id, price, category, index }) => {
         image,
         category,
         discountPercentage,
-        size: selectedSize
+        size: selectedSize || 'M' // Default size if no sizes available
       };
 
       addToCart(productToAdd, 1);
@@ -262,7 +303,7 @@ const Card = ({ name, image, id, price, category, index }) => {
 
   return (
     <>
-      {/* Size Selector Modal - Rendered via Portal */}
+      {/* Size Selector Modal */}
       <SizeSelectorModal
         isOpen={showSizeSelector}
         onClose={handleCloseSizeSelector}
@@ -271,13 +312,70 @@ const Card = ({ name, image, id, price, category, index }) => {
         productName={name}
       />
 
+      {/* Wishlist Notification */}
+      {wishlistNotification.show && (
+        <div className="fixed top-24 right-6 z-50 animate-slide-in-right">
+          <div className={`rounded-2xl p-4 shadow-2xl border max-w-sm backdrop-blur-sm ${wishlistNotification.type === 'info'
+            ? 'bg-gradient-to-r from-blue-500 to-cyan-600 border-blue-400 shadow-blue-500/30'
+            : wishlistNotification.type === 'success'
+              ? 'bg-gradient-to-r from-green-500 to-emerald-600 border-green-400 shadow-green-500/30'
+              : 'bg-gradient-to-r from-red-500 to-pink-600 border-red-400 shadow-red-500/30'
+            }`}>
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 p-2 rounded-full">
+                {wishlistNotification.type === 'info' && '🔒'}
+                {wishlistNotification.type === 'success' && '✅'}
+                {wishlistNotification.type === 'error' && '❌'}
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-sm text-white">
+                  {wishlistNotification.message}
+                </p>
+                {wishlistNotification.type === 'info' && (
+                  <p className="text-white/80 text-xs mt-1">
+                    Click here to login
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => setWishlistNotification({ show: false, message: "", type: "" })}
+                className="text-white/80 hover:text-white text-lg transition-colors duration-200 hover:scale-110"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Progress Bar for auto-close - Duration based on notification type */}
+            <div className="mt-2 w-full bg-white/20 rounded-full h-1">
+              <div
+                className="bg-white h-1 rounded-full transition-all ease-linear"
+                style={{
+                  width: '100%',
+                  animation: wishlistNotification.type === 'info'
+                    ? 'progress 2000ms linear forwards'
+                    : wishlistNotification.type === 'success'
+                      ? 'progress 2000ms linear forwards'
+                      : 'progress 3000ms linear forwards'
+                }}
+              ></div>
+            </div>
+          </div>
+
+          <style>{`
+      @keyframes progress {
+        from { width: 100%; }
+        to { width: 0%; }
+      }
+    `}</style>
+        </div>
+      )}
+
       {/* Card Component */}
       <div
         ref={cardRef}
         onClick={handleClick}
-        className={`group w-72 h-80 bg-gradient-to-br from-[#1a1a1a] to-[#0f1a1d] rounded-2xl overflow-hidden cursor-pointer transition-all duration-700 hover:shadow-2xl hover:-translate-y-3 flex flex-col border border-gray-700 relative scroll-card ${
-          isVisible ? 'visible' : ''
-        }`}
+        className={`group w-72 h-80 bg-gradient-to-br from-[#1a1a1a] to-[#0f1a1d] rounded-2xl overflow-hidden cursor-pointer transition-all duration-700 hover:shadow-2xl hover:-translate-y-3 flex flex-col border border-gray-700 relative scroll-card ${isVisible ? 'visible' : ''
+          }`}
         style={{
           transitionDelay: isVisible ? `${index * 0.1}s` : '0s'
         }}
@@ -294,11 +392,10 @@ const Card = ({ name, image, id, price, category, index }) => {
         <button
           onClick={handleWishlistClick}
           disabled={wishlistLoading || !authChecked}
-          className={`absolute top-3 right-3 z-10 w-8 h-8 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
-            isInWishlist(id)
-              ? 'text-red-500 bg-red-500/20 animate-heart-beat'
-              : 'text-white/80 hover:text-red-400 bg-black/60 hover:bg-black/80'
-          } ${wishlistLoading ? 'opacity-50' : ''}`}
+          className={`absolute top-3 right-3 z-10 w-8 h-8 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${isInWishlist(id)
+            ? 'text-red-500 bg-red-500/20 animate-heart-beat'
+            : 'text-white/80 hover:text-red-400 bg-black/60 hover:bg-black/80'
+            } ${wishlistLoading ? 'opacity-50' : ''}`}
         >
           {wishlistLoading ? (
             <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>

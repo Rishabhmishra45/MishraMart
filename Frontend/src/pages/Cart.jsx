@@ -2,13 +2,15 @@ import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { shopDataContext } from '../context/ShopContext';
-import { FaTrash, FaPlus, FaMinus, FaShoppingBag, FaArrowLeft, FaCreditCard } from 'react-icons/fa';
+import { userDataContext } from '../context/UserContext';
+import { FaTrash, FaPlus, FaMinus, FaShoppingBag, FaArrowLeft, FaCreditCard, FaExclamationTriangle, FaUser } from 'react-icons/fa';
 import CartNotification from '../components/CartNotification';
 
 const Cart = () => {
     const navigate = useNavigate();
     const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotal, showCartNotification, notificationProduct, setShowCartNotification } = useCart();
     const { currency, delivery_fee } = useContext(shopDataContext);
+    const { userData } = useContext(userDataContext);
 
     // Safe calculations
     const subtotal = getCartTotal ? getCartTotal() : 0;
@@ -37,6 +39,15 @@ const Cart = () => {
     };
 
     const proceedToCheckout = () => {
+        if (!userData) {
+            // Show login modal instead of redirect
+            if (window.confirm('Please login to proceed with checkout. Would you like to login now?')) {
+                navigate('/login', { 
+                    state: { from: '/place-order' } 
+                });
+            }
+            return;
+        }
         console.log('Proceeding to checkout with items:', cartItems);
         navigate('/place-order');
     };
@@ -106,6 +117,35 @@ const Cart = () => {
                         Continue Shopping
                     </button>
                 </div>
+
+                {/* Guest User Notice */}
+                {!userData && (
+                    <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-2xl p-6 mb-6">
+                        <div className="flex items-center gap-3">
+                            <FaUser className="text-yellow-400 text-xl" />
+                            <div>
+                                <h3 className="text-yellow-400 font-semibold text-lg">Shopping as Guest</h3>
+                                <p className="text-yellow-300 text-sm">
+                                    You can add items to cart and browse. Login for checkout and wishlist features.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex gap-3 mt-3">
+                            <button
+                                onClick={() => navigate('/login', { state: { from: '/cart' } })}
+                                className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition duration-300 text-sm"
+                            >
+                                Login
+                            </button>
+                            <button
+                                onClick={() => navigate('/signup')}
+                                className="px-4 py-2 border border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-white rounded-lg transition duration-300 text-sm"
+                            >
+                                Create Account
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
@@ -216,10 +256,14 @@ const Cart = () => {
 
                             <button
                                 onClick={proceedToCheckout}
-                                className="w-full px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold rounded-2xl transition-all duration-300 transform hover:-translate-y-1 shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-3"
+                                className={`w-full px-8 py-4 text-white font-semibold rounded-2xl transition-all duration-300 transform shadow-lg flex items-center justify-center gap-3 ${
+                                    userData 
+                                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 hover:-translate-y-1 shadow-cyan-500/20'
+                                        : 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 hover:-translate-y-1 shadow-yellow-500/20'
+                                }`}
                             >
                                 <FaCreditCard />
-                                Proceed to Checkout
+                                {userData ? 'Proceed to Checkout' : 'Login to Checkout'}
                             </button>
 
                             <button
@@ -228,6 +272,15 @@ const Cart = () => {
                             >
                                 Clear Cart
                             </button>
+
+                            {/* Guest User Benefits */}
+                            {!userData && (
+                                <div className="mt-4 p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
+                                    <p className="text-cyan-400 text-xs text-center">
+                                        Create an account to save your cart and get faster checkout
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

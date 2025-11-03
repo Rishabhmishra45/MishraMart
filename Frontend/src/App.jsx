@@ -42,12 +42,20 @@ const App = () => {
     "/reset-password"
   ];
 
+  // Protected routes - require login for checkout and personal pages
+  const protectedRoutes = [
+    "/place-order",
+    "/orders",
+    "/profile",
+    "/invoice"
+  ];
+
   const isPublicRoute = publicRoutes.includes(location.pathname);
+  const isProtectedRoute = protectedRoutes.includes(location.pathname);
 
   // App initialization - prevent flash
   useEffect(() => {
     const initializeApp = async () => {
-      // Wait for all auth and user checks to complete
       if (authChecked && userChecked && !loading) {
         setTimeout(() => {
           setAppReady(true);
@@ -58,18 +66,28 @@ const App = () => {
     initializeApp();
   }, [authChecked, userChecked, loading]);
 
-  // Redirect logic
+  // Redirect logic - FIXED: Only redirect if not on public routes
   useEffect(() => {
     if (!appReady) return;
 
-    if (!userData && !isPublicRoute) {
-      navigate("/signup", { replace: true });
+    // If user tries to access protected routes without login
+    if (!userData && isProtectedRoute) {
+      navigate("/login", { 
+        replace: true,
+        state: { from: location.pathname }
+      });
+      return;
     }
 
+    // If logged-in user tries to access public routes (login, signup)
     if (userData && isPublicRoute) {
       navigate("/", { replace: true });
+      return;
     }
-  }, [userData, appReady, isPublicRoute, navigate]);
+
+    // If user is not logged in and tries to access root path, let them see home page
+    // No automatic redirect to signup
+  }, [userData, appReady, isPublicRoute, isProtectedRoute, navigate, location]);
 
   // Show loading only when app is not ready
   if (!appReady) {
@@ -85,11 +103,11 @@ const App = () => {
 
   return (
     <>
-      {/* Show Nav only when user is logged in AND not on public routes */}
-      {userData && !isPublicRoute && <Nav />}
+      {/* Show Nav always - for both logged in and guest users */}
+      <Nav />
 
       <Routes>
-        {/* Public Routes - Only accessible when NOT logged in */}
+        {/* Public Routes - Accessible to all */}
         <Route
           path="/login"
           element={!userData ? <Login /> : <Navigate to="/" replace />}
@@ -107,53 +125,17 @@ const App = () => {
           element={!userData ? <ResetPassword /> : <Navigate to="/" replace />}
         />
 
-        {/* Protected Routes - Only accessible when logged in */}
-        <Route
-          path="/"
-          element={userData ? <Home /> : <Navigate to="/signup" replace />}
-        />
-        <Route
-          path="/about"
-          element={
-            userData ? <About /> : <Navigate to="/login" replace />
-          }
-        />
-        <Route
-          path="/collections"
-          element={
-            userData ? <Collections /> : <Navigate to="/login" replace />
-          }
-        />
-        <Route
-          path="/product"
-          element={
-            userData ? <Product /> : <Navigate to="/login" replace />
-          }
-        />
-        <Route
-          path="/contact"
-          element={
-            userData ? <Contact /> : <Navigate to="/login" replace />
-          }
-        />
-        <Route
-          path="/wishlist"
-          element={
-            userData ? <Wishlist /> : <Navigate to="/login" replace />
-          }
-        />
-        <Route
-          path="/product/:id"
-          element={
-            userData ? <ProductDetail /> : <Navigate to="/login" replace />
-          }
-        />
-        <Route
-          path="/cart"
-          element={
-            userData ? <Cart /> : <Navigate to="/login" replace />
-          }
-        />
+        {/* Public Pages - Accessible without login */}
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/collections" element={<Collections />} />
+        <Route path="/product" element={<Product />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+
+        {/* Protected Routes - Require login */}
         <Route
           path="/place-order"
           element={
@@ -179,19 +161,15 @@ const App = () => {
           }
         />
 
-        {/* Catch all route - redirect to appropriate page */}
+        {/* Catch all route */}
         <Route
           path="*"
-          element={
-            userData ?
-              <Navigate to="/" replace /> :
-              <Navigate to="/signup" replace />
-          }
+          element={<Navigate to="/" replace />}
         />
       </Routes>
 
       {/* Add Chatbot Component - Only show when user is logged in */}
-      {userData && !isPublicRoute && <Chatbot />}
+      {userData && <Chatbot />}
     </>
   );
 };

@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { shopDataContext } from '../context/ShopContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
-import { useAuth } from '../context/AuthContext';
+import { userDataContext } from '../context/UserContext';
 import {
     FaStar,
     FaHeart,
@@ -25,7 +25,8 @@ import {
     FaTag,
     FaArrowLeft,
     FaExpand,
-    FaFire
+    FaFire,
+    FaExclamationTriangle
 } from 'react-icons/fa';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -62,7 +63,7 @@ const ProductDetail = () => {
     const { products, currency, getProducts } = useContext(shopDataContext);
     const { addToCart, showCartNotification, notificationProduct } = useCart();
     const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
-    const { isAuthenticated } = useAuth();
+    const { userData } = useContext(userDataContext);
     
     const [product, setProduct] = useState(null);
     const [selectedImage, setSelectedImage] = useState(0);
@@ -147,10 +148,13 @@ const ProductDetail = () => {
         navigate('/cart');
     };
 
-    // Wishlist functionality
+    // Wishlist functionality - UPDATED FOR GUEST USERS
     const handleWishlistToggle = async () => {
-        if (!isAuthenticated) {
-            navigate('/login');
+        if (!userData) {
+            // Show login prompt for guest users
+            if (window.confirm('Please login to add items to your wishlist. Would you like to login now?')) {
+                navigate('/login', { state: { from: location.pathname } });
+            }
             return;
         }
 
@@ -390,6 +394,7 @@ const ProductDetail = () => {
                                             ? 'text-red-500 bg-red-500/10 border border-red-500/30 animate-heart-beat'
                                             : 'text-gray-400 bg-gray-700/50 border border-gray-600 hover:text-red-400'
                                     } ${wishlistLoading ? 'opacity-50' : ''}`}
+                                    title={!userData ? "Login to add to wishlist" : isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                                 >
                                     {wishlistLoading ? (
                                         <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
@@ -534,6 +539,25 @@ const ProductDetail = () => {
                                 Share this Product
                             </button>
                         </div>
+
+                        {/* Guest User Login Prompt */}
+                        {!userData && (
+                            <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-2xl p-4 animate-pulse">
+                                <div className="flex items-center gap-3">
+                                    <FaExclamationTriangle className="text-yellow-400 text-lg" />
+                                    <div className="flex-1">
+                                        <p className="text-yellow-400 font-semibold">Want to save items for later?</p>
+                                        <p className="text-yellow-300 text-sm">Login to access your wishlist and save your cart</p>
+                                    </div>
+                                    <button
+                                        onClick={() => navigate('/login')}
+                                        className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition duration-300 text-sm"
+                                    >
+                                        Login
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Features Grid */}
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

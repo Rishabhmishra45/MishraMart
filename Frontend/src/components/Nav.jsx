@@ -131,7 +131,7 @@ const Nav = () => {
       }
       localStorage.removeItem('cart');
       setProfileImage(null);
-      navigate('/signup');
+      navigate('/');
     }
   };
 
@@ -217,42 +217,39 @@ const Nav = () => {
                 )}
               </div>
 
-              {/* Wishlist (Desktop) */}
-              <div className="relative">
-                <button
-                  className="text-gray-700 hover:text-[#00bcd4] p-2 relative"
-                  onClick={() => navigate("/wishlist")}
-                >
-                  <FaHeart className="text-2xl" />
-                  {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-                      {wishlistCount}
-                    </span>
-                  )}
-                </button>
-              </div>
-
               {/* User Dropdown (Desktop) */}
               <div className="relative" ref={desktopDropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="text-gray-700 hover:text-[#00bcd4] p-2"
+                  className="text-gray-700 hover:text-[#00bcd4] p-2 flex items-center gap-2"
                 >
                   {!userData ? (
-                    <FaUserCircle className="text-2xl cursor-pointer" />
+                    <>
+                      {/* Guest User - Login Button in Rectangle */}
+                      <div className="group bg-[#101C20] border border-gray-600 rounded-lg px-3 py-2 flex items-center gap-2 hover:bg-[#00D3F3] transition-all duration-300 cursor-pointer">
+                        <FaUserCircle className="text-xl text-gray-300 group-hover:text-[#101C20]" />
+                        <span className="text-sm font-medium text-gray-300 group-hover:text-[#101C20]">Login</span>
+                      </div>
+
+                    </>
                   ) : (
-                    <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center cursor-pointer overflow-hidden border border-gray-300 shadow-sm">
-                      {profileImage ? (
-                        <img 
-                          src={profileImage} 
-                          alt="Profile" 
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-[#080808] text-white rounded-full flex items-center justify-center text-sm font-medium">
-                          {userData?.name?.slice(0, 1)?.toUpperCase() || 'U'}
-                        </div>
-                      )}
+                    <div className="flex items-center gap-2">
+                      <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center cursor-pointer overflow-hidden border border-gray-300 shadow-sm">
+                        {profileImage ? (
+                          <img
+                            src={profileImage}
+                            alt="Profile"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-[#080808] text-white rounded-full flex items-center justify-center text-sm font-medium">
+                            {userData?.name?.slice(0, 1)?.toUpperCase() || 'U'}
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-sm font-medium hidden lg:block">
+                        {userData?.name?.split(' ')[0]}
+                      </span>
                     </div>
                   )}
                 </button>
@@ -375,9 +372,9 @@ const Nav = () => {
                   ) : (
                     <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center cursor-pointer overflow-hidden border border-gray-300 shadow-sm">
                       {profileImage ? (
-                        <img 
-                          src={profileImage} 
-                          alt="Profile" 
+                        <img
+                          src={profileImage}
+                          alt="Profile"
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -481,17 +478,7 @@ const Nav = () => {
             <FaPhone className="text-xl" />
             <span className="text-xs">Contact</span>
           </Link>
-          
-          {/* Wishlist Mobile */}
-          <button onClick={() => navigate("/wishlist")} className="relative flex flex-col items-center text-gray-700 hover:text-[#00bcd4]">
-            <FaHeart className="text-xl" />
-            <span className="text-xs">Wishlist</span>
-            {wishlistCount > 0 && (
-              <span className="absolute -top-1 right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
-                {wishlistCount}
-              </span>
-            )}
-          </button>
+
 
           {/* Cart Mobile */}
           <button onClick={() => navigate("/cart")} className="relative flex flex-col items-center text-gray-700 hover:text-[#00bcd4]">

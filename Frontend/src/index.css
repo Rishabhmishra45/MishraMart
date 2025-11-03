@@ -287,3 +287,51 @@ html {
     width: 0%;
   }
 }
+
+
+
+
+
+
+/* Guest user notifications */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2s infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce 3s infinite;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Guest specific styles */
+.guest-notice {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1));
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.guest-checkout {
+  background: linear-gradient(135deg, #ff9800, #f57c00) !important;
+}
+
+.guest-checkout:hover {
+  background: linear-gradient(135deg, #f57c00, #e65100) !important;
+}
