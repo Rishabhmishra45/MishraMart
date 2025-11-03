@@ -1,4 +1,3 @@
-// LatestCollection.jsx - With Staggered Animations
 import React, { useContext, useEffect, useState } from 'react'
 import Tittle from './Tittle'
 import { shopDataContext } from '../context/ShopContext';
@@ -29,6 +28,7 @@ const LatestCollection = () => {
             image={item.image1} 
             price={item.price} 
             category={item.category}
+            index={index} // Index pass karo for animation delay
           />
         ))}
       </div>

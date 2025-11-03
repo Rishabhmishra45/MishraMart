@@ -11,6 +11,7 @@ const BestSeller = () => {
     let filterProduct = products.filter((item) => item.bestseller)
     setBestSeller(filterProduct.slice(0, 4));
   }, [products])
+  
   return (
     <div>
       <div className='h-[8%] w-[100%] text-center mt-[50px]'>
@@ -21,7 +22,15 @@ const BestSeller = () => {
       <div className='w-[100%] h-[50%] mt-[30px] flex items-center justify-center flex-wrap gap-[50px]'>
         {
           bestSeller.map((item, index) => (
-            <Card key={index} id={item._id} name={item.name} image={item.image1} price={item.price} />
+            <Card 
+              key={index} 
+              id={item._id} 
+              name={item.name} 
+              image={item.image1} 
+              price={item.price} 
+              category={item.category}
+              index={index} // Index pass karo for animation delay
+            />
           ))
         }
       </div>

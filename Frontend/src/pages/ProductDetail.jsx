@@ -24,7 +24,8 @@ import {
     FaClock,
     FaTag,
     FaArrowLeft,
-    FaExpand
+    FaExpand,
+    FaFire
 } from 'react-icons/fa';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -72,6 +73,7 @@ const ProductDetail = () => {
     const [showShareOptions, setShowShareOptions] = useState(false);
     const [selectedSize, setSelectedSize] = useState('');
     const [zoomImage, setZoomImage] = useState(false);
+    const [discountPercentage, setDiscountPercentage] = useState(20); // Default discount
     const imageRef = useRef(null);
 
     useEffect(() => {
@@ -81,8 +83,18 @@ const ProductDetail = () => {
             const foundProduct = products.find(p => p._id === id);
             setProduct(foundProduct);
             
-            // Check if product is in wishlist
+            // Get persistent discount for this product
             if (foundProduct) {
+                const storedDiscount = localStorage.getItem(`product_discount_${foundProduct._id}`);
+                if (storedDiscount) {
+                    setDiscountPercentage(parseInt(storedDiscount));
+                } else {
+                    // Generate random discount between 15% and 35% if not exists
+                    const randomDiscount = Math.floor(Math.random() * 21) + 15;
+                    setDiscountPercentage(randomDiscount);
+                    localStorage.setItem(`product_discount_${foundProduct._id}`, randomDiscount.toString());
+                }
+                
                 setIsWishlisted(isInWishlist(foundProduct._id));
             }
             
@@ -90,8 +102,7 @@ const ProductDetail = () => {
         }
     }, [products, id, getProducts, isInWishlist]);
 
-    // Get discount from navigation state or use fixed 20%
-    const discountPercentage = location.state?.discountPercentage || 20;
+    // Calculate discounted price
     const discountedPrice = product ? product.price - (product.price * discountPercentage / 100) : 0;
 
     const handleQuantityChange = (action) => {
@@ -116,7 +127,7 @@ const ProductDetail = () => {
         const productToAdd = {
             id: product._id,
             name: product.name,
-            price: discountedPrice,
+            price: discountedPrice, // Use discounted price
             originalPrice: product.price,
             image: product.image1,
             category: product.category,
@@ -153,9 +164,11 @@ const ProductDetail = () => {
                 await addToWishlist({
                     id: product._id,
                     name: product.name,
-                    price: product.price,
+                    price: discountedPrice, // Use discounted price
+                    originalPrice: product.price,
                     image: product.image1,
-                    category: product.category
+                    category: product.category,
+                    discountPercentage: discountPercentage
                 });
                 setIsWishlisted(true);
             }
@@ -328,12 +341,12 @@ const ProductDetail = () => {
                                 ref={imageRef}
                                 src={productImages[selectedImage]}
                                 alt={product.name}
-                                className="w-full h-80 lg:h-96 object-cover rounded-xl shadow-lg cursor-zoom-in"
+                                className="w-full h-80 lg:h-96 object-cover rounded-xl shadow-lg cursor-zoom-in transition-transform duration-300 hover:scale-105"
                                 onClick={handleImageZoom}
                             />
                             <button
                                 onClick={handleImageZoom}
-                                className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:scale-110"
                             >
                                 <FaExpand className="text-sm" />
                             </button>
@@ -345,10 +358,11 @@ const ProductDetail = () => {
                                 <button
                                     key={index}
                                     onClick={() => setSelectedImage(index)}
-                                    className={`flex-shrink-0 w-16 h-16 border-2 rounded-lg overflow-hidden transition-all duration-300 ${selectedImage === index
+                                    className={`flex-shrink-0 w-16 h-16 border-2 rounded-lg overflow-hidden transition-all duration-300 transform hover:scale-110 ${
+                                        selectedImage === index
                                             ? 'border-cyan-400 scale-110 shadow-lg shadow-cyan-400/20'
                                             : 'border-gray-600 hover:border-gray-400'
-                                        }`}
+                                    }`}
                                 >
                                     <img
                                         src={img}
@@ -363,7 +377,7 @@ const ProductDetail = () => {
                     {/* Product Info - Modern Design */}
                     <div className="space-y-6">
                         {/* Product Header */}
-                        <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20">
+                        <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 animate-fade-in-up">
                             <div className="flex justify-between items-start mb-3">
                                 <h1 className="text-2xl sm:text-3xl font-bold text-white">
                                     {product.name}
@@ -371,9 +385,9 @@ const ProductDetail = () => {
                                 <button
                                     onClick={handleWishlistToggle}
                                     disabled={wishlistLoading}
-                                    className={`p-2 rounded-full transition-all duration-300 ${
+                                    className={`p-2 rounded-full transition-all duration-300 hover:scale-110 ${
                                         isWishlisted
-                                            ? 'text-red-500 bg-red-500/10 border border-red-500/30'
+                                            ? 'text-red-500 bg-red-500/10 border border-red-500/30 animate-heart-beat'
                                             : 'text-gray-400 bg-gray-700/50 border border-gray-600 hover:text-red-400'
                                     } ${wishlistLoading ? 'opacity-50' : ''}`}
                                 >
@@ -392,10 +406,10 @@ const ProductDetail = () => {
                                     ))}
                                     <span className="text-gray-400 text-sm ml-2">4.8 • 124 Reviews</span>
                                 </div>
-                                <span className="text-green-400 text-sm font-semibold bg-green-400/10 py-1 px-2 rounded-full">In Stock</span>
+                                <span className="text-green-400 text-sm font-semibold bg-green-400/10 py-1 px-2 rounded-full animate-pulse">In Stock</span>
                             </div>
 
-                            {/* Price Section with Dynamic Discount */}
+                            {/* Price Section with Persistent Discount */}
                             <div className="flex items-center gap-3 mb-2">
                                 <span className="text-3xl font-bold text-cyan-400">
                                     {currency} {discountedPrice.toFixed(0)}
@@ -403,17 +417,18 @@ const ProductDetail = () => {
                                 <span className="text-lg text-gray-400 line-through">
                                     {currency} {product.price}
                                 </span>
-                                <span className="bg-gradient-to-r from-red-500 to-pink-600 text-white text-sm font-bold py-1 px-3 rounded-full">
+                                <span className="bg-gradient-to-r from-red-500 to-pink-600 text-white text-sm font-bold py-1 px-3 rounded-full flex items-center gap-1 animate-pulse-slow">
+                                    <FaFire className="text-xs" />
                                     {discountPercentage}% OFF
                                 </span>
                             </div>
-                            <div className="text-green-400 text-sm font-medium">
+                            <div className="text-green-400 text-sm font-medium animate-bounce-slow">
                                 You save {currency} {(product.price * discountPercentage / 100).toFixed(0)}
                             </div>
                         </div>
 
                         {/* Product Description */}
-                        <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20">
+                        <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 animate-fade-in-up" style={{animationDelay: '0.1s'}}>
                             <h3 className="text-lg font-semibold mb-3 text-cyan-400">Product Description</h3>
                             <p className="text-gray-300 leading-relaxed">
                                 {product.description || `Discover the exceptional quality and style of our ${product.name}. Crafted with precision and attention to detail, this product offers unparalleled comfort and durability. Perfect for everyday use while maintaining a sophisticated appearance that complements any style.`}
@@ -422,7 +437,7 @@ const ProductDetail = () => {
 
                         {/* Size Selector */}
                         {sizeOptions.length > 0 && (
-                            <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20">
+                            <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 animate-fade-in-up" style={{animationDelay: '0.2s'}}>
                                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-cyan-400">
                                     <FaRuler />
                                     Select Size
@@ -433,17 +448,18 @@ const ProductDetail = () => {
                                             key={size}
                                             type="button"
                                             onClick={() => setSelectedSize(size)}
-                                            className={`px-5 py-2.5 border-2 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${selectedSize === size
+                                            className={`px-5 py-2.5 border-2 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
+                                                selectedSize === size
                                                     ? 'border-cyan-400 bg-cyan-400/10 text-cyan-400 scale-105 shadow-lg shadow-cyan-400/20'
                                                     : 'border-gray-600 text-gray-400 hover:border-cyan-400 hover:text-cyan-400'
-                                                }`}
+                                            }`}
                                         >
                                             {size}
                                         </button>
                                     ))}
                                 </div>
                                 {!selectedSize && (
-                                    <p className="text-red-400 text-sm mt-3 flex items-center gap-2">
+                                    <p className="text-red-400 text-sm mt-3 flex items-center gap-2 animate-pulse">
                                         <span className="w-2 h-2 bg-red-400 rounded-full"></span>
                                         Please select a size to continue
                                     </p>
@@ -452,7 +468,7 @@ const ProductDetail = () => {
                         )}
 
                         {/* Quantity Selector */}
-                        <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20">
+                        <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 animate-fade-in-up" style={{animationDelay: '0.3s'}}>
                             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-cyan-400">
                                 <FaTag />
                                 Quantity
@@ -461,7 +477,7 @@ const ProductDetail = () => {
                                 <div className="flex items-center border border-gray-600 rounded-xl bg-gray-800/50">
                                     <button
                                         onClick={() => handleQuantityChange('decrement')}
-                                        className="px-4 py-3 text-gray-400 hover:text-white transition hover:bg-gray-700/50 rounded-l-xl"
+                                        className="px-4 py-3 text-gray-400 hover:text-white transition hover:bg-gray-700/50 rounded-l-xl hover:scale-105"
                                     >
                                         <FaMinus />
                                     </button>
@@ -470,25 +486,25 @@ const ProductDetail = () => {
                                     </span>
                                     <button
                                         onClick={() => handleQuantityChange('increment')}
-                                        className="px-4 py-3 text-gray-400 hover:text-white transition hover:bg-gray-700/50 rounded-r-xl"
+                                        className="px-4 py-3 text-gray-400 hover:text-white transition hover:bg-gray-700/50 rounded-r-xl hover:scale-105"
                                     >
                                         <FaPlus />
                                     </button>
                                 </div>
-                                <span className="text-green-400 text-sm font-medium bg-green-400/10 py-1 px-3 rounded-full">
+                                <span className="text-green-400 text-sm font-medium bg-green-400/10 py-1 px-3 rounded-full animate-pulse">
                                     Only 12 items left!
                                 </span>
                             </div>
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{animationDelay: '0.4s'}}>
                             <button
                                 onClick={handleAddToCart}
                                 disabled={sizeOptions.length > 0 && !selectedSize}
                                 className={`flex-1 px-8 py-4 font-semibold rounded-2xl transition-all duration-300 transform flex items-center justify-center gap-3 ${
                                     (sizeOptions.length === 0 || selectedSize)
-                                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white hover:-translate-y-1 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50'
+                                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white hover:-translate-y-1 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:scale-105'
                                         : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                                 }`}
                             >
@@ -500,7 +516,7 @@ const ProductDetail = () => {
                                 disabled={sizeOptions.length > 0 && !selectedSize}
                                 className={`flex-1 px-8 py-4 font-semibold rounded-2xl transition-all duration-300 transform flex items-center justify-center gap-3 ${
                                     (sizeOptions.length === 0 || selectedSize)
-                                        ? 'bg-white hover:bg-gray-100 text-gray-900 hover:-translate-y-1 shadow-lg hover:shadow-xl'
+                                        ? 'bg-white hover:bg-gray-100 text-gray-900 hover:-translate-y-1 shadow-lg hover:shadow-xl hover:scale-105'
                                         : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                                 }`}
                             >
@@ -509,10 +525,10 @@ const ProductDetail = () => {
                         </div>
 
                         {/* Share Button */}
-                        <div className="flex gap-4">
+                        <div className="flex gap-4 animate-fade-in-up" style={{animationDelay: '0.5s'}}>
                             <button
                                 onClick={nativeShare}
-                                className="px-6 py-3 border border-gray-600 text-gray-400 hover:border-cyan-400 hover:text-cyan-400 rounded-2xl transition-all duration-300 flex items-center gap-2 flex-1 justify-center"
+                                className="px-6 py-3 border border-gray-600 text-gray-400 hover:border-cyan-400 hover:text-cyan-400 rounded-2xl transition-all duration-300 flex items-center gap-2 flex-1 justify-center hover:scale-105"
                             >
                                 <FaShare />
                                 Share this Product
@@ -522,7 +538,7 @@ const ProductDetail = () => {
                         {/* Features Grid */}
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                             {features.map((feature, index) => (
-                                <div key={index} className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-xl p-4 text-center hover:border-cyan-400/30 transition-all duration-300 group hover:transform hover:-translate-y-1">
+                                <div key={index} className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-xl p-4 text-center hover:border-cyan-400/30 transition-all duration-300 group hover:transform hover:-translate-y-1 animate-fade-in-up" style={{animationDelay: `${0.6 + index * 0.1}s`}}>
                                     <div className={`text-xl mb-2 flex justify-center ${feature.color} group-hover:scale-110 transition-transform duration-300`}>
                                         {feature.icon}
                                     </div>
@@ -537,7 +553,7 @@ const ProductDetail = () => {
                 {/* Additional Sections */}
                 <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Product Specifications */}
-                    <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20">
+                    <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 animate-fade-in-up">
                         <h3 className="text-xl font-semibold mb-6 text-cyan-400">Product Specifications</h3>
                         <div className="space-y-4">
                             {[
@@ -545,11 +561,9 @@ const ProductDetail = () => {
                                 { label: "Material", value: "Premium Quality" },
                                 { label: "Care Instructions", value: "Machine Wash Cold" },
                                 { label: "Available Sizes", value: sizeOptions.length > 0 ? sizeOptions.join(', ') : 'One Size' },
-                                { label: "SKU", value: product._id?.slice(-8).toUpperCase() || 'N/A' },
-                                { label: "Discount", value: `${discountPercentage}% OFF` },
-                                { label: "You Save", value: `${currency} ${(product.price * discountPercentage / 100).toFixed(0)}` }
+                                { label: "SKU", value: product._id.slice(-8).toUpperCase() }
                             ].map((spec, index) => (
-                                <div key={index} className="flex justify-between items-center py-2 border-b border-gray-700 last:border-b-0">
+                                <div key={index} className="flex justify-between py-2 border-b border-gray-700 last:border-b-0">
                                     <span className="text-gray-400 font-medium">{spec.label}</span>
                                     <span className="text-white font-semibold">{spec.value}</span>
                                 </div>
@@ -557,35 +571,61 @@ const ProductDetail = () => {
                         </div>
                     </div>
 
-                    {/* Shipping & Returns */}
-                    <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20">
-                        <h3 className="text-xl font-semibold mb-6 text-cyan-400">Shipping & Returns</h3>
+                    {/* Customer Reviews Preview */}
+                    <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 animate-fade-in-up">
+                        <h3 className="text-xl font-semibold mb-6 text-cyan-400">Customer Reviews</h3>
                         <div className="space-y-4">
-                            <div className="flex items-start gap-3">
-                                <FaTruck className="text-green-400 mt-1 flex-shrink-0" />
-                                <div>
-                                    <div className="text-white font-semibold">Free Shipping</div>
-                                    <div className="text-gray-400 text-sm">Free delivery on orders above ₹999</div>
+                            {[
+                                { name: "Sarah M.", rating: 5, comment: "Absolutely love this product! The quality is amazing.", date: "2 days ago" },
+                                { name: "John D.", rating: 4, comment: "Great value for money. Fast delivery too!", date: "1 week ago" },
+                                { name: "Emma L.", rating: 5, comment: "Perfect fit and excellent quality. Highly recommend!", date: "2 weeks ago" }
+                            ].map((review, index) => (
+                                <div key={index} className="border-b border-gray-700 pb-4 last:border-b-0 last:pb-0">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className="font-semibold text-white">{review.name}</span>
+                                        <div className="flex items-center gap-1">
+                                            {[...Array(5)].map((_, i) => (
+                                                <FaStar key={i} className={`text-sm ${i < review.rating ? 'text-yellow-400' : 'text-gray-600'}`} />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <p className="text-gray-300 text-sm mb-2">{review.comment}</p>
+                                    <span className="text-gray-500 text-xs">{review.date}</span>
                                 </div>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <FaUndo className="text-blue-400 mt-1 flex-shrink-0" />
-                                <div>
-                                    <div className="text-white font-semibold">Easy Returns</div>
-                                    <div className="text-gray-400 text-sm">30-day return policy</div>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <FaShieldAlt className="text-purple-400 mt-1 flex-shrink-0" />
-                                <div>
-                                    <div className="text-white font-semibold">Secure Payment</div>
-                                    <div className="text-gray-400 text-sm">Your payment information is safe with us</div>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Share Options Popup */}
+            {showShareOptions && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center">
+                    <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+                        <h3 className="text-lg font-semibold mb-4 text-white">Share this product</h3>
+                        <div className="grid grid-cols-2 gap-3">
+                            {shareOptions.map((option) => (
+                                <button
+                                    key={option.platform}
+                                    onClick={() => shareOnPlatform(option.platform)}
+                                    className={`p-3 rounded-xl text-white transition-all duration-300 transform hover:scale-105 ${option.color} bg-gray-700/50 border border-gray-600`}
+                                >
+                                    <div className="flex flex-col items-center gap-2">
+                                        <span className="text-lg">{option.icon}</span>
+                                        <span className="text-xs">{option.label}</span>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            onClick={() => setShowShareOptions(false)}
+                            className="w-full mt-4 py-2 border border-gray-600 text-gray-400 hover:border-red-500 hover:text-red-400 rounded-xl transition-all duration-300"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

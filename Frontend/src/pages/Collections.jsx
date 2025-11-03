@@ -4,11 +4,14 @@ import { FaArrowRightToBracket } from "react-icons/fa6";
 import Tittle from "../components/Tittle";
 import { shopDataContext } from "../context/ShopContext";
 import Card from "../components/Card";
+import { useCart } from "../context/CartContext";
+import CartNotification from "../components/CartNotification";
 
 const Collections = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { products, search } = useContext(shopDataContext);
+  const { showCartNotification, notificationProduct, setShowCartNotification } = useCart();
   const [filteredProducts, setFilteredProducts] = useState([]);
 
   // Filter states
@@ -94,6 +97,10 @@ const Collections = () => {
     setSortType("relevant");
   };
 
+  const handleCloseNotification = () => {
+    setShowCartNotification(false);
+  };
+
   // Auto-hide loading after data loads
   useEffect(() => {
     if (products.length > 0) {
@@ -104,6 +111,13 @@ const Collections = () => {
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] flex pt-[60px] text-white overflow-x-hidden pb-[100px]">
+      {/* Cart Notification */}
+      <CartNotification
+        product={notificationProduct}
+        isVisible={showCartNotification}
+        onClose={handleCloseNotification}
+      />
+
       {/* ================= Sidebar Filters ================= */}
       <div
         className={`fixed top-[65px] h-[calc(100vh-60px)]

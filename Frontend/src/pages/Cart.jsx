@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { shopDataContext } from '../context/ShopContext';
 import { FaTrash, FaPlus, FaMinus, FaShoppingBag, FaArrowLeft, FaCreditCard } from 'react-icons/fa';
+import CartNotification from '../components/CartNotification';
 
 const Cart = () => {
     const navigate = useNavigate();
-    const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotal } = useCart();
+    const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotal, showCartNotification, notificationProduct, setShowCartNotification } = useCart();
     const { currency, delivery_fee } = useContext(shopDataContext);
 
     // Safe calculations
@@ -25,9 +26,19 @@ const Cart = () => {
         }
     };
 
+    const handleRemoveFromCart = (productId) => {
+        if (removeFromCart) {
+            removeFromCart(productId);
+        }
+    };
+
+    const handleCloseNotification = () => {
+        setShowCartNotification(false);
+    };
+
     const proceedToCheckout = () => {
         console.log('Proceeding to checkout with items:', cartItems);
-        alert('Proceeding to checkout!');
+        navigate('/place-order');
     };
 
     // If cart context is not available
@@ -75,6 +86,13 @@ const Cart = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#141414] via-[#0c2025] to-[#141414] text-white pt-[70px]">
+            {/* Cart Notification */}
+            <CartNotification
+                product={notificationProduct}
+                isVisible={showCartNotification}
+                onClose={handleCloseNotification}
+            />
+            
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
                 {/* Header */}
@@ -93,8 +111,12 @@ const Cart = () => {
 
                     {/* Cart Items */}
                     <div className="lg:col-span-2 space-y-4">
-                        {cartItems.map((item) => (
-                            <div key={item.id} className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20">
+                        {cartItems.map((item, index) => (
+                            <div 
+                                key={`${item.id}-${item.size || 'no-size'}`} 
+                                className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 animate-slide-up"
+                                style={{ animationDelay: `${index * 0.1}s` }}
+                            >
                                 <div className="flex flex-col sm:flex-row gap-4">
                                     {/* Product Image */}
                                     <div className="flex-shrink-0">
@@ -112,13 +134,28 @@ const Cart = () => {
                                                 <h3 className="text-lg font-semibold text-white mb-2">
                                                     {item.name}
                                                 </h3>
+                                                {item.size && (
+                                                    <p className="text-cyan-300 text-sm mb-2">
+                                                        Size: {item.size}
+                                                    </p>
+                                                )}
                                                 <p className="text-cyan-400 text-lg font-bold mb-4">
                                                     {currency} {item.price}
                                                 </p>
+                                                {item.discountPercentage > 0 && (
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <span className="text-sm text-gray-400 line-through">
+                                                            {currency} {item.originalPrice}
+                                                        </span>
+                                                        <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded-full">
+                                                            {item.discountPercentage}% OFF
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
                                             <button
-                                                onClick={() => removeFromCart && removeFromCart(item.id)}
-                                                className="text-red-400 hover:text-red-300 transition p-2"
+                                                onClick={() => handleRemoveFromCart(item.id)}
+                                                className="text-red-400 hover:text-red-300 transition p-2 hover:scale-110"
                                             >
                                                 <FaTrash />
                                             </button>
@@ -129,7 +166,7 @@ const Cart = () => {
                                             <div className="flex items-center border border-gray-600 rounded-lg">
                                                 <button
                                                     onClick={() => handleQuantityChange(item.id, 'decrement')}
-                                                    className="px-4 py-2 text-gray-400 hover:text-white transition"
+                                                    className="px-4 py-2 text-gray-400 hover:text-white transition hover:bg-gray-700/50"
                                                 >
                                                     <FaMinus />
                                                 </button>
@@ -138,7 +175,7 @@ const Cart = () => {
                                                 </span>
                                                 <button
                                                     onClick={() => handleQuantityChange(item.id, 'increment')}
-                                                    className="px-4 py-2 text-gray-400 hover:text-white transition"
+                                                    className="px-4 py-2 text-gray-400 hover:text-white transition hover:bg-gray-700/50"
                                                 >
                                                     <FaPlus />
                                                 </button>
@@ -178,7 +215,7 @@ const Cart = () => {
                             </div>
 
                             <button
-                                onClick={() => navigate('/place-order')}
+                                onClick={proceedToCheckout}
                                 className="w-full px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold rounded-2xl transition-all duration-300 transform hover:-translate-y-1 shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-3"
                             >
                                 <FaCreditCard />
@@ -187,7 +224,7 @@ const Cart = () => {
 
                             <button
                                 onClick={() => clearCart && clearCart()}
-                                className="w-full px-8 py-3 border border-red-500 text-red-400 hover:bg-red-500 hover:text-white mt-4 rounded-2xl transition-all duration-300"
+                                className="w-full px-8 py-3 border border-red-500 text-red-400 hover:bg-red-500 hover:text-white mt-4 rounded-2xl transition-all duration-300 hover:scale-105"
                             >
                                 Clear Cart
                             </button>

@@ -1,35 +1,29 @@
 import React, { useEffect, useState } from "react";
 import Hero from "../components/Hero";
 import Product from "./Product";
-// import LoadingSpinner from "../components/LoadingSpinner";
 import OurPolicy from "../components/OurPolicy";
 import NewLetterBox from "../components/NewLetterBox";
 import Footer from "../components/Footer";
 import Chatbot from "../components/Chatbot";
+import { useCart } from "../context/CartContext";
+import CartNotification from "../components/CartNotification";
 
 const Home = () => {
-  // const [isLoading, setIsLoading] = useState(true);
+  const { showCartNotification, notificationProduct, setShowCartNotification } = useCart();
 
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     setIsLoading(false);
-  //   }, 2000);
-
-  //   return () => clearTimeout(timer);
-  // }, []);
-
-  // if (isLoading) {
-  //   return (
-  //     <LoadingSpinner
-  //       message="Loading Homepage..."
-  //       spinnerColor="#aaf5fa"
-  //       textColor="#aaf5fa"
-  //     />
-  //   );
-  // }
+  const handleCloseNotification = () => {
+    setShowCartNotification(false);
+  };
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] text-white overflow-x-hidden">
+      {/* Cart Notification for Home Page */}
+      <CartNotification
+        product={notificationProduct}
+        isVisible={showCartNotification}
+        onClose={handleCloseNotification}
+      />
+      
       <Hero />
       <Product />
       <OurPolicy />

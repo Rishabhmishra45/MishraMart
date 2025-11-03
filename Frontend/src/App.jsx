@@ -29,9 +29,10 @@ import { authDataContext } from "./context/AuthContext";
 
 const App = () => {
   const { userData, loading, userChecked } = useContext(userDataContext);
-  const { authChecked } = useContext(authDataContext); // ✅ Get authChecked from AuthContext
+  const { authChecked } = useContext(authDataContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const [appReady, setAppReady] = useState(false);
 
   // Public routes - accessible without authentication
   const publicRoutes = [
@@ -43,27 +44,35 @@ const App = () => {
 
   const isPublicRoute = publicRoutes.includes(location.pathname);
 
-  // ✅ IMPROVED: Only redirect when all checks are complete
+  // App initialization - prevent flash
   useEffect(() => {
-    // Don't do anything if still checking authentication
-    if (!authChecked || !userChecked || loading) {
-      return;
-    }
+    const initializeApp = async () => {
+      // Wait for all auth and user checks to complete
+      if (authChecked && userChecked && !loading) {
+        setTimeout(() => {
+          setAppReady(true);
+        }, 100);
+      }
+    };
 
-    // If user is not logged in and not on a public route, redirect to signup
+    initializeApp();
+  }, [authChecked, userChecked, loading]);
+
+  // Redirect logic
+  useEffect(() => {
+    if (!appReady) return;
+
     if (!userData && !isPublicRoute) {
       navigate("/signup", { replace: true });
     }
 
-    // ✅ FIX: If user is logged in and on a public route, redirect to home
     if (userData && isPublicRoute) {
       navigate("/", { replace: true });
     }
-  }, [userData, loading, isPublicRoute, navigate, authChecked, userChecked]);
+  }, [userData, appReady, isPublicRoute, navigate]);
 
-  // ✅ IMPROVED: Show loading only when actually checking auth
-  // Show loading if either auth check or user check is in progress
-  if (loading || !authChecked || !userChecked) {
+  // Show loading only when app is not ready
+  if (!appReady) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#141414] via-[#0c2025] to-[#141414] text-white flex items-center justify-center">
         <div className="text-center">
