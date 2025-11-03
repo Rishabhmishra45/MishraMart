@@ -1,3 +1,3 @@
 ﻿# MishraMart
 
-https://mishramarts.netlify.app/signup
+https://mishramarts.netlify.app/
