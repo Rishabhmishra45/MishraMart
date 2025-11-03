@@ -8,11 +8,20 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
-    host: true,   
-    port: 5173  
+    host: true,
+    port: 5173
   },
   build: {
     outDir: 'dist',
-    sourcemap: false
+    sourcemap: false,
+    // Add these for better Netlify compatibility
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') {
+          return
+        }
+        warn(warning)
+      }
+    }
   }
 })
