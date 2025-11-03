@@ -14,13 +14,17 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    // Add these for better Netlify compatibility
     rollupOptions: {
       onwarn(warning, warn) {
-        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') {
-          return
-        }
+        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return
         warn(warning)
+      },
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor'
+          }
+        }
       }
     }
   }
