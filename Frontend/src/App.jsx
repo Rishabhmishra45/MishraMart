@@ -53,20 +53,22 @@ const App = () => {
   const isPublicRoute = publicRoutes.includes(location.pathname);
   const isProtectedRoute = protectedRoutes.includes(location.pathname);
 
-  // App initialization - prevent flash
+  // App initialization - VERY FAST, almost no delay
   useEffect(() => {
     const initializeApp = async () => {
-      if (authChecked && userChecked && !loading) {
+      // Wait for both auth and user data to be checked
+      if (authChecked && userChecked) {
+        // Minimal delay to ensure smooth transition
         setTimeout(() => {
           setAppReady(true);
-        }, 100);
+        }, 50); // Reduced from 300ms to 50ms
       }
     };
 
     initializeApp();
-  }, [authChecked, userChecked, loading]);
+  }, [authChecked, userChecked]);
 
-  // Redirect logic - FIXED: Only redirect if not on public routes
+  // Redirect logic
   useEffect(() => {
     if (!appReady) return;
 
@@ -84,18 +86,15 @@ const App = () => {
       navigate("/", { replace: true });
       return;
     }
-
-    // If user is not logged in and tries to access root path, let them see home page
-    // No automatic redirect to signup
   }, [userData, appReady, isPublicRoute, isProtectedRoute, navigate, location]);
 
-  // Show loading only when app is not ready
+  // Show loading only when app is not ready - BUT make it very fast
   if (!appReady) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#141414] via-[#0c2025] to-[#141414] text-white flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-cyan-400">Loading...</p>
+          <div className="w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-cyan-400 text-sm">Loading...</p>
         </div>
       </div>
     );
