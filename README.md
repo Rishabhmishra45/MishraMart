@@ -97,27 +97,11 @@ This platform allows users to **shop clothes online**, manage **wishlist and ord
 
 ## 📸 Screenshots
 
-Create a folder named **screenshots/** in the root directory and add images like:
-
-```
-screenshots/
-│── home.png
-│── product.png
-│── wishlist.png
-│── orders.png
-│── admin-dashboard.png
-│── chatbot.png
-```
-
-To display screenshots on GitHub:
-
-```md
-![Home Page](screenshots/home.png)
-![Product Page](screenshots/product.png)
-![Wishlist](screenshots/wishlist.png)
-![Orders](screenshots/orders.png)
-![Admin Panel](screenshots/admin-dashboard.png)
-![Chatbot](screenshots/chatbot.png)
+![Home Page](ScreenShots/Home.png)
+![Collection Page](ScreenShots/Collection.png)
+![Orders](ScreenShots/Order.png)
+![Admin Panel](ScreenShots/Admin-Section.png)
+![Chatbot](ScreenShots/Chatbot.png)
 ```
 
 ---
