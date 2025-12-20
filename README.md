@@ -102,11 +102,12 @@ This platform allows users to **shop clothes online**, manage **wishlist and ord
 ![Orders](ScreenShots/Order.png)
 ![Admin Panel](ScreenShots/Admin-Section.png)
 ![Chatbot](ScreenShots/Chatbot.png)
-```
 
 ---
 
 ## 📂 Project Structure
+
+
 
 ```
 MishraMart/
