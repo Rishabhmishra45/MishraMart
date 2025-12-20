@@ -113,55 +113,103 @@ This platform allows users to **shop clothes online**, manage **wishlist and ord
 MishraMart/
 │
 ├── Admin Panel/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── Pages/
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── index.html
-│   └── package.json
+│ ├── src/
+│ │ ├── assets/
+│ │ ├── components/
+│ │ │ ├── LoginNotification.jsx
+│ │ │ ├── Nav.jsx
+│ │ │ ├── OrderNotification.jsx
+│ │ │ ├── Sidebar.jsx
+│ │ │ └── UploadNotification.jsx
+│ │ ├── context/
+│ │ │ ├── AdminContext.jsx
+│ │ │ └── AuthContext.jsx
+│ │ ├── Pages/
+│ │ │ ├── Add.jsx
+│ │ │ ├── Home.jsx
+│ │ │ ├── Lists.jsx
+│ │ │ ├── Login.jsx
+│ │ │ └── Orders.jsx
+│ │ ├── App.jsx
+│ │ ├── main.jsx
+│ │ └── index.css
+│ ├── index.html
+│ ├── vite.config.js
+│ └── package.json
 │
 ├── backend/
-│   ├── config/
-│   │   ├── cloudinary.js
-│   │   ├── db.js
-│   │   └── token.js
-│   ├── controller/
-│   │   ├── authController.js
-│   │   ├── productController.js
-│   │   ├── orderController.js
-│   │   ├── chatbotController.js
-│   │   └── userController.js
-│   ├── middleware/
-│   │   ├── authMiddleware.js
-│   │   ├── adminAuth.js
-│   │   └── multer.js
-│   ├── model/
-│   │   ├── UserModel.js
-│   │   ├── ProductModel.js
-│   │   ├── OrderModel.js
-│   │   ├── WishlistModel.js
-│   │   └── Cart.js
-│   ├── routes/
-│   │   ├── authRoutes.js
-│   │   ├── productRoutes.js
-│   │   ├── orderRoutes.js
-│   │   ├── wishlistRoutes.js
-│   │   └── chatbotRoutes.js
-│   ├── index.js
-│   └── package.json
+│ ├── config/
+│ │ ├── cloudinary.js
+│ │ ├── db.js
+│ │ └── token.js
+│ ├── controller/
+│ │ ├── authController.js
+│ │ ├── productController.js
+│ │ ├── orderController.js
+│ │ ├── chatbotController.js
+│ │ └── userController.js
+│ ├── middleware/
+│ │ ├── authMiddleware.js
+│ │ ├── adminAuth.js
+│ │ └── multer.js
+│ ├── model/
+│ │ ├── UserModel.js
+│ │ ├── ProductModel.js
+│ │ ├── OrderModel.js
+│ │ ├── WishlistModel.js
+│ │ └── Cart.js
+│ ├── routes/
+│ │ ├── authRoutes.js
+│ │ ├── productRoutes.js
+│ │ ├── orderRoutes.js
+│ │ ├── wishlistRoutes.js
+│ │ └── chatbotRoutes.js
+│ ├── index.js
+│ └── package.json
 │
 ├── Frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── pages/
-│   │   ├── utils/
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── index.html
-│   └── package.json
+│ ├── src/
+│ │ ├── assets/
+│ │ ├── components/
+│ │ │ ├── Background.jsx
+│ │ │ ├── BestSeller.jsx
+│ │ │ ├── Card.jsx
+│ │ │ ├── CartNotification.jsx
+│ │ │ ├── Chatbot.jsx
+│ │ │ ├── Footer.jsx
+│ │ │ ├── Hero.jsx
+│ │ │ ├── LatestCollection.jsx
+│ │ │ ├── LoadingSpinner.jsx
+│ │ │ ├── Nav.jsx
+│ │ │ ├── NewsLetterBox.jsx
+│ │ │ └── OurPolicy.jsx
+│ │ ├── context/
+│ │ │ ├── AuthContext.jsx
+│ │ │ ├── CartContext.jsx
+│ │ │ ├── ShopContext.jsx
+│ │ │ ├── UserContext.jsx
+│ │ │ └── WishlistContext.jsx
+│ │ ├── pages/
+│ │ │ ├── About.jsx
+│ │ │ ├── Cart.jsx
+│ │ │ ├── Collections.jsx
+│ │ │ ├── Contact.jsx
+│ │ │ ├── Home.jsx
+│ │ │ ├── Login.jsx
+│ │ │ ├── Orders.jsx
+│ │ │ ├── PlaceOrder.jsx
+│ │ │ ├── Product.jsx
+│ │ │ ├── ProductDetail.jsx
+│ │ │ ├── Profile.jsx
+│ │ │ ├── Registration.jsx
+│ │ │ ├── ResetPassword.jsx
+│ │ │ └── Wishlist.jsx
+│ │ ├── utils/
+│ │ │ └── Firebase.js
+│ │ ├── App.jsx
+│ │ └── main.jsx
+│ ├── index.html
+│ └── package.json
 │
 └── README.md
 ```
