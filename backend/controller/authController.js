@@ -1,37 +1,33 @@
 import User from "../model/UserModel.js";
 import validator from "validator";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { genToken, genToken1 } from "../config/token.js";
+import sendEmail from "../utils/sendEmail.js";
+import otpEmailTemplate from "../utils/otpEmailTemplate.js"; // ✅ NEW IMPORT
 
-// Common cookie options
+// cookie options (unchanged)
 const cookieOptions = {
   httpOnly: true,
   secure: true,
   sameSite: "None",
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
-// ⬇️ Registration
+/* ================= REGISTER ================= */
 export const registration = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-      return res.status(400).json({ success: false, message: "Name, email and password are required" });
-    }
+
+    if (!name || !email || !password)
+      return res.status(400).json({ success: false, message: "All fields required" });
+
+    if (!validator.isEmail(email))
+      return res.status(400).json({ success: false, message: "Invalid email" });
 
     const existUser = await User.findOne({ email: email.toLowerCase() });
-    if (existUser) {
-      return res.status(400).json({ success: false, message: "User already exists with this email" });
-    }
-
-    if (!validator.isEmail(email)) {
-      return res.status(400).json({ success: false, message: "Please enter a valid email address" });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({ success: false, message: "Password must be at least 6 characters long" });
-    }
+    if (existUser)
+      return res.status(400).json({ success: false, message: "User already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -47,35 +43,24 @@ export const registration = async (req, res) => {
     const userObj = user.toObject();
     delete userObj.password;
 
-    return res.status(201).json({ success: true, message: "Registration successful", user: userObj });
-
-  } catch (error) {
-    console.error("Register error:", error.message);
-    return res.status(500).json({ success: false, message: `Registration failed: ${error.message}` });
+    res.status(201).json({ success: true, user: userObj });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
   }
 };
 
-// ⬇️ Login
+/* ================= LOGIN ================= */
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ success: false, message: "Email and password are required" });
-    }
 
     const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found with this email" });
-    }
-
-    if (!user.password) {
-      return res.status(400).json({ success: false, message: "Please use social login for this account" });
-    }
+    if (!user || !user.password)
+      return res.status(400).json({ success: false, message: "Invalid credentials" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ success: false, message: "Incorrect password" });
-    }
+    if (!isMatch)
+      return res.status(400).json({ success: false, message: "Wrong password" });
 
     const token = genToken(user._id);
     res.cookie("token", token, cookieOptions);
@@ -83,43 +68,26 @@ export const login = async (req, res) => {
     const userObj = user.toObject();
     delete userObj.password;
 
-    return res.status(200).json({ success: true, message: "Login successful", user: userObj });
-
-  } catch (error) {
-    console.error("Login error:", error.message);
-    return res.status(500).json({ success: false, message: `Login failed: ${error.message}` });
+    res.json({ success: true, user: userObj });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
   }
 };
 
-// ✅ ⬇️ LOGOUT
+/* ================= LOGOUT ================= */
 export const logOut = async (req, res) => {
-  try {
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-    });
-
-    return res.status(200).json({
-      success: true,
-      message: "Logout successful",
-    });
-  } catch (error) {
-    console.error("Logout error:", error.message);
-    return res.status(500).json({
-      success: false,
-      message: `Logout failed: ${error.message}`,
-    });
-  }
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+  });
+  res.json({ success: true, message: "Logged out" });
 };
 
-// ⬇️ Google Login
+/* ================= GOOGLE LOGIN ================= */
 export const googleLogin = async (req, res) => {
   try {
     const { email, name } = req.body;
-    if (!email) {
-      return res.status(400).json({ success: false, message: "Email is required" });
-    }
 
     let user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
@@ -132,38 +100,92 @@ export const googleLogin = async (req, res) => {
     const userObj = user.toObject();
     delete userObj.password;
 
-    return res.status(200).json({ success: true, message: "Google login successful", user: userObj });
-
-  } catch (error) {
-    console.error("Google login error:", error.message);
-    return res.status(500).json({ success: false, message: `Google login failed: ${error.message}` });
+    res.json({ success: true, user: userObj });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
   }
 };
 
-// ⬇️ Admin Login
+/* ================= ADMIN LOGIN ================= */
 export const adminLogin = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+    const token = genToken1(email);
+    res.cookie("token", token, cookieOptions);
+    return res.json({ success: true, message: "Admin login success" });
+  }
+
+  res.status(401).json({ success: false, message: "Invalid admin credentials" });
+};
+
+/* ================= SEND OTP (HTML EMAIL) ================= */
+export const forgotPasswordOtp = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ success: false, message: "Email and password are required" });
-    }
+    const { email } = req.body;
 
-    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-      const token = genToken1(email);
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user)
+      return res.status(404).json({ success: false, message: "User not found" });
+
+    const otp = user.generateResetOtp();
+    await user.save({ validateBeforeSave: false });
+
+    // ✅ HTML EMAIL
+    await sendEmail({
+      email: user.email,
+      subject: "MishraMart - Password Reset OTP",
+      html: otpEmailTemplate(otp),
+    });
+
+    res.json({ success: true, message: "OTP sent to email" });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+};
+
+/* ================= VERIFY OTP + RESET ================= */
+export const verifyOtpAndResetPassword = async (req, res) => {
+  try {
+    const { email, otp, password } = req.body;
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user || !user.resetOtp)
+      return res.status(400).json({ success: false, message: "OTP expired" });
+
+    if (user.resetOtpAttempts >= 3) {
+      user.resetOtp = undefined;
+      user.resetOtpExpire = undefined;
+      user.resetOtpAttempts = 0;
+      await user.save();
+
+      return res.status(429).json({
+        success: false,
+        message: "Too many wrong attempts. Request new OTP.",
       });
-
-      return res.status(200).json({ success: true, message: "Admin login successful", token });
     }
 
-    return res.status(401).json({ success: false, message: "Invalid admin credentials" });
+    const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
 
-  } catch (error) {
-    console.error("Admin login error:", error.message);
-    return res.status(500).json({ success: false, message: `Admin login failed: ${error.message}` });
+    if (hashedOtp !== user.resetOtp || user.resetOtpExpire < Date.now()) {
+      user.resetOtpAttempts += 1;
+      await user.save();
+
+      return res.status(400).json({
+        success: false,
+        message: `Invalid OTP. Attempts left: ${3 - user.resetOtpAttempts}`,
+      });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+    user.resetOtp = undefined;
+    user.resetOtpExpire = undefined;
+    user.resetOtpAttempts = 0;
+
+    await user.save();
+
+    res.json({ success: true, message: "Password reset successful" });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
   }
 };

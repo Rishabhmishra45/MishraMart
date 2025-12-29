@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
 import { authDataContext } from "../context/AuthContext";
@@ -6,11 +6,22 @@ import axios from "axios";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
+  const { serverUrl } = useContext(authDataContext);
+
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  let { serverUrl } = useContext(authDataContext);
+  const [cooldown, setCooldown] = useState(0);
+
+  // 🔁 resend cooldown timer
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((c) => c - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,18 +30,20 @@ const ForgotPassword = () => {
     setMessage("");
 
     try {
-      const response = await axios.post(
-        `${serverUrl}/api/auth/forgot-password`,
+      const res = await axios.post(
+        `${serverUrl}/api/auth/forgot-password-otp`,
         { email }
       );
-      
-      setMessage(response.data.message);
-      setEmail("");
-    } catch (error) {
-      console.error("Forgot password error:", error);
+
+      setMessage(res.data.message);
+      setCooldown(60); // 🔁 60 sec
+      setTimeout(() => {
+        navigate("/reset-password", { state: { email } });
+      }, 1200);
+    } catch (err) {
       setError(
-        error.response?.data?.message || 
-        "Failed to send reset email. Please try again."
+        err.response?.data?.message ||
+          "Failed to send OTP. Please try again."
       );
     } finally {
       setLoading(false);
@@ -39,91 +52,75 @@ const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-[#0f2027] via-[#203a43] to-[#2c5364] text-white flex flex-col">
-      {/* Navbar / Logo */}
-      <div className="w-full px-4 py-3 sm:px-6 sm:py-4 lg:px-8 lg:py-6">
+      {/* Logo */}
+      <div className="w-full px-4 py-6">
         <img
-          className="h-16 sm:h-20 lg:h-24 w-auto object-contain cursor-pointer hover:scale-105 transition-transform duration-200"
           src={Logo}
           alt="Logo"
+          className="h-16 cursor-pointer hover:scale-105 transition"
           onClick={() => navigate("/")}
         />
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-4 sm:py-6">
-        <div className="w-full max-w-xs sm:max-w-sm md:max-w-md text-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
+      {/* Content */}
+      <div className="flex-1 flex items-center justify-center px-4">
+        <div className="w-full max-w-md bg-white/10 border border-white/20 backdrop-blur-lg rounded-2xl shadow-lg p-6">
+          <h1 className="text-3xl font-bold text-center mb-2">
             Forgot Password
           </h1>
-          <p className="text-gray-300 mt-2 text-xs sm:text-sm lg:text-base">
-            Enter your email to receive a password reset link
+          <p className="text-gray-300 text-center mb-6">
+            Enter your email to receive OTP
           </p>
-        </div>
 
-        {/* Forgot Password Box */}
-        <div className="w-full max-w-xs sm:max-w-sm md:max-w-md bg-white/10 border border-white/20 backdrop-blur-lg rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
-          {/* Success Message */}
           {message && (
-            <div className="mb-4 p-3 bg-green-500/20 border border-green-500/50 rounded-lg text-green-300 text-sm">
+            <div className="mb-4 p-3 bg-green-500/20 border border-green-500/40 rounded text-green-300 text-sm">
               {message}
             </div>
           )}
 
-          {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-sm">
+            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/40 rounded text-red-300 text-sm">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-5">
-            <div>
-              <label className="block text-gray-300 text-sm sm:text-base mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                placeholder="Enter your registered email"
-                className="w-full h-10 sm:h-11 lg:h-12 px-3 sm:px-4 rounded-lg bg-white/10 border border-white/20 
-                  focus:outline-none focus:border-[#4aa4b5] text-white placeholder-gray-300 text-sm sm:text-base transition-colors duration-200
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-                required
-                value={email}
-                disabled={loading}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input
+              type="email"
+              placeholder="Enter registered email"
+              className="w-full h-11 px-4 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-[#4aa4b5] text-white"
+              required
+              value={email}
+              disabled={loading}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-            {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading}
-              className={`w-full h-10 sm:h-11 lg:h-12 rounded-lg text-white font-semibold mt-2 transition-all duration-200
-                ${loading
-                  ? "bg-gray-500 cursor-not-allowed"
-                  : "bg-[#4aa4b5] hover:bg-[#3a8c9a] active:scale-95"
+              disabled={loading || cooldown > 0}
+              className={`w-full h-11 rounded-lg font-semibold transition-all
+                ${
+                  loading || cooldown > 0
+                    ? "bg-gray-500 cursor-not-allowed"
+                    : "bg-[#4aa4b5] hover:bg-[#3a8c9a] active:scale-95"
                 }`}
             >
-              {loading ? "Sending..." : "Send Reset Link"}
+              {cooldown > 0
+                ? `Resend OTP in ${cooldown}s`
+                : loading
+                ? "Sending..."
+                : "Send OTP"}
             </button>
-
-            {/* Back to Login */}
-            <div className="text-center mt-4">
-              <span
-                className="text-[#4aa4b5] text-sm sm:text-base font-semibold cursor-pointer hover:underline"
-                onClick={() => navigate("/login")}
-              >
-                ← Back to Login
-              </span>
-            </div>
           </form>
-        </div>
 
-        {/* Additional Info */}
-        <div className="w-full max-w-xs sm:max-w-sm md:max-w-md mt-6 text-center">
-          <p className="text-gray-400 text-xs">
-            You will receive an email with instructions to reset your password.
-          </p>
+          <div className="text-center mt-4">
+            <span
+              className="text-[#4aa4b5] cursor-pointer hover:underline"
+              onClick={() => navigate("/login")}
+            >
+              ← Back to Login
+            </span>
+          </div>
         </div>
       </div>
     </div>

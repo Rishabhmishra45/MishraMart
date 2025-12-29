@@ -24,71 +24,65 @@ import Invoice from "./pages/Invoice";
 import Chatbot from "./components/Chatbot";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-import Wishlist from './pages/Wishlist';
+import Wishlist from "./pages/Wishlist";
 import { authDataContext } from "./context/AuthContext";
 
 const App = () => {
-  const { userData, loading, userChecked } = useContext(userDataContext);
+  const { userData, userChecked } = useContext(userDataContext);
   const { authChecked } = useContext(authDataContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [appReady, setAppReady] = useState(false);
 
-  // Public routes - accessible without authentication
+  // Public routes
   const publicRoutes = [
     "/login",
     "/signup",
     "/forgot-password",
-    "/reset-password"
+    "/reset-password",
   ];
 
-  // Protected routes - require login for checkout and personal pages
   const protectedRoutes = [
     "/place-order",
     "/orders",
     "/profile",
-    "/invoice"
+    "/invoice",
   ];
 
-  const isPublicRoute = publicRoutes.includes(location.pathname);
-  const isProtectedRoute = protectedRoutes.includes(location.pathname);
+  const isPublicRoute =
+    publicRoutes.includes(location.pathname);
 
-  // App initialization - VERY FAST, almost no delay
+  const isProtectedRoute =
+    protectedRoutes.includes(location.pathname);
+
   useEffect(() => {
-    const initializeApp = async () => {
-      // Wait for both auth and user data to be checked
-      if (authChecked && userChecked) {
-        // Minimal delay to ensure smooth transition
-        setTimeout(() => {
-          setAppReady(true);
-        }, 50); // Reduced from 300ms to 50ms
-      }
-    };
-
-    initializeApp();
+    if (authChecked && userChecked) {
+      setTimeout(() => setAppReady(true), 50);
+    }
   }, [authChecked, userChecked]);
 
-  // Redirect logic
   useEffect(() => {
     if (!appReady) return;
 
-    // If user tries to access protected routes without login
+    // 🔒 Not logged in → trying protected route
     if (!userData && isProtectedRoute) {
-      navigate("/login", { 
+      navigate("/login", {
         replace: true,
-        state: { from: location.pathname }
+        state: { from: location.pathname },
       });
       return;
     }
 
-    // If logged-in user tries to access public routes (login, signup)
-    if (userData && isPublicRoute) {
+    // 🔓 Logged in → trying auth pages
+    if (
+      userData &&
+      isPublicRoute &&
+      location.pathname !== "/reset-password"
+    ) {
       navigate("/", { replace: true });
-      return;
     }
   }, [userData, appReady, isPublicRoute, isProtectedRoute, navigate, location]);
 
-  // Show loading only when app is not ready - BUT make it very fast
   if (!appReady) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#141414] via-[#0c2025] to-[#141414] text-white flex items-center justify-center">
@@ -102,11 +96,10 @@ const App = () => {
 
   return (
     <>
-      {/* Show Nav always - for both logged in and guest users */}
       <Nav />
 
       <Routes>
-        {/* Public Routes - Accessible to all */}
+        {/* Auth Routes */}
         <Route
           path="/login"
           element={!userData ? <Login /> : <Navigate to="/" replace />}
@@ -117,14 +110,14 @@ const App = () => {
         />
         <Route
           path="/forgot-password"
-          element={!userData ? <ForgotPassword /> : <Navigate to="/" replace />}
+          element={<ForgotPassword />}
         />
         <Route
           path="/reset-password"
-          element={!userData ? <ResetPassword /> : <Navigate to="/" replace />}
+          element={<ResetPassword />}
         />
 
-        {/* Public Pages - Accessible without login */}
+        {/* Public Pages */}
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/collections" element={<Collections />} />
@@ -134,7 +127,7 @@ const App = () => {
         <Route path="/cart" element={<Cart />} />
         <Route path="/wishlist" element={<Wishlist />} />
 
-        {/* Protected Routes - Require login */}
+        {/* Protected Pages */}
         <Route
           path="/place-order"
           element={
@@ -160,14 +153,9 @@ const App = () => {
           }
         />
 
-        {/* Catch all route */}
-        <Route
-          path="*"
-          element={<Navigate to="/" replace />}
-        />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {/* Add Chatbot Component - Only show when user is logged in */}
       {userData && <Chatbot />}
     </>
   );

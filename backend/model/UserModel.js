@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import crypto from "crypto";
 
 const userSchema = new mongoose.Schema(
   {
@@ -21,44 +22,34 @@ const userSchema = new mongoose.Schema(
       required: false,
     },
 
-    phone: {
-      type: String,
-      default: "",
-      trim: true,
-    },
+    phone: { type: String, default: "" },
+    address: { type: String, default: "" },
+    city: { type: String, default: "" },
+    state: { type: String, default: "" },
+    pincode: { type: String, default: "" },
+    cardData: { type: Object, default: {} },
 
-    address: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-
-    city: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-
-    state: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-
-    pincode: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-
-    cardData: {
-      type: Object,
-      default: {},
+    // 🔐 OTP RESET
+    resetOtp: String,
+    resetOtpExpire: Date,
+    resetOtpAttempts: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true, minimize: false }
 );
 
-const User = mongoose.models.User || mongoose.model("User", userSchema);
+// 🔐 Generate OTP
+userSchema.methods.generateResetOtp = function () {
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
+  this.resetOtp = crypto.createHash("sha256").update(otp).digest("hex");
+  this.resetOtpExpire = Date.now() + 10 * 60 * 1000; // 10 min
+  this.resetOtpAttempts = 0;
+
+  return otp;
+};
+
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 export default User;
