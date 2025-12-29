@@ -262,33 +262,49 @@ const Collections = () => {
       <div className="flex-1 relative min-h-[calc(100vh-60px)] overflow-y-auto md:ml-[280px] lg:ml-[300px]">
         <div className="p-4 sm:p-6 lg:p-8">
           {/* Mobile Header */}
-          <div className="md:hidden mb-6 mt-4">
-            <Tittle text1="EXPLORE" text2="COLLECTIONS" />
+          <div className="md:hidden mb-4 mt-3 px-4">
+            {/* Custom mobile title */}
+            <div className="mb-3">
+              <h1 className="text-xl font-bold">
+                <span className="text-cyan-400">EXPLORE</span>
+                <span className="text-white"> COLLECTIONS</span>
+              </h1>
+              <div className="h-1 w-12 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full mt-1"></div>
+            </div>
+
             {search && (
-              <p className="text-cyan-300 text-sm mt-1 flex items-center gap-1">
-                <FaSearch className="text-xs" />
-                Search results for: "{search}"
-              </p>
+              <div className="mb-2 bg-gradient-to-r from-cyan-900/15 to-blue-900/10 border border-cyan-700/20 rounded-lg p-2">
+                <div className="flex items-center gap-2">
+                  <FaSearch className="text-cyan-400 text-xs" />
+                  <p className="text-cyan-300 text-xs truncate">"{search}"</p>
+                </div>
+              </div>
             )}
-            <p className="text-gray-300 text-sm mt-2">
-              {filteredProducts.length} {filteredProducts.length === 1 ? "item" : "items"} discovered
-            </p>
+
+            <div className="flex items-center justify-between bg-gradient-to-r from-[#0f1b1d] to-[#0a1517] border border-gray-700/30 rounded-lg p-2">
+              <p className="text-gray-300 text-xs">
+                <span className="text-cyan-400 font-bold">{filteredProducts.length}</span> products found
+              </p>
+              <div className="text-[10px] text-gray-400">
+                {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+              </div>
+            </div>
           </div>
 
-          {/* Mobile Filter Button */}
-          <div className="md:hidden flex items-center justify-between mb-8 bg-gradient-to-r from-[#0f1b1d] to-[#0a1517] p-4 rounded-2xl border border-gray-700/50 shadow-lg">
+          {/* Mobile Filter Button - Compact for mobile */}
+          <div className="md:hidden flex items-center justify-between mb-6 p-3 bg-gradient-to-r from-[#0f1b1d] to-[#0a1517] rounded-xl border border-gray-700/30 shadow-md">
             <button
               onClick={() => setShowFilter(true)}
-              className="flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 border border-cyan-500/30 hover:border-cyan-400 px-4 py-3 rounded-xl transition-all duration-300 group"
+              className="flex items-center gap-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 border border-cyan-500/30 hover:border-cyan-400 px-3 py-2 rounded-lg transition-all duration-200 active:scale-95 group"
             >
-              <FaFilter className="text-cyan-400 group-hover:scale-110 transition-transform" />
-              <span className="font-medium text-white">Filters & Sort</span>
-              <FaArrowRightToBracket className="text-cyan-400 group-hover:translate-x-1 transition-transform" />
+              <FaFilter className="text-cyan-400 text-sm group-hover:scale-110 transition-transform" />
+              <span className="font-medium text-white text-sm">Filters</span>
+              <FaArrowRightToBracket className="text-cyan-400 text-xs group-hover:translate-x-0.5 transition-transform" />
             </button>
 
-            <div className="text-center">
-              <div className="text-2xl font-bold text-cyan-400">{filteredProducts.length}</div>
-              <div className="text-xs text-gray-400">Products</div>
+            <div className="text-center min-w-[70px]">
+              <div className="text-xl font-bold text-cyan-400">{filteredProducts.length}</div>
+              <div className="text-[10px] text-gray-400">Items</div>
             </div>
           </div>
 
@@ -336,8 +352,8 @@ const Collections = () => {
               <p className="text-gray-400">Discovering amazing products for you</p>
             </div>
           ) : filteredProducts.length > 0 ? (
-            // Products Grid
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+            // Products Grid - Mobile: 2 columns, Desktop: same as before
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {filteredProducts.map((item, index) => (
                 <div key={item._id} className="flex justify-center items-center transform hover:scale-[1.02] transition-transform duration-300">
                   <Card
@@ -359,7 +375,7 @@ const Collections = () => {
                 {search ? "No matching products found" : "No products available"}
               </h3>
               <p className="text-gray-400 mb-6 max-w-md">
-                {search 
+                {search
                   ? `We couldn't find any products matching "${search}". Try different keywords or browse all categories.`
                   : "Check back later for new arrivals or try adjusting your filters."
                 }

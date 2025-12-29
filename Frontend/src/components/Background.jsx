@@ -47,17 +47,16 @@ const Background = () => {
 
   return (
     <div className="w-full h-full relative overflow-hidden rounded-2xl lg:rounded-3xl shadow-2xl shadow-blue-900/20 group">
-      
+
       {/* Slider Images with Enhanced Transitions */}
       <div className="relative w-full h-full">
         {images.map((img, idx) => (
           <div
             key={idx}
-            className={`absolute inset-0 w-full h-full transition-all duration-1000 transform ${
-              idx === current
+            className={`absolute inset-0 w-full h-full transition-all duration-1000 transform ${idx === current
                 ? "opacity-100 scale-100 z-10"
                 : "opacity-0 scale-105 z-0"
-            }`}
+              }`}
           >
             <img
               src={img}
@@ -65,10 +64,10 @@ const Background = () => {
               draggable={false}
               className="w-full h-full object-cover"
             />
-            
+
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent z-10"></div>
-            
+
             {/* Image Indicator */}
             <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm z-20 backdrop-blur-sm">
               {idx + 1} / {images.length}
@@ -89,7 +88,7 @@ const Background = () => {
       >
         <FaChevronLeft className="text-lg sm:text-xl" />
       </button>
-      
+
       <button
         onClick={nextSlide}
         className="absolute right-4 top-1/2 transform -translate-y-1/2 
@@ -120,11 +119,10 @@ const Background = () => {
           <button
             key={idx}
             onClick={() => goToSlide(idx)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 transform hover:scale-125 ${
-              idx === current 
-                ? "bg-cyan-400 shadow-lg shadow-cyan-400/50 scale-125" 
+            className={`w-3 h-3 rounded-full transition-all duration-300 transform hover:scale-125 ${idx === current
+                ? "bg-cyan-400 shadow-lg shadow-cyan-400/50 scale-125"
                 : "bg-gray-400/50 hover:bg-gray-300"
-            }`}
+              }`}
             aria-label={`Go to slide ${idx + 1}`}
           />
         ))}
@@ -132,7 +130,7 @@ const Background = () => {
 
       {/* Progress Bar */}
       <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-600/30 z-20">
-        <div 
+        <div
           className="h-full bg-gradient-to-r from-cyan-400 to-blue-400 transition-all duration-1000 ease-linear"
           style={{ width: isAutoPlay ? '100%' : '0%' }}
         />

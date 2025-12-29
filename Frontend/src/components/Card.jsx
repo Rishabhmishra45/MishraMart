@@ -362,15 +362,15 @@ const Card = ({ name, image, id, price, category, index }) => {
           </div>
 
           <style>{`
-      @keyframes progress {
-        from { width: 100%; }
-        to { width: 0%; }
-      }
-    `}</style>
+            @keyframes progress {
+              from { width: 100%; }
+              to { width: 0%; }
+            }
+          `}</style>
         </div>
       )}
 
-      {/* Card Component */}
+      {/* Card Component - Mobile: hidden save amount and category, Desktop: same as before */}
       <div
         ref={cardRef}
         onClick={handleClick}
@@ -380,7 +380,7 @@ const Card = ({ name, image, id, price, category, index }) => {
           transitionDelay: isVisible ? `${index * 0.1}s` : '0s'
         }}
       >
-        {/* Discount Badge */}
+        {/* Discount Badge - Mobile छोटा, Desktop वही */}
         <div className="absolute top-3 left-3 z-10">
           <div className="bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs font-bold py-1.5 px-3 rounded-full shadow-lg border border-red-300/30 flex items-center gap-1 animate-pulse-glow">
             <FaFire className="text-xs" />
@@ -454,13 +454,15 @@ const Card = ({ name, image, id, price, category, index }) => {
               </span>
             </div>
 
-            <div className="text-xs text-green-400 font-medium bg-green-400/10 py-1 px-2 rounded-full inline-block animate-bounce-soft">
+            {/* Save Amount - Hidden on mobile, shown on desktop with proper width control */}
+            <div className="hidden sm:inline-block text-xs text-green-400 font-medium bg-green-400/10 py-1 px-2 rounded-full animate-bounce-soft whitespace-nowrap">
               Save {currency} {(price * discountPercentage / 100).toFixed(0)}
             </div>
           </div>
 
+          {/* Category Tag - Hidden on mobile, shown on desktop */}
           <div
-            className={`mt-2 text-xs py-1.5 px-3 rounded-full bg-gradient-to-r ${cardColor} text-gray-300 border inline-block self-start transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg`}
+            className={`hidden sm:block mt-2 text-xs py-1.5 px-3 rounded-full bg-gradient-to-r ${cardColor} text-gray-300 border inline-block self-start transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg`}
           >
             {category || 'Product'}
           </div>
