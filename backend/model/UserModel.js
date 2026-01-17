@@ -29,7 +29,20 @@ const userSchema = new mongoose.Schema(
     pincode: { type: String, default: "" },
     cardData: { type: Object, default: {} },
 
-    // 🔐 OTP RESET
+    // ✅ Email verification
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    emailVerifyOtp: String,
+    emailVerifyOtpExpire: Date,
+    emailVerifyOtpAttempts: {
+      type: Number,
+      default: 0,
+    },
+
+    // 🔐 OTP RESET (existing)
     resetOtp: String,
     resetOtpExpire: Date,
     resetOtpAttempts: {
@@ -40,13 +53,28 @@ const userSchema = new mongoose.Schema(
   { timestamps: true, minimize: false }
 );
 
-// 🔐 Generate OTP
+/* =========================
+   🔐 Generate Reset OTP (existing)
+========================= */
 userSchema.methods.generateResetOtp = function () {
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
   this.resetOtp = crypto.createHash("sha256").update(otp).digest("hex");
   this.resetOtpExpire = Date.now() + 10 * 60 * 1000; // 10 min
   this.resetOtpAttempts = 0;
+
+  return otp;
+};
+
+/* =========================
+   ✅ Generate Email Verify OTP (NEW)
+========================= */
+userSchema.methods.generateEmailVerifyOtp = function () {
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  this.emailVerifyOtp = crypto.createHash("sha256").update(otp).digest("hex");
+  this.emailVerifyOtpExpire = Date.now() + 10 * 60 * 1000; // 10 min
+  this.emailVerifyOtpAttempts = 0;
 
   return otp;
 };

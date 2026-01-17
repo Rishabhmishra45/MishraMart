@@ -11,29 +11,42 @@ import { userDataContext } from "../context/UserContext";
 
 const Login = () => {
   const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
+
   let { serverUrl } = useContext(authDataContext);
   let { getCurrentUser } = useContext(userDataContext);
 
-  // Normal login
+  // ✅ Normal login
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
       await axios.post(
         `${serverUrl}/api/auth/login`,
         { email, password },
         { withCredentials: true }
       );
+
       await getCurrentUser();
       navigate("/");
     } catch (error) {
       console.error("Login error:", error);
-      if (error.response?.data?.message) {
-        alert(error.response.data.message);
+
+      const msg = error?.response?.data?.message;
+
+      if (msg) {
+        alert(msg);
+
+        // ✅ If email is not verified, send user to Signup page (same page OTP flow)
+        if (msg.toLowerCase().includes("verify your email")) {
+          navigate("/signup");
+        }
       } else {
         alert("Network error during login");
       }
@@ -42,12 +55,14 @@ const Login = () => {
     }
   };
 
-  // Google login
+  // ✅ Google login
   const googlelogin = async () => {
     try {
       setLoading(true);
+
       const response = await signInWithPopup(auth, provider);
       const user = response.user;
+
       const name = user.displayName;
       const email = user.email;
 
@@ -75,6 +90,7 @@ const Login = () => {
           className="h-[120px] sm:h-[160px] w-auto object-contain cursor-pointer"
           src={Logo}
           alt="Logo"
+          draggable={false}
           onClick={() => !loading && navigate("/")}
         />
       </div>
@@ -86,8 +102,8 @@ const Login = () => {
         </h1>
         <p className="text-gray-300 mt-2 text-sm sm:text-base">
           Sign in to Your
-          <span className="text-[#4aa4b5] font-semibold"> MishraMart</span> Account and
-          start shopping today!
+          <span className="text-[#4aa4b5] font-semibold"> MishraMart</span>{" "}
+          Account and start shopping today!
         </p>
       </div>
 
@@ -97,9 +113,10 @@ const Login = () => {
           {/* Google Button */}
           <div
             className={`w-full flex items-center justify-center gap-3 bg-[#ffffff1a] border border-white/20 rounded-lg py-3 mb-6 transition 
-              ${loading
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:bg-white/20 cursor-pointer"
+              ${
+                loading
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-white/20 cursor-pointer"
               }`}
             onClick={!loading ? googlelogin : undefined}
           >
@@ -107,6 +124,7 @@ const Login = () => {
               src={google}
               alt="Google"
               className="w-5 h-5 sm:w-6 sm:h-6 object-contain rounded-full"
+              draggable={false}
             />
             <span className="font-medium text-white text-sm sm:text-base">
               Continue with Google
@@ -163,10 +181,11 @@ const Login = () => {
             {/* Forgot Password */}
             <div className="text-right mt-1">
               <span
-                className={`text-[#4aa4b5] text-xs sm:text-sm font-semibold ${loading
-                  ? "cursor-not-allowed opacity-50"
-                  : "cursor-pointer hover:underline"
-                  }`}
+                className={`text-[#4aa4b5] text-xs sm:text-sm font-semibold ${
+                  loading
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer hover:underline"
+                }`}
                 onClick={() => !loading && navigate("/forgot-password")}
               >
                 Forgot Password?
@@ -178,9 +197,10 @@ const Login = () => {
               type="submit"
               disabled={loading}
               className={`w-full h-11 sm:h-12 rounded-lg text-white font-semibold mt-4 transition
-                ${loading
-                  ? "bg-gray-500 cursor-not-allowed"
-                  : "bg-[#4aa4b5] hover:bg-[#3a8c9a]"
+                ${
+                  loading
+                    ? "bg-gray-500 cursor-not-allowed"
+                    : "bg-[#4aa4b5] hover:bg-[#3a8c9a]"
                 }`}
             >
               {loading ? "Signing in..." : "Sign In"}
@@ -190,10 +210,11 @@ const Login = () => {
             <p className="text-center text-gray-300 mt-3 text-xs sm:text-sm">
               Don’t have an account?{" "}
               <span
-                className={`text-[#4aa4b5] font-semibold ${loading
-                  ? "cursor-not-allowed opacity-50"
-                  : "cursor-pointer hover:underline"
-                  }`}
+                className={`text-[#4aa4b5] font-semibold ${
+                  loading
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer hover:underline"
+                }`}
                 onClick={() => !loading && navigate("/signup")}
               >
                 Create Account

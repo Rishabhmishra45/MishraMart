@@ -1,4 +1,12 @@
-const otpEmailTemplate = (otp) => {
+const otpEmailTemplate = (otp, purpose = "RESET_PASSWORD") => {
+  const title =
+    purpose === "VERIFY_EMAIL" ? "Email Verification" : "Secure Password Reset";
+
+  const message =
+    purpose === "VERIFY_EMAIL"
+      ? `Thanks for signing up on <b>MishraMart</b>! Please verify your email using the OTP below.`
+      : `We received a request to reset your <b>MishraMart</b> account password. Please use the OTP below to continue.`;
+
   return `
   <div style="background:#f4f6f8;padding:30px;font-family:Arial,Helvetica,sans-serif;">
     <div style="max-width:480px;margin:auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.08)">
@@ -7,7 +15,7 @@ const otpEmailTemplate = (otp) => {
       <div style="background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);padding:20px;text-align:center;color:white">
         <h1 style="margin:0;font-size:22px;letter-spacing:0.5px;">MishraMart</h1>
         <p style="margin:5px 0 0;font-size:13px;opacity:0.9;">
-          Secure Password Reset
+          ${title}
         </p>
       </div>
 
@@ -18,8 +26,7 @@ const otpEmailTemplate = (otp) => {
         </p>
 
         <p style="font-size:14px;line-height:1.6;margin-bottom:20px;">
-          We received a request to reset your <b>MishraMart</b> account password.
-          Please use the OTP below to continue.
+          ${message}
         </p>
 
         <!-- OTP BOX -->
