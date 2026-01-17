@@ -1,25 +1,34 @@
-import nodemailer from "nodemailer";
+import axios from "axios";
 
 const sendEmail = async ({ email, subject, html }) => {
-  const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true, // ✅ 465 = secure true
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS, // ✅ Gmail App Password
-    },
-  });
+  try {
+    if (!process.env.BREVO_API_KEY) {
+      throw new Error("BREVO_API_KEY is missing in environment variables");
+    }
 
-  // ✅ optional but very useful (debug)
-  await transporter.verify();
+    await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        sender: { name: "MishraMart", email: process.env.EMAIL_USER },
+        to: [{ email }],
+        subject,
+        htmlContent: html,
+      },
+      {
+        headers: {
+          "api-key": process.env.BREVO_API_KEY,
+          "Content-Type": "application/json",
+          accept: "application/json",
+        },
+        timeout: 15000, // ✅ 15 sec max
+      }
+    );
 
-  await transporter.sendMail({
-    from: `MishraMart <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject,
-    html,
-  });
+    return true;
+  } catch (err) {
+    console.error("BREVO EMAIL ERROR:", err?.response?.data || err.message);
+    throw new Error("Email sending failed");
+  }
 };
 
 export default sendEmail;
