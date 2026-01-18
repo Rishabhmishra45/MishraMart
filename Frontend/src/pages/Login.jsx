@@ -81,7 +81,7 @@ const Login = () => {
         await signOut(auth);
         showToast(
           "error",
-          "⚠️ Email not verified!\n\nGo to your email inbox and click verification link, then login again."
+          "⚠️ Email not verified!\n\nGo to your email inbox/spam and click verification link, then login again."
         );
         setLoading(false);
         return;
