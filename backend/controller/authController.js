@@ -294,10 +294,10 @@ export const verifyEmailOtp = async (req, res) => {
   }
 };
 
-/* ================= FIREBASE SYNC (NEW - needed for link based auth) ================= */
+/* ================= FIREBASE SYNC (UPDATED) ================= */
 export const firebaseSync = async (req, res) => {
   try {
-    const { name, email, verified } = req.body;
+    const { name, email, verified, password } = req.body;
 
     if (!name || !email) {
       return res
@@ -313,16 +313,29 @@ export const firebaseSync = async (req, res) => {
 
     let user = await User.findOne({ email: userEmail });
 
+    // Save password hashed in MongoDB (optional, safe)
+    let hashedPassword = "";
+    if (password && password.trim().length >= 6) {
+      hashedPassword = await bcrypt.hash(password, 10);
+    }
+
     if (!user) {
       user = await User.create({
         name,
         email: userEmail,
         isVerified: !!verified,
-        password: "",
+        password: hashedPassword, // store hashed
       });
     } else {
       user.name = name;
+
       if (verified === true) user.isVerified = true;
+
+      // If password missing in DB, store it now
+      if (hashedPassword && (!user.password || user.password.trim() === "")) {
+        user.password = hashedPassword;
+      }
+
       await user.save({ validateBeforeSave: false });
     }
 
@@ -354,7 +367,7 @@ export const login = async (req, res) => {
         .json({ success: false, message: "Invalid credentials" });
     }
 
-    // Block unverified user always
+    // Block unverified user
     if (!user.isVerified) {
       return res.status(403).json({
         success: false,
@@ -362,7 +375,7 @@ export const login = async (req, res) => {
       });
     }
 
-    // If DB user has password -> check it
+    // DB password exists => check it
     if (user.password && user.password.trim() !== "") {
       if (!password) {
         return res
@@ -378,7 +391,6 @@ export const login = async (req, res) => {
       }
     }
 
-    // Firebase users (password empty) -> allow login (frontend already authenticated)
     const token = genToken(user._id);
     res.cookie("token", token, cookieOptions);
 

@@ -14,11 +14,12 @@ import {
 import { auth, provider } from "../../utils/Firebase";
 import { userDataContext } from "../context/UserContext";
 
-/* ✅ Modern toast component */
+// Modern toast below navbar
 const Toast = ({ type = "success", message, onClose }) => {
   if (!message) return null;
+
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-6 z-[9999] w-[92%] sm:w-[380px]">
+    <div className="fixed top-[92px] left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-6 z-[9999] w-[92%] sm:w-[420px]">
       <div
         className={`p-4 rounded-2xl border backdrop-blur-xl shadow-2xl animate-[fadeIn_.25s_ease-out] ${
           type === "success"
@@ -30,6 +31,7 @@ const Toast = ({ type = "success", message, onClose }) => {
           <div className="flex-1 text-sm leading-relaxed whitespace-pre-line">
             {message}
           </div>
+
           <button
             className="text-xs font-semibold opacity-80 hover:opacity-100"
             onClick={onClose}
@@ -66,10 +68,9 @@ const Registration = () => {
   const showToast = (type, msg) => {
     setToastType(type);
     setToastMsg(msg);
-    setTimeout(() => setToastMsg(""), 3500);
+    setTimeout(() => setToastMsg(""), 6500);
   };
 
-  // ✅ Signup with email verification link
   const handleSignup = async (e) => {
     e.preventDefault();
 
@@ -86,43 +87,39 @@ const Registration = () => {
     setLoading(true);
 
     try {
-      // ✅ Save username temporarily so we can use it after verification link
+      // Save username temporarily for verification sync
       localStorage.setItem("MM_PENDING_NAME", cleanName);
       localStorage.setItem("MM_PENDING_EMAIL", cleanEmail);
 
-      // 1) Create user in Firebase
       const userCred = await createUserWithEmailAndPassword(
         auth,
         cleanEmail,
         password
       );
 
-      // 2) Send verification email
       setSendingVerify(true);
       await sendEmailVerification(userCred.user);
 
-      // 3) Sync in backend DB (IMPORTANT: verified false)
+      // Sync in backend
       await axios.post(
         `${serverUrl}/api/auth/firebase-sync`,
-        { name: cleanName, email: cleanEmail, verified: false },
+        { name: cleanName, email: cleanEmail, verified: false, password },
         { withCredentials: true }
       );
 
-      // 4) Sign out (prevent access before verification)
       await signOut(auth);
 
       showToast(
         "success",
-        "✅ Account created!\n\nVerification link has been sent to your email.\nPlease verify FIRST, then login."
+        "✅ Account created!\n\nVerification link sent to your email.\nPlease verify FIRST, then login."
       );
 
-      // Clear form
       setName("");
       setEmail("");
       setPassword("");
       setConfirmPassword("");
 
-      setTimeout(() => navigate("/login"), 1600);
+      setTimeout(() => navigate("/login"), 1800);
     } catch (error) {
       console.error("Signup error:", error);
 
@@ -143,7 +140,6 @@ const Registration = () => {
     }
   };
 
-  // ✅ Google Signup/Login (keep)
   const googleSignup = async () => {
     try {
       setLoading(true);
@@ -178,7 +174,6 @@ const Registration = () => {
         onClose={() => setToastMsg("")}
       />
 
-      {/* Navbar / Logo */}
       <div className="w-full h-[70px] sm:h-[80px] flex items-center justify-start px-4 sm:px-8">
         <img
           className="h-[120px] sm:h-[160px] w-auto object-contain cursor-pointer hover:scale-105 transition-transform"
@@ -189,7 +184,6 @@ const Registration = () => {
         />
       </div>
 
-      {/* Page Title */}
       <div className="w-full text-center mt-2 sm:mt-4 px-4">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-wide">
           Create Account
@@ -200,10 +194,8 @@ const Registration = () => {
         </p>
       </div>
 
-      {/* Registration Box */}
       <div className="flex flex-1 items-center justify-center px-3 sm:px-4 py-6">
         <div className="w-full max-w-sm sm:max-w-md bg-[#ffffff10] border border-[#ffffff20] backdrop-blur-2xl rounded-2xl shadow-2xl p-6 sm:p-8">
-          {/* Google Button */}
           <div
             className={`w-full flex items-center justify-center gap-3 bg-[#42656cae] rounded-lg py-3 mb-6 transition 
               ${
@@ -224,14 +216,12 @@ const Registration = () => {
             </span>
           </div>
 
-          {/* Divider */}
           <div className="flex items-center justify-center gap-2 text-gray-400 mb-6">
             <div className="flex-1 h-[1px] bg-[#96969635]" />
             <span className="text-xs sm:text-sm">OR</span>
             <div className="flex-1 h-[1px] bg-[#96969635]" />
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSignup} className="flex flex-col gap-4">
             <input
               type="text"
@@ -255,7 +245,6 @@ const Registration = () => {
               value={email}
             />
 
-            {/* Password */}
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -281,7 +270,6 @@ const Registration = () => {
               </button>
             </div>
 
-            {/* Confirm Password */}
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}
@@ -307,7 +295,6 @@ const Registration = () => {
               </button>
             </div>
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
@@ -325,7 +312,6 @@ const Registration = () => {
                 : "Create Account"}
             </button>
 
-            {/* Login Link */}
             <p className="text-center text-gray-400 mt-2 text-xs sm:text-sm">
               Already have an account?{" "}
               <span

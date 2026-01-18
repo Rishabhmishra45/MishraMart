@@ -1,15 +1,21 @@
 import React, { useEffect, useMemo, useState, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
-import { applyActionCode, checkActionCode, confirmPasswordReset, getAuth } from "firebase/auth";
+import {
+  applyActionCode,
+  checkActionCode,
+  confirmPasswordReset,
+  getAuth,
+} from "firebase/auth";
 import axios from "axios";
 import { authDataContext } from "../context/AuthContext";
 
-/* ✅ Modern toast */
+// Modern toast below navbar
 const Toast = ({ type = "success", message, onClose }) => {
   if (!message) return null;
+
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-6 z-[9999] w-[92%] sm:w-[380px]">
+    <div className="fixed top-[92px] left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-6 z-[9999] w-[92%] sm:w-[420px]">
       <div
         className={`p-4 rounded-2xl border backdrop-blur-xl shadow-2xl animate-[fadeIn_.25s_ease-out] ${
           type === "success"
@@ -18,8 +24,14 @@ const Toast = ({ type = "success", message, onClose }) => {
         }`}
       >
         <div className="flex items-start gap-3">
-          <div className="flex-1 text-sm leading-relaxed whitespace-pre-line">{message}</div>
-          <button className="text-xs font-semibold opacity-80 hover:opacity-100" onClick={onClose} type="button">
+          <div className="flex-1 text-sm leading-relaxed whitespace-pre-line">
+            {message}
+          </div>
+          <button
+            className="text-xs font-semibold opacity-80 hover:opacity-100"
+            onClick={onClose}
+            type="button"
+          >
             ✕
           </button>
         </div>
@@ -32,6 +44,7 @@ const AuthAction = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const firebaseAuth = useMemo(() => getAuth(), []);
+
   const { serverUrl } = useContext(authDataContext);
 
   const [loading, setLoading] = useState(true);
@@ -52,20 +65,23 @@ const AuthAction = () => {
   const showToast = (type, msg) => {
     setToastType(type);
     setToastMsg(msg);
-    setTimeout(() => setToastMsg(""), 3500);
+    setTimeout(() => setToastMsg(""), 6500);
   };
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    setMode(params.get("mode") || "");
-    setOobCode(params.get("oobCode") || "");
+    const m = params.get("mode");
+    const code = params.get("oobCode");
+
+    setMode(m || "");
+    setOobCode(code || "");
   }, [location.search]);
 
   const syncBackendVerified = async (email) => {
     if (!email) return;
 
-    // ✅ get real username from localStorage
-    const pendingName = localStorage.getItem("MM_PENDING_NAME") || "MishraMart User";
+    const pendingName =
+      localStorage.getItem("MM_PENDING_NAME") || "MishraMart User";
 
     try {
       await axios.post(
@@ -74,7 +90,6 @@ const AuthAction = () => {
         { withCredentials: true }
       );
 
-      // ✅ cleanup after success
       localStorage.removeItem("MM_PENDING_NAME");
       localStorage.removeItem("MM_PENDING_EMAIL");
     } catch (e) {
@@ -88,6 +103,7 @@ const AuthAction = () => {
         setLoading(false);
         setSuccess(false);
         setStatus("Invalid action link.");
+        showToast("error", "Invalid action link.");
         return;
       }
 
@@ -97,12 +113,15 @@ const AuthAction = () => {
           await checkActionCode(firebaseAuth, oobCode);
           await applyActionCode(firebaseAuth, oobCode);
 
-          const email = firebaseAuth?.currentUser?.email || localStorage.getItem("MM_PENDING_EMAIL");
+          const email =
+            firebaseAuth?.currentUser?.email ||
+            localStorage.getItem("MM_PENDING_EMAIL");
+
           await syncBackendVerified(email);
 
           setSuccess(true);
           setStatus("✅ Email verified successfully! You can now login.");
-          showToast("success", "✅ Email verified successfully!");
+          showToast("success", "✅ Email verified successfully! Now login.");
           setLoading(false);
           return;
         }
@@ -116,17 +135,19 @@ const AuthAction = () => {
 
         setSuccess(false);
         setStatus("Unsupported action link.");
+        showToast("error", "Unsupported action link.");
         setLoading(false);
       } catch (err) {
         console.error("AuthAction error:", err);
         setSuccess(false);
         setLoading(false);
-        setStatus(
-          err?.message?.includes("expired")
-            ? "This link has expired. Please request a new one."
-            : "Invalid or expired link."
-        );
-        showToast("error", "Invalid or expired link.");
+
+        const msg = err?.message?.includes("expired")
+          ? "This link has expired. Please request a new one."
+          : "Invalid or expired link.";
+
+        setStatus(msg);
+        showToast("error", msg);
       }
     };
 
@@ -139,22 +160,24 @@ const AuthAction = () => {
     if (!newPassword || newPassword.length < 6) {
       return showToast("error", "Password must be at least 6 characters");
     }
+
     if (newPassword !== confirmNewPassword) {
       return showToast("error", "Password and Confirm Password do not match");
     }
 
     try {
       setResetLoading(true);
+
       await confirmPasswordReset(firebaseAuth, oobCode, newPassword);
 
       setSuccess(true);
       setStatus("✅ Password reset successful! Please login.");
-      showToast("success", "✅ Password reset successful!");
+      showToast("success", "✅ Password reset successful! Now login.");
 
       setNewPassword("");
       setConfirmNewPassword("");
 
-      setTimeout(() => navigate("/login"), 1500);
+      setTimeout(() => navigate("/login"), 1800);
     } catch (err) {
       console.error("Reset password error:", err);
       showToast(
@@ -170,9 +193,12 @@ const AuthAction = () => {
 
   return (
     <div className="w-full min-h-screen overflow-x-hidden bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364] text-white flex flex-col select-none">
-      <Toast type={toastType} message={toastMsg} onClose={() => setToastMsg("")} />
+      <Toast
+        type={toastType}
+        message={toastMsg}
+        onClose={() => setToastMsg("")}
+      />
 
-      {/* Navbar */}
       <div className="w-full h-[70px] sm:h-[80px] flex items-center justify-start px-4 sm:px-8">
         <img
           src={Logo}
@@ -183,9 +209,8 @@ const AuthAction = () => {
         />
       </div>
 
-      {/* Content */}
       <div className="flex-1 flex items-start justify-center px-4 pb-10">
-        <div className="w-full max-w-lg pt-4 sm:pt-10">
+        <div className="w-full max-w-lg pt-4 sm:pt-8">
           <div className="w-full bg-white/10 border border-white/20 backdrop-blur-xl rounded-3xl shadow-2xl p-6 sm:p-10">
             <div className="text-center">
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide">
@@ -293,7 +318,8 @@ const AuthAction = () => {
             )}
 
             <p className="text-center text-xs text-gray-400 mt-8 leading-relaxed">
-              If this link is expired, please request a new verification/reset link.
+              If this link is expired, please request a new verification/reset
+              link.
             </p>
           </div>
         </div>

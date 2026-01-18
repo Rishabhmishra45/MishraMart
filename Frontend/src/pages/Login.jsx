@@ -5,15 +5,20 @@ import google from "../assets/google.png";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import { authDataContext } from "../context/AuthContext";
 import axios from "axios";
-import { signInWithPopup, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import {
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
 import { auth, provider } from "../../utils/Firebase";
 import { userDataContext } from "../context/UserContext";
 
-/* ✅ Modern toast component */
+// Modern toast below navbar
 const Toast = ({ type = "success", message, onClose }) => {
   if (!message) return null;
+
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-6 z-[9999] w-[92%] sm:w-[380px]">
+    <div className="fixed top-[92px] left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-6 z-[9999] w-[92%] sm:w-[420px]">
       <div
         className={`p-4 rounded-2xl border backdrop-blur-xl shadow-2xl animate-[fadeIn_.25s_ease-out] ${
           type === "success"
@@ -55,34 +60,33 @@ const Login = () => {
   const showToast = (type, msg) => {
     setToastType(type);
     setToastMsg(msg);
-    setTimeout(() => setToastMsg(""), 3500);
+    setTimeout(() => setToastMsg(""), 6500);
   };
 
-  // ✅ Normal login (Firebase verify check + backend session)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // 1) Firebase sign-in
-      const userCred = await signInWithEmailAndPassword(auth, email.trim(), password);
-      const user = userCred.user;
+      const userCred = await signInWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password
+      );
 
-      // 2) refresh verification
+      const user = userCred.user;
       await user.reload();
 
-      // 3) If not verified -> STOP + modern notification
       if (!user.emailVerified) {
-        await signOut(auth); // don't keep firebase auth session
+        await signOut(auth);
         showToast(
           "error",
-          "⚠️ Email not verified!\n\nGo to your email inbox and click the verification link, then login again."
+          "⚠️ Email not verified!\n\nGo to your email inbox and click verification link, then login again."
         );
         setLoading(false);
         return;
       }
 
-      // 4) Backend login (cookie/session)
       await axios.post(
         `${serverUrl}/api/auth/login`,
         { email: email.trim(), password },
@@ -94,21 +98,20 @@ const Login = () => {
     } catch (error) {
       console.error("Login error:", error);
 
-      // If wrong user/pass show invalid credential message
-      const firebaseCode = error?.code;
-
-      if (firebaseCode === "auth/invalid-credential") {
+      if (error?.code === "auth/invalid-credential") {
         showToast("error", "Invalid email or password.");
       } else {
         const backendMsg = error?.response?.data?.message;
-        showToast("error", backendMsg || error?.message || "Network error during login");
+        showToast(
+          "error",
+          backendMsg || error?.message || "Network error during login"
+        );
       }
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Google login
   const googlelogin = async () => {
     try {
       setLoading(true);
@@ -119,7 +122,6 @@ const Login = () => {
       const name = user.displayName;
       const email = user.email;
 
-      // Backend user creation/login
       await axios.post(
         `${serverUrl}/api/auth/googlelogin`,
         { name, email },
@@ -138,9 +140,12 @@ const Login = () => {
 
   return (
     <div className="w-full min-h-screen overflow-x-hidden flex flex-col bg-gradient-to-tr from-[#0f2027] via-[#203a43] to-[#2c5364] text-white select-none">
-      <Toast type={toastType} message={toastMsg} onClose={() => setToastMsg("")} />
+      <Toast
+        type={toastType}
+        message={toastMsg}
+        onClose={() => setToastMsg("")}
+      />
 
-      {/* Navbar / Logo */}
       <div className="w-full h-[70px] sm:h-[80px] flex items-center px-4 sm:px-8">
         <img
           className="h-[120px] sm:h-[160px] w-auto object-contain cursor-pointer"
@@ -151,7 +156,6 @@ const Login = () => {
         />
       </div>
 
-      {/* Page Title */}
       <div className="w-full text-center mt-2 sm:mt-4 px-4">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-wide">
           Welcome back
@@ -163,10 +167,8 @@ const Login = () => {
         </p>
       </div>
 
-      {/* Center Box */}
       <div className="flex-1 flex items-center justify-center px-3 sm:px-6 py-6">
         <div className="w-full max-w-sm sm:max-w-md bg-white/10 border border-white/20 backdrop-blur-xl shadow-xl rounded-2xl p-6 sm:p-8">
-          {/* Google Button */}
           <div
             className={`w-full flex items-center justify-center gap-3 bg-[#ffffff1a] border border-white/20 rounded-lg py-3 mb-6 transition 
               ${
@@ -187,16 +189,13 @@ const Login = () => {
             </span>
           </div>
 
-          {/* Divider */}
           <div className="flex items-center justify-center gap-2 text-gray-400 mb-6">
             <div className="flex-1 h-[1px] bg-white/20"></div>
             <span className="text-xs sm:text-sm">OR</span>
             <div className="flex-1 h-[1px] bg-white/20"></div>
           </div>
 
-          {/* Form */}
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-            {/* Email */}
             <input
               type="email"
               placeholder="Email"
@@ -208,7 +207,6 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
             />
 
-            {/* Password */}
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -234,7 +232,6 @@ const Login = () => {
               </button>
             </div>
 
-            {/* Forgot Password */}
             <div className="text-right mt-1">
               <span
                 className={`text-[#4aa4b5] text-xs sm:text-sm font-semibold ${
@@ -248,7 +245,6 @@ const Login = () => {
               </span>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
@@ -262,7 +258,6 @@ const Login = () => {
               {loading ? "Signing in..." : "Sign In"}
             </button>
 
-            {/* Signup Link */}
             <p className="text-center text-gray-300 mt-3 text-xs sm:text-sm">
               Don’t have an account?{" "}
               <span
