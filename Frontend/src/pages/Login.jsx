@@ -5,9 +5,38 @@ import google from "../assets/google.png";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import { authDataContext } from "../context/AuthContext";
 import axios from "axios";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { signInWithPopup, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth, provider } from "../../utils/Firebase";
 import { userDataContext } from "../context/UserContext";
+
+/* ✅ Modern toast component */
+const Toast = ({ type = "success", message, onClose }) => {
+  if (!message) return null;
+  return (
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-6 z-[9999] w-[92%] sm:w-[380px]">
+      <div
+        className={`p-4 rounded-2xl border backdrop-blur-xl shadow-2xl animate-[fadeIn_.25s_ease-out] ${
+          type === "success"
+            ? "bg-green-500/15 border-green-500/30 text-green-100"
+            : "bg-red-500/15 border-red-500/30 text-red-100"
+        }`}
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex-1 text-sm leading-relaxed whitespace-pre-line">
+            {message}
+          </div>
+          <button
+            className="text-xs font-semibold opacity-80 hover:opacity-100"
+            onClick={onClose}
+            type="button"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Login = () => {
   const navigate = useNavigate();
@@ -17,36 +46,46 @@ const Login = () => {
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const [errMsg, setErrMsg] = useState("");
+  const [toastMsg, setToastMsg] = useState("");
+  const [toastType, setToastType] = useState("success");
 
   let { serverUrl } = useContext(authDataContext);
   let { getCurrentUser } = useContext(userDataContext);
 
-  // ✅ Normal login (Firebase verify check + backend login)
+  const showToast = (type, msg) => {
+    setToastType(type);
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(""), 3500);
+  };
+
+  // ✅ Normal login (Firebase verify check + backend session)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setErrMsg("");
 
     try {
-      // 1) First Firebase login
-      const userCred = await signInWithEmailAndPassword(auth, email, password);
+      // 1) Firebase sign-in
+      const userCred = await signInWithEmailAndPassword(auth, email.trim(), password);
       const user = userCred.user;
 
-      // 2) Refresh user verification status
+      // 2) refresh verification
       await user.reload();
 
-      // 3) Block if NOT verified
+      // 3) If not verified -> STOP + modern notification
       if (!user.emailVerified) {
-        setErrMsg("Your email is not verified. Please verify your email first.");
+        await signOut(auth); // don't keep firebase auth session
+        showToast(
+          "error",
+          "⚠️ Email not verified!\n\nGo to your email inbox and click the verification link, then login again."
+        );
         setLoading(false);
         return;
       }
 
-      // 4) Backend login (cookie/session for your services)
+      // 4) Backend login (cookie/session)
       await axios.post(
         `${serverUrl}/api/auth/login`,
-        { email, password },
+        { email: email.trim(), password },
         { withCredentials: true }
       );
 
@@ -55,14 +94,15 @@ const Login = () => {
     } catch (error) {
       console.error("Login error:", error);
 
-      const firebaseMsg =
-        error?.code === "auth/invalid-credential"
-          ? "Invalid email or password"
-          : error?.message;
+      // If wrong user/pass show invalid credential message
+      const firebaseCode = error?.code;
 
-      const backendMsg = error?.response?.data?.message;
-
-      setErrMsg(backendMsg || firebaseMsg || "Network error during login");
+      if (firebaseCode === "auth/invalid-credential") {
+        showToast("error", "Invalid email or password.");
+      } else {
+        const backendMsg = error?.response?.data?.message;
+        showToast("error", backendMsg || error?.message || "Network error during login");
+      }
     } finally {
       setLoading(false);
     }
@@ -72,7 +112,6 @@ const Login = () => {
   const googlelogin = async () => {
     try {
       setLoading(true);
-      setErrMsg("");
 
       const response = await signInWithPopup(auth, provider);
       const user = response.user;
@@ -80,6 +119,7 @@ const Login = () => {
       const name = user.displayName;
       const email = user.email;
 
+      // Backend user creation/login
       await axios.post(
         `${serverUrl}/api/auth/googlelogin`,
         { name, email },
@@ -90,7 +130,7 @@ const Login = () => {
       navigate("/");
     } catch (error) {
       console.error("Google login error:", error);
-      setErrMsg("Google login failed");
+      showToast("error", "Google login failed");
     } finally {
       setLoading(false);
     }
@@ -98,6 +138,8 @@ const Login = () => {
 
   return (
     <div className="w-full min-h-screen overflow-x-hidden flex flex-col bg-gradient-to-tr from-[#0f2027] via-[#203a43] to-[#2c5364] text-white select-none">
+      <Toast type={toastType} message={toastMsg} onClose={() => setToastMsg("")} />
+
       {/* Navbar / Logo */}
       <div className="w-full h-[70px] sm:h-[80px] flex items-center px-4 sm:px-8">
         <img
@@ -124,13 +166,6 @@ const Login = () => {
       {/* Center Box */}
       <div className="flex-1 flex items-center justify-center px-3 sm:px-6 py-6">
         <div className="w-full max-w-sm sm:max-w-md bg-white/10 border border-white/20 backdrop-blur-xl shadow-xl rounded-2xl p-6 sm:p-8">
-          {/* Error */}
-          {errMsg && (
-            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/40 rounded text-red-200 text-sm">
-              {errMsg}
-            </div>
-          )}
-
           {/* Google Button */}
           <div
             className={`w-full flex items-center justify-center gap-3 bg-[#ffffff1a] border border-white/20 rounded-lg py-3 mb-6 transition 
@@ -161,6 +196,7 @@ const Login = () => {
 
           {/* Form */}
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+            {/* Email */}
             <input
               type="email"
               placeholder="Email"
@@ -212,7 +248,7 @@ const Login = () => {
               </span>
             </div>
 
-            {/* Submit */}
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}

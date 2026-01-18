@@ -14,6 +14,35 @@ import {
 import { auth, provider } from "../../utils/Firebase";
 import { userDataContext } from "../context/UserContext";
 
+/* ✅ Modern toast component */
+const Toast = ({ type = "success", message, onClose }) => {
+  if (!message) return null;
+  return (
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-6 z-[9999] w-[92%] sm:w-[380px]">
+      <div
+        className={`p-4 rounded-2xl border backdrop-blur-xl shadow-2xl animate-[fadeIn_.25s_ease-out] ${
+          type === "success"
+            ? "bg-green-500/15 border-green-500/30 text-green-100"
+            : "bg-red-500/15 border-red-500/30 text-red-100"
+        }`}
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex-1 text-sm leading-relaxed whitespace-pre-line">
+            {message}
+          </div>
+          <button
+            className="text-xs font-semibold opacity-80 hover:opacity-100"
+            onClick={onClose}
+            type="button"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Registration = () => {
   const navigate = useNavigate();
 
@@ -23,8 +52,8 @@ const Registration = () => {
   const [loading, setLoading] = useState(false);
   const [sendingVerify, setSendingVerify] = useState(false);
 
-  const [successMsg, setSuccessMsg] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
+  const [toastMsg, setToastMsg] = useState("");
+  const [toastType, setToastType] = useState("success");
 
   let { serverUrl } = useContext(authDataContext);
   let { getCurrentUser } = useContext(userDataContext);
@@ -34,26 +63,37 @@ const Registration = () => {
   let [password, setPassword] = useState("");
   let [confirmPassword, setConfirmPassword] = useState("");
 
+  const showToast = (type, msg) => {
+    setToastType(type);
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(""), 3500);
+  };
+
   // ✅ Signup with email verification link
   const handleSignup = async (e) => {
     e.preventDefault();
-    setErrorMsg("");
-    setSuccessMsg("");
 
-    if (!name.trim()) return setErrorMsg("Please enter username");
-    if (!email.trim()) return setErrorMsg("Please enter email");
+    const cleanName = name.trim();
+    const cleanEmail = email.trim();
+
+    if (!cleanName) return showToast("error", "Please enter username");
+    if (!cleanEmail) return showToast("error", "Please enter email");
     if (!password || password.length < 6)
-      return setErrorMsg("Password must be at least 6 characters");
+      return showToast("error", "Password must be at least 6 characters");
     if (password !== confirmPassword)
-      return setErrorMsg("Password and Confirm Password do not match");
+      return showToast("error", "Password and Confirm Password do not match");
 
     setLoading(true);
 
     try {
+      // ✅ Save username temporarily so we can use it after verification link
+      localStorage.setItem("MM_PENDING_NAME", cleanName);
+      localStorage.setItem("MM_PENDING_EMAIL", cleanEmail);
+
       // 1) Create user in Firebase
       const userCred = await createUserWithEmailAndPassword(
         auth,
-        email.trim(),
+        cleanEmail,
         password
       );
 
@@ -61,18 +101,19 @@ const Registration = () => {
       setSendingVerify(true);
       await sendEmailVerification(userCred.user);
 
-      // 3) ✅ Sync user in backend DB (IMPORTANT: do NOT verify here)
+      // 3) Sync in backend DB (IMPORTANT: verified false)
       await axios.post(
         `${serverUrl}/api/auth/firebase-sync`,
-        { name: name.trim(), email: email.trim(), verified: false },
+        { name: cleanName, email: cleanEmail, verified: false },
         { withCredentials: true }
       );
 
-      // 4) Sign out so user doesn't stay authenticated before verifying
+      // 4) Sign out (prevent access before verification)
       await signOut(auth);
 
-      setSuccessMsg(
-        "✅ Account created! Verification link has been sent to your email.\n\nPlease verify your email FIRST, then login."
+      showToast(
+        "success",
+        "✅ Account created!\n\nVerification link has been sent to your email.\nPlease verify FIRST, then login."
       );
 
       // Clear form
@@ -81,8 +122,7 @@ const Registration = () => {
       setPassword("");
       setConfirmPassword("");
 
-      // Move to login after some time
-      setTimeout(() => navigate("/login"), 1800);
+      setTimeout(() => navigate("/login"), 1600);
     } catch (error) {
       console.error("Signup error:", error);
 
@@ -96,20 +136,17 @@ const Registration = () => {
           : error?.message;
 
       const backendMsg = error?.response?.data?.message;
-
-      setErrorMsg(backendMsg || firebaseMsg || "Signup failed");
+      showToast("error", backendMsg || firebaseMsg || "Signup failed");
     } finally {
       setSendingVerify(false);
       setLoading(false);
     }
   };
 
-  // ✅ Google Signup/Login (keep existing service)
+  // ✅ Google Signup/Login (keep)
   const googleSignup = async () => {
     try {
       setLoading(true);
-      setErrorMsg("");
-      setSuccessMsg("");
 
       const response = await signInWithPopup(auth, provider);
       const user = response.user;
@@ -117,7 +154,6 @@ const Registration = () => {
       const gName = user.displayName || "MishraMart User";
       const gEmail = user.email;
 
-      // ✅ Google login should stay as it is
       await axios.post(
         `${serverUrl}/api/auth/googlelogin`,
         { name: gName, email: gEmail },
@@ -128,15 +164,20 @@ const Registration = () => {
       navigate("/");
     } catch (error) {
       console.error("Google signup error:", error);
-      setErrorMsg("Google signup failed");
+      showToast("error", "Google signup failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    // ✅ No horizontal scroll
     <div className="w-full min-h-screen overflow-x-hidden bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364] text-white flex flex-col select-none">
+      <Toast
+        type={toastType}
+        message={toastMsg}
+        onClose={() => setToastMsg("")}
+      />
+
       {/* Navbar / Logo */}
       <div className="w-full h-[70px] sm:h-[80px] flex items-center justify-start px-4 sm:px-8">
         <img
@@ -154,27 +195,14 @@ const Registration = () => {
           Create Account
         </h1>
         <p className="text-gray-300 mt-2 text-sm sm:text-base">
-          Join{" "}
-          <span className="text-[#4aa4b5] font-semibold">MishraMart</span> and
-          start shopping today!
+          Join <span className="text-[#4aa4b5] font-semibold">MishraMart</span>{" "}
+          and start shopping today!
         </p>
       </div>
 
       {/* Registration Box */}
       <div className="flex flex-1 items-center justify-center px-3 sm:px-4 py-6">
         <div className="w-full max-w-sm sm:max-w-md bg-[#ffffff10] border border-[#ffffff20] backdrop-blur-2xl rounded-2xl shadow-2xl p-6 sm:p-8">
-          {/* Alerts */}
-          {successMsg && (
-            <div className="mb-4 p-3 bg-green-500/20 border border-green-500/40 rounded text-green-200 text-sm whitespace-pre-line">
-              {successMsg}
-            </div>
-          )}
-          {errorMsg && (
-            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/40 rounded text-red-200 text-sm">
-              {errorMsg}
-            </div>
-          )}
-
           {/* Google Button */}
           <div
             className={`w-full flex items-center justify-center gap-3 bg-[#42656cae] rounded-lg py-3 mb-6 transition 
@@ -279,7 +307,7 @@ const Registration = () => {
               </button>
             </div>
 
-            {/* Submit Button */}
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading}

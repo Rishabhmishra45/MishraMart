@@ -1,20 +1,37 @@
 import React, { useEffect, useMemo, useState, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
-import {
-  applyActionCode,
-  checkActionCode,
-  confirmPasswordReset,
-  getAuth,
-} from "firebase/auth";
+import { applyActionCode, checkActionCode, confirmPasswordReset, getAuth } from "firebase/auth";
 import axios from "axios";
 import { authDataContext } from "../context/AuthContext";
+
+/* ✅ Modern toast */
+const Toast = ({ type = "success", message, onClose }) => {
+  if (!message) return null;
+  return (
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-6 z-[9999] w-[92%] sm:w-[380px]">
+      <div
+        className={`p-4 rounded-2xl border backdrop-blur-xl shadow-2xl animate-[fadeIn_.25s_ease-out] ${
+          type === "success"
+            ? "bg-green-500/15 border-green-500/30 text-green-100"
+            : "bg-red-500/15 border-red-500/30 text-red-100"
+        }`}
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex-1 text-sm leading-relaxed whitespace-pre-line">{message}</div>
+          <button className="text-xs font-semibold opacity-80 hover:opacity-100" onClick={onClose} type="button">
+            ✕
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AuthAction = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const firebaseAuth = useMemo(() => getAuth(), []);
-
   const { serverUrl } = useContext(authDataContext);
 
   const [loading, setLoading] = useState(true);
@@ -24,30 +41,42 @@ const AuthAction = () => {
   const [status, setStatus] = useState("Processing...");
   const [success, setSuccess] = useState(false);
 
-  // Reset Password States
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
 
+  const [toastMsg, setToastMsg] = useState("");
+  const [toastType, setToastType] = useState("success");
+
+  const showToast = (type, msg) => {
+    setToastType(type);
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(""), 3500);
+  };
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const m = params.get("mode");
-    const code = params.get("oobCode");
-
-    setMode(m || "");
-    setOobCode(code || "");
+    setMode(params.get("mode") || "");
+    setOobCode(params.get("oobCode") || "");
   }, [location.search]);
 
-  // Sync verified state to backend DB
   const syncBackendVerified = async (email) => {
     if (!email) return;
+
+    // ✅ get real username from localStorage
+    const pendingName = localStorage.getItem("MM_PENDING_NAME") || "MishraMart User";
+
     try {
       await axios.post(
         `${serverUrl}/api/auth/firebase-sync`,
-        { name: "MishraMart User", email, verified: true },
+        { name: pendingName, email, verified: true },
         { withCredentials: true }
       );
+
+      // ✅ cleanup after success
+      localStorage.removeItem("MM_PENDING_NAME");
+      localStorage.removeItem("MM_PENDING_EMAIL");
     } catch (e) {
       console.error("Backend sync failed:", e);
     }
@@ -68,18 +97,17 @@ const AuthAction = () => {
           await checkActionCode(firebaseAuth, oobCode);
           await applyActionCode(firebaseAuth, oobCode);
 
-          // Sync verified in backend after firebase verify
-          const email = firebaseAuth?.currentUser?.email;
+          const email = firebaseAuth?.currentUser?.email || localStorage.getItem("MM_PENDING_EMAIL");
           await syncBackendVerified(email);
 
           setSuccess(true);
           setStatus("✅ Email verified successfully! You can now login.");
+          showToast("success", "✅ Email verified successfully!");
           setLoading(false);
           return;
         }
 
         if (mode === "resetPassword") {
-          // For reset password, show form
           setStatus("Please set your new password.");
           setSuccess(false);
           setLoading(false);
@@ -98,6 +126,7 @@ const AuthAction = () => {
             ? "This link has expired. Please request a new one."
             : "Invalid or expired link."
         );
+        showToast("error", "Invalid or expired link.");
       }
     };
 
@@ -108,27 +137,28 @@ const AuthAction = () => {
     e.preventDefault();
 
     if (!newPassword || newPassword.length < 6) {
-      return alert("Password must be at least 6 characters");
+      return showToast("error", "Password must be at least 6 characters");
     }
-
     if (newPassword !== confirmNewPassword) {
-      return alert("Password and Confirm Password do not match");
+      return showToast("error", "Password and Confirm Password do not match");
     }
 
     try {
       setResetLoading(true);
-
       await confirmPasswordReset(firebaseAuth, oobCode, newPassword);
 
       setSuccess(true);
       setStatus("✅ Password reset successful! Please login.");
+      showToast("success", "✅ Password reset successful!");
+
       setNewPassword("");
       setConfirmNewPassword("");
 
       setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       console.error("Reset password error:", err);
-      alert(
+      showToast(
+        "error",
         err?.message?.includes("expired")
           ? "Reset link expired. Request new reset link."
           : "Failed to reset password."
@@ -139,8 +169,9 @@ const AuthAction = () => {
   };
 
   return (
-    // ✅ overflow-x-hidden to remove right side bug on mobile
     <div className="w-full min-h-screen overflow-x-hidden bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364] text-white flex flex-col select-none">
+      <Toast type={toastType} message={toastMsg} onClose={() => setToastMsg("")} />
+
       {/* Navbar */}
       <div className="w-full h-[70px] sm:h-[80px] flex items-center justify-start px-4 sm:px-8">
         <img
@@ -154,10 +185,8 @@ const AuthAction = () => {
 
       {/* Content */}
       <div className="flex-1 flex items-start justify-center px-4 pb-10">
-        {/* ✅ Mobile: form slightly upper (pt-4), Desktop: centered (pt-10) */}
         <div className="w-full max-w-lg pt-4 sm:pt-10">
           <div className="w-full bg-white/10 border border-white/20 backdrop-blur-xl rounded-3xl shadow-2xl p-6 sm:p-10">
-            {/* Header */}
             <div className="text-center">
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide">
                 MishraMart Authentication
@@ -167,7 +196,6 @@ const AuthAction = () => {
               </p>
             </div>
 
-            {/* Loading */}
             {loading && (
               <div className="mt-8 text-center">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-white mx-auto"></div>
@@ -175,7 +203,6 @@ const AuthAction = () => {
               </div>
             )}
 
-            {/* Status Messages */}
             {!loading && mode !== "resetPassword" && (
               <div
                 className={`mt-6 p-4 rounded-2xl border text-sm sm:text-base ${
@@ -188,7 +215,6 @@ const AuthAction = () => {
               </div>
             )}
 
-            {/* ✅ Reset Password Form */}
             {!loading && mode === "resetPassword" && (
               <>
                 <div className="mt-6 p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-100 text-sm">
@@ -249,7 +275,6 @@ const AuthAction = () => {
               </>
             )}
 
-            {/* Buttons */}
             {!loading && mode !== "resetPassword" && (
               <div className="mt-6 flex flex-col sm:flex-row gap-3">
                 <button
