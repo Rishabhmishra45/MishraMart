@@ -51,20 +51,24 @@ const Registration = () => {
 
     try {
       // 1) Create user in Firebase
-      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+      const userCred = await createUserWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password
+      );
 
       // 2) Send verification email
       setSendingVerify(true);
       await sendEmailVerification(userCred.user);
 
-      // 3) Sync user in backend DB (keep services safe)
+      // 3) ✅ Sync user in backend DB (IMPORTANT: do NOT verify here)
       await axios.post(
-        `${serverUrl}/api/auth/googlelogin`,
-        { name, email },
+        `${serverUrl}/api/auth/firebase-sync`,
+        { name: name.trim(), email: email.trim(), verified: false },
         { withCredentials: true }
       );
 
-      // 4) Important UX: Sign out so user doesn't stay authenticated before verify
+      // 4) Sign out so user doesn't stay authenticated before verifying
       await signOut(auth);
 
       setSuccessMsg(
@@ -100,7 +104,7 @@ const Registration = () => {
     }
   };
 
-  // ✅ Google Signup/Login
+  // ✅ Google Signup/Login (keep existing service)
   const googleSignup = async () => {
     try {
       setLoading(true);
@@ -110,12 +114,13 @@ const Registration = () => {
       const response = await signInWithPopup(auth, provider);
       const user = response.user;
 
-      const name = user.displayName || "MishraMart User";
-      const email = user.email;
+      const gName = user.displayName || "MishraMart User";
+      const gEmail = user.email;
 
+      // ✅ Google login should stay as it is
       await axios.post(
         `${serverUrl}/api/auth/googlelogin`,
-        { name, email },
+        { name: gName, email: gEmail },
         { withCredentials: true }
       );
 
@@ -240,7 +245,11 @@ const Registration = () => {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <IoEyeOffOutline size={20} /> : <IoEyeOutline size={20} />}
+                {showPassword ? (
+                  <IoEyeOffOutline size={20} />
+                ) : (
+                  <IoEyeOutline size={20} />
+                )}
               </button>
             </div>
 
@@ -262,7 +271,11 @@ const Registration = () => {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
-                {showConfirmPassword ? <IoEyeOffOutline size={20} /> : <IoEyeOutline size={20} />}
+                {showConfirmPassword ? (
+                  <IoEyeOffOutline size={20} />
+                ) : (
+                  <IoEyeOutline size={20} />
+                )}
               </button>
             </div>
 
@@ -289,7 +302,9 @@ const Registration = () => {
               Already have an account?{" "}
               <span
                 className={`text-[#1a1aebcf] font-semibold ${
-                  loading ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:underline"
+                  loading
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer hover:underline"
                 }`}
                 onClick={() => !loading && navigate("/login")}
               >

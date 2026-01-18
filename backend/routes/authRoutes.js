@@ -7,36 +7,40 @@ import {
   adminLogin,
   forgotPasswordOtp,
   verifyOtpAndResetPassword,
-
-  // ✅ NEW Signup flow
   startSignup,
   completeSignup,
-
-  // ✅ Email verify OTP
   sendEmailVerifyOtp,
   verifyEmailOtp,
+  firebaseSync,
 } from "../controller/authController.js";
 
 const authRoutes = express.Router();
 
-/* ================= OLD ================= */
-// registration old (will keep but not use in frontend anymore)
+// Old registration (keep)
 authRoutes.post("/registration", registration);
 
+// Login/logout
 authRoutes.post("/login", login);
 authRoutes.post("/logout", logOut);
+
+// Google login
 authRoutes.post("/googlelogin", googleLogin);
+
+// Admin login
 authRoutes.post("/adminlogin", adminLogin);
 
-/* ================= ✅ NEW SIGNUP FLOW ================= */
+// OTP signup flow (keep)
 authRoutes.post("/start-signup", startSignup);
 authRoutes.post("/complete-signup", completeSignup);
 
-/* ================= EMAIL VERIFY OTP ================= */
+// OTP verify routes (keep)
 authRoutes.post("/send-verify-otp", sendEmailVerifyOtp);
 authRoutes.post("/verify-email-otp", verifyEmailOtp);
 
-/* ================= RESET PASSWORD ================= */
+// Firebase sync (required for link based auth)
+authRoutes.post("/firebase-sync", firebaseSync);
+
+// Reset password OTP (keep services)
 authRoutes.post("/forgot-password-otp", forgotPasswordOtp);
 authRoutes.post("/verify-reset-otp", verifyOtpAndResetPassword);
 

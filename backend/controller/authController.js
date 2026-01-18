@@ -8,19 +8,12 @@ import otpEmailTemplate from "../utils/otpEmailTemplate.js";
 
 const cookieOptions = {
   httpOnly: true,
-  secure: true,
-  sameSite: "None",
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
-/* =========================================================
-   ✅ NEW SIGNUP FLOW (SINGLE PAGE)
-   1) startSignup -> (name+email) create/update user + send OTP
-   2) verifyEmailOtp -> verify OTP
-   3) completeSignup -> set password + login token
-========================================================= */
-
-/* ================= START SIGNUP (NEW) ================= */
+/* ================= START SIGNUP (OTP based old flow - keep) ================= */
 export const startSignup = async (req, res) => {
   try {
     const { name, email } = req.body;
@@ -36,17 +29,14 @@ export const startSignup = async (req, res) => {
     }
 
     const userEmail = email.toLowerCase().trim();
-
     let user = await User.findOne({ email: userEmail });
 
-    // Block already verified users
     if (user && user.isVerified) {
       return res
         .status(400)
         .json({ success: false, message: "Email already registered" });
     }
 
-    // Create or update the user safely
     if (!user) {
       user = new User({
         name,
@@ -57,10 +47,7 @@ export const startSignup = async (req, res) => {
       user.name = name;
     }
 
-    // Generate and send OTP
     const otp = user.generateEmailVerifyOtp();
-
-    // Save OTP without schema issues
     await user.save({ validateBeforeSave: false });
 
     await sendEmail({
@@ -83,7 +70,7 @@ export const startSignup = async (req, res) => {
   }
 };
 
-/* ================= COMPLETE SIGNUP (NEW) ================= */
+/* ================= COMPLETE SIGNUP (OTP based old flow - keep) ================= */
 export const completeSignup = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -107,12 +94,10 @@ export const completeSignup = async (req, res) => {
       });
     }
 
-    // Set password now
     const hashedPassword = await bcrypt.hash(password, 10);
     user.password = hashedPassword;
     await user.save({ validateBeforeSave: false });
 
-    // Login token
     const token = genToken(user._id);
     res.cookie("token", token, cookieOptions);
 
@@ -309,17 +294,67 @@ export const verifyEmailOtp = async (req, res) => {
   }
 };
 
-/* ================= LOGIN (Block unverified) ================= */
+/* ================= FIREBASE SYNC (NEW - needed for link based auth) ================= */
+export const firebaseSync = async (req, res) => {
+  try {
+    const { name, email, verified } = req.body;
+
+    if (!name || !email) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Name and Email are required" });
+    }
+
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ success: false, message: "Invalid email" });
+    }
+
+    const userEmail = email.toLowerCase().trim();
+
+    let user = await User.findOne({ email: userEmail });
+
+    if (!user) {
+      user = await User.create({
+        name,
+        email: userEmail,
+        isVerified: !!verified,
+        password: "",
+      });
+    } else {
+      user.name = name;
+      if (verified === true) user.isVerified = true;
+      await user.save({ validateBeforeSave: false });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Firebase user synced",
+    });
+  } catch (e) {
+    console.error("❌ FIREBASE SYNC ERROR:", e);
+    return res.status(500).json({ success: false, message: e.message });
+  }
+};
+
+/* ================= LOGIN (FIXED for Firebase + MERN) ================= */
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
-    if (!user || !user.password)
+    const userEmail = email?.toLowerCase?.().trim?.();
+    if (!userEmail) {
+      return res.status(400).json({ success: false, message: "Email required" });
+    }
+
+    const user = await User.findOne({ email: userEmail });
+
+    if (!user) {
       return res
         .status(400)
         .json({ success: false, message: "Invalid credentials" });
+    }
 
+    // Block unverified user always
     if (!user.isVerified) {
       return res.status(403).json({
         success: false,
@@ -327,17 +362,30 @@ export const login = async (req, res) => {
       });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(400).json({ success: false, message: "Wrong password" });
+    // If DB user has password -> check it
+    if (user.password && user.password.trim() !== "") {
+      if (!password) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Password required" });
+      }
 
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid credentials" });
+      }
+    }
+
+    // Firebase users (password empty) -> allow login (frontend already authenticated)
     const token = genToken(user._id);
     res.cookie("token", token, cookieOptions);
 
     const userObj = user.toObject();
     delete userObj.password;
 
-    res.json({ success: true, user: userObj });
+    return res.json({ success: true, user: userObj });
   } catch (e) {
     console.error("❌ LOGIN ERROR:", e);
     res.status(500).json({ success: false, message: e.message });
@@ -348,13 +396,13 @@ export const login = async (req, res) => {
 export const logOut = async (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: true,
-    sameSite: "None",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
   });
   res.json({ success: true, message: "Logged out" });
 };
 
-/* ================= GOOGLE LOGIN (Auto verified) ================= */
+/* ================= GOOGLE LOGIN ================= */
 export const googleLogin = async (req, res) => {
   try {
     const { email, name } = req.body;
@@ -403,7 +451,7 @@ export const adminLogin = async (req, res) => {
   res.status(401).json({ success: false, message: "Invalid admin credentials" });
 };
 
-/* ================= RESET PASSWORD OTP ================= */
+/* ================= RESET PASSWORD OTP (keep old services) ================= */
 export const forgotPasswordOtp = async (req, res) => {
   try {
     const { email } = req.body;
@@ -428,7 +476,6 @@ export const forgotPasswordOtp = async (req, res) => {
   }
 };
 
-/* ================= VERIFY OTP + RESET ================= */
 export const verifyOtpAndResetPassword = async (req, res) => {
   try {
     const { email, otp, password } = req.body;
