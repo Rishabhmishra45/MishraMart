@@ -35,32 +35,32 @@ export const startSignup = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid email" });
     }
 
-    const userEmail = email.toLowerCase();
+    const userEmail = email.toLowerCase().trim();
 
     let user = await User.findOne({ email: userEmail });
 
-    // ✅ If already exists AND verified => block
+    // Block already verified users
     if (user && user.isVerified) {
       return res
         .status(400)
         .json({ success: false, message: "Email already registered" });
     }
 
-    // ✅ If not exists => create user without password (yet)
+    // Create or update the user safely
     if (!user) {
-      user = await User.create({
+      user = new User({
         name,
         email: userEmail,
         isVerified: false,
-        password: "", // will set after otp verified
       });
     } else {
-      // if exists but unverified, update name if needed
       user.name = name;
     }
 
-    // ✅ Generate + send OTP
+    // Generate and send OTP
     const otp = user.generateEmailVerifyOtp();
+
+    // Save OTP without schema issues
     await user.save({ validateBeforeSave: false });
 
     await sendEmail({
@@ -75,7 +75,11 @@ export const startSignup = async (req, res) => {
       email: user.email,
     });
   } catch (e) {
-    return res.status(500).json({ success: false, message: e.message });
+    console.error("❌ START SIGNUP ERROR:", e);
+    return res.status(500).json({
+      success: false,
+      message: e.message || "Internal Server Error",
+    });
   }
 };
 
@@ -90,7 +94,7 @@ export const completeSignup = async (req, res) => {
         .json({ success: false, message: "Email and Password are required" });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
 
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
@@ -103,12 +107,12 @@ export const completeSignup = async (req, res) => {
       });
     }
 
-    // ✅ set password now
+    // Set password now
     const hashedPassword = await bcrypt.hash(password, 10);
     user.password = hashedPassword;
-    await user.save();
+    await user.save({ validateBeforeSave: false });
 
-    // ✅ login token
+    // Login token
     const token = genToken(user._id);
     res.cookie("token", token, cookieOptions);
 
@@ -121,6 +125,7 @@ export const completeSignup = async (req, res) => {
       user: userObj,
     });
   } catch (e) {
+    console.error("❌ COMPLETE SIGNUP ERROR:", e);
     return res.status(500).json({ success: false, message: e.message });
   }
 };
@@ -140,7 +145,7 @@ export const registration = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Invalid email" });
 
-    const existUser = await User.findOne({ email: email.toLowerCase() });
+    const existUser = await User.findOne({ email: email.toLowerCase().trim() });
 
     if (existUser && existUser.isVerified) {
       return res
@@ -169,7 +174,7 @@ export const registration = async (req, res) => {
 
     const user = await User.create({
       name,
-      email: email.toLowerCase(),
+      email: email.toLowerCase().trim(),
       password: hashedPassword,
       isVerified: false,
     });
@@ -189,11 +194,12 @@ export const registration = async (req, res) => {
       email: user.email,
     });
   } catch (e) {
+    console.error("❌ REGISTRATION ERROR:", e);
     res.status(500).json({ success: false, message: e.message });
   }
 };
 
-/* ================= SEND VERIFY OTP (EXISTING) ================= */
+/* ================= SEND VERIFY OTP ================= */
 export const sendEmailVerifyOtp = async (req, res) => {
   try {
     const { email } = req.body;
@@ -204,7 +210,7 @@ export const sendEmailVerifyOtp = async (req, res) => {
         .json({ success: false, message: "Valid email required" });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
       return res
         .status(404)
@@ -229,11 +235,12 @@ export const sendEmailVerifyOtp = async (req, res) => {
 
     res.json({ success: true, message: "OTP sent to email" });
   } catch (e) {
+    console.error("❌ SEND VERIFY OTP ERROR:", e);
     res.status(500).json({ success: false, message: e.message });
   }
 };
 
-/* ================= VERIFY EMAIL OTP (EXISTING) ================= */
+/* ================= VERIFY EMAIL OTP ================= */
 export const verifyEmailOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -244,7 +251,7 @@ export const verifyEmailOtp = async (req, res) => {
         .json({ success: false, message: "Email and OTP required" });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user || !user.emailVerifyOtp) {
       return res
         .status(400)
@@ -262,7 +269,7 @@ export const verifyEmailOtp = async (req, res) => {
       user.emailVerifyOtp = undefined;
       user.emailVerifyOtpExpire = undefined;
       user.emailVerifyOtpAttempts = 0;
-      await user.save();
+      await user.save({ validateBeforeSave: false });
 
       return res.status(429).json({
         success: false,
@@ -277,7 +284,7 @@ export const verifyEmailOtp = async (req, res) => {
       user.emailVerifyOtpExpire < Date.now()
     ) {
       user.emailVerifyOtpAttempts += 1;
-      await user.save();
+      await user.save({ validateBeforeSave: false });
 
       return res.status(400).json({
         success: false,
@@ -290,13 +297,14 @@ export const verifyEmailOtp = async (req, res) => {
     user.emailVerifyOtpExpire = undefined;
     user.emailVerifyOtpAttempts = 0;
 
-    await user.save();
+    await user.save({ validateBeforeSave: false });
 
     return res.json({
       success: true,
       message: "Email verified successfully",
     });
   } catch (e) {
+    console.error("❌ VERIFY EMAIL OTP ERROR:", e);
     res.status(500).json({ success: false, message: e.message });
   }
 };
@@ -306,7 +314,7 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user || !user.password)
       return res
         .status(400)
@@ -331,6 +339,7 @@ export const login = async (req, res) => {
 
     res.json({ success: true, user: userObj });
   } catch (e) {
+    console.error("❌ LOGIN ERROR:", e);
     res.status(500).json({ success: false, message: e.message });
   }
 };
@@ -350,11 +359,11 @@ export const googleLogin = async (req, res) => {
   try {
     const { email, name } = req.body;
 
-    let user = await User.findOne({ email: email.toLowerCase() });
+    let user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
       user = await User.create({
         name,
-        email: email.toLowerCase(),
+        email: email.toLowerCase().trim(),
         isVerified: true,
       });
     } else if (!user.isVerified) {
@@ -373,6 +382,7 @@ export const googleLogin = async (req, res) => {
 
     res.json({ success: true, user: userObj });
   } catch (e) {
+    console.error("❌ GOOGLE LOGIN ERROR:", e);
     res.status(500).json({ success: false, message: e.message });
   }
 };
@@ -393,12 +403,12 @@ export const adminLogin = async (req, res) => {
   res.status(401).json({ success: false, message: "Invalid admin credentials" });
 };
 
-/* ================= RESET PASSWORD OTP (EXISTING) ================= */
+/* ================= RESET PASSWORD OTP ================= */
 export const forgotPasswordOtp = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user)
       return res.status(404).json({ success: false, message: "User not found" });
 
@@ -413,16 +423,17 @@ export const forgotPasswordOtp = async (req, res) => {
 
     res.json({ success: true, message: "OTP sent to email" });
   } catch (e) {
+    console.error("❌ FORGOT PASSWORD OTP ERROR:", e);
     res.status(500).json({ success: false, message: e.message });
   }
 };
 
-/* ================= VERIFY OTP + RESET (EXISTING) ================= */
+/* ================= VERIFY OTP + RESET ================= */
 export const verifyOtpAndResetPassword = async (req, res) => {
   try {
     const { email, otp, password } = req.body;
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user || !user.resetOtp)
       return res.status(400).json({ success: false, message: "OTP expired" });
 
@@ -430,7 +441,7 @@ export const verifyOtpAndResetPassword = async (req, res) => {
       user.resetOtp = undefined;
       user.resetOtpExpire = undefined;
       user.resetOtpAttempts = 0;
-      await user.save();
+      await user.save({ validateBeforeSave: false });
 
       return res.status(429).json({
         success: false,
@@ -442,7 +453,7 @@ export const verifyOtpAndResetPassword = async (req, res) => {
 
     if (hashedOtp !== user.resetOtp || user.resetOtpExpire < Date.now()) {
       user.resetOtpAttempts += 1;
-      await user.save();
+      await user.save({ validateBeforeSave: false });
 
       return res.status(400).json({
         success: false,
@@ -455,10 +466,11 @@ export const verifyOtpAndResetPassword = async (req, res) => {
     user.resetOtpExpire = undefined;
     user.resetOtpAttempts = 0;
 
-    await user.save();
+    await user.save({ validateBeforeSave: false });
 
     res.json({ success: true, message: "Password reset successful" });
   } catch (e) {
+    console.error("❌ RESET PASSWORD ERROR:", e);
     res.status(500).json({ success: false, message: e.message });
   }
 };

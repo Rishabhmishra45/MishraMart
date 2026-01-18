@@ -5,7 +5,7 @@ import google from "../assets/google.png";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import { authDataContext } from "../context/AuthContext";
 import axios from "axios";
-import { signInWithPopup } from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../../utils/Firebase";
 import { userDataContext } from "../context/UserContext";
 
@@ -17,16 +17,33 @@ const Login = () => {
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
+  const [errMsg, setErrMsg] = useState("");
 
   let { serverUrl } = useContext(authDataContext);
   let { getCurrentUser } = useContext(userDataContext);
 
-  // ✅ Normal login
+  // ✅ Normal login (Firebase verify check + backend login)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setErrMsg("");
 
     try {
+      // 1) First Firebase login
+      const userCred = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCred.user;
+
+      // 2) Refresh user verification status
+      await user.reload();
+
+      // 3) Block if NOT verified
+      if (!user.emailVerified) {
+        setErrMsg("Your email is not verified. Please verify your email first.");
+        setLoading(false);
+        return;
+      }
+
+      // 4) Backend login (cookie/session for your services)
       await axios.post(
         `${serverUrl}/api/auth/login`,
         { email, password },
@@ -38,18 +55,14 @@ const Login = () => {
     } catch (error) {
       console.error("Login error:", error);
 
-      const msg = error?.response?.data?.message;
+      const firebaseMsg =
+        error?.code === "auth/invalid-credential"
+          ? "Invalid email or password"
+          : error?.message;
 
-      if (msg) {
-        alert(msg);
+      const backendMsg = error?.response?.data?.message;
 
-        // ✅ If email is not verified, send user to Signup page (same page OTP flow)
-        if (msg.toLowerCase().includes("verify your email")) {
-          navigate("/signup");
-        }
-      } else {
-        alert("Network error during login");
-      }
+      setErrMsg(backendMsg || firebaseMsg || "Network error during login");
     } finally {
       setLoading(false);
     }
@@ -59,6 +72,7 @@ const Login = () => {
   const googlelogin = async () => {
     try {
       setLoading(true);
+      setErrMsg("");
 
       const response = await signInWithPopup(auth, provider);
       const user = response.user;
@@ -76,14 +90,14 @@ const Login = () => {
       navigate("/");
     } catch (error) {
       console.error("Google login error:", error);
-      alert("Google login failed");
+      setErrMsg("Google login failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="w-screen min-h-screen flex flex-col bg-gradient-to-tr from-[#0f2027] via-[#203a43] to-[#2c5364] text-white select-none">
+    <div className="w-full min-h-screen overflow-x-hidden flex flex-col bg-gradient-to-tr from-[#0f2027] via-[#203a43] to-[#2c5364] text-white select-none">
       {/* Navbar / Logo */}
       <div className="w-full h-[70px] sm:h-[80px] flex items-center px-4 sm:px-8">
         <img
@@ -110,6 +124,13 @@ const Login = () => {
       {/* Center Box */}
       <div className="flex-1 flex items-center justify-center px-3 sm:px-6 py-6">
         <div className="w-full max-w-sm sm:max-w-md bg-white/10 border border-white/20 backdrop-blur-xl shadow-xl rounded-2xl p-6 sm:p-8">
+          {/* Error */}
+          {errMsg && (
+            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/40 rounded text-red-200 text-sm">
+              {errMsg}
+            </div>
+          )}
+
           {/* Google Button */}
           <div
             className={`w-full flex items-center justify-center gap-3 bg-[#ffffff1a] border border-white/20 rounded-lg py-3 mb-6 transition 
@@ -140,7 +161,6 @@ const Login = () => {
 
           {/* Form */}
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-            {/* Email */}
             <input
               type="email"
               placeholder="Email"
@@ -192,7 +212,7 @@ const Login = () => {
               </span>
             </div>
 
-            {/* Submit Button */}
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading}

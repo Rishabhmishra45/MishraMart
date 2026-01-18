@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: false,
+      default: "",
     },
 
     phone: { type: String, default: "" },
@@ -50,7 +51,10 @@ const userSchema = new mongoose.Schema(
       default: 0,
     },
   },
-  { timestamps: true, minimize: false }
+  { 
+    timestamps: true, minimize: false 
+
+  }
 );
 
 /* =========================
