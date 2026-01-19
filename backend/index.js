@@ -12,6 +12,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import chatbotRoutes from './routes/chatbotRoutes.js';
 import wishlistRoutes from './routes/wishlistRoutes.js';
+import reviewRoutes from "./routes/reviewRoutes.js";
 import compression from 'compression';
 
 // Load env first
@@ -119,6 +120,7 @@ app.use("/api/product", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/chatbot", chatbotRoutes);
 app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/review", reviewRoutes);
 
 // Root endpoint
 app.get("/", (req, res) => res.json({

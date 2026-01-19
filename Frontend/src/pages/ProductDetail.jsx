@@ -29,6 +29,7 @@ import {
     FaExclamationTriangle
 } from 'react-icons/fa';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ProductReviews from '../components/ProductReviews';
 
 // Cart Notification Component
 const CartNotification = ({ product, isVisible }) => {
@@ -64,7 +65,7 @@ const ProductDetail = () => {
     const { addToCart, showCartNotification, notificationProduct } = useCart();
     const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
     const { userData } = useContext(userDataContext);
-    
+
     const [product, setProduct] = useState(null);
     const [selectedImage, setSelectedImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
@@ -83,7 +84,7 @@ const ProductDetail = () => {
         } else {
             const foundProduct = products.find(p => p._id === id);
             setProduct(foundProduct);
-            
+
             // Get persistent discount for this product
             if (foundProduct) {
                 const storedDiscount = localStorage.getItem(`product_discount_${foundProduct._id}`);
@@ -95,10 +96,10 @@ const ProductDetail = () => {
                     setDiscountPercentage(randomDiscount);
                     localStorage.setItem(`product_discount_${foundProduct._id}`, randomDiscount.toString());
                 }
-                
+
                 setIsWishlisted(isInWishlist(foundProduct._id));
             }
-            
+
             setIsLoading(false);
         }
     }, [products, id, getProducts, isInWishlist]);
@@ -119,7 +120,7 @@ const ProductDetail = () => {
 
     const handleAddToCart = () => {
         if (!product) return;
-        
+
         if (!selectedSize && sizeOptions.length > 0) {
             alert('Please select a size before adding to cart');
             return;
@@ -159,7 +160,7 @@ const ProductDetail = () => {
         }
 
         setWishlistLoading(true);
-        
+
         try {
             if (isWishlisted) {
                 await removeFromWishlist(product._id);
@@ -228,7 +229,6 @@ const ProductDetail = () => {
                     text: `Check out ${product?.name} on MishraMart - ${discountPercentage}% OFF!`,
                     url: window.location.href,
                 });
-                console.log('Product shared successfully');
             } catch (error) {
                 console.log('Error sharing:', error);
             }
@@ -301,7 +301,7 @@ const ProductDetail = () => {
 
             {/* Zoom Modal */}
             {zoomImage && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
                     onClick={() => setZoomImage(false)}
                 >
@@ -312,7 +312,7 @@ const ProductDetail = () => {
                             className="w-full h-full object-contain rounded-lg"
                         />
                     </div>
-                    <button 
+                    <button
                         className="absolute top-4 right-4 text-white text-2xl bg-black/50 rounded-full p-2"
                         onClick={() => setZoomImage(false)}
                     >
@@ -362,11 +362,10 @@ const ProductDetail = () => {
                                 <button
                                     key={index}
                                     onClick={() => setSelectedImage(index)}
-                                    className={`flex-shrink-0 w-16 h-16 border-2 rounded-lg overflow-hidden transition-all duration-300 transform hover:scale-110 ${
-                                        selectedImage === index
-                                            ? 'border-cyan-400 scale-110 shadow-lg shadow-cyan-400/20'
-                                            : 'border-gray-600 hover:border-gray-400'
-                                    }`}
+                                    className={`flex-shrink-0 w-16 h-16 border-2 rounded-lg overflow-hidden transition-all duration-300 transform hover:scale-110 ${selectedImage === index
+                                        ? 'border-cyan-400 scale-110 shadow-lg shadow-cyan-400/20'
+                                        : 'border-gray-600 hover:border-gray-400'
+                                        }`}
                                 >
                                     <img
                                         src={img}
@@ -389,11 +388,10 @@ const ProductDetail = () => {
                                 <button
                                     onClick={handleWishlistToggle}
                                     disabled={wishlistLoading}
-                                    className={`p-2 rounded-full transition-all duration-300 hover:scale-110 ${
-                                        isWishlisted
-                                            ? 'text-red-500 bg-red-500/10 border border-red-500/30 animate-heart-beat'
-                                            : 'text-gray-400 bg-gray-700/50 border border-gray-600 hover:text-red-400'
-                                    } ${wishlistLoading ? 'opacity-50' : ''}`}
+                                    className={`p-2 rounded-full transition-all duration-300 hover:scale-110 ${isWishlisted
+                                        ? 'text-red-500 bg-red-500/10 border border-red-500/30 animate-heart-beat'
+                                        : 'text-gray-400 bg-gray-700/50 border border-gray-600 hover:text-red-400'
+                                        } ${wishlistLoading ? 'opacity-50' : ''}`}
                                     title={!userData ? "Login to add to wishlist" : isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                                 >
                                     {wishlistLoading ? (
@@ -403,13 +401,15 @@ const ProductDetail = () => {
                                     )}
                                 </button>
                             </div>
-                            
+
                             <div className="flex items-center gap-4 mb-4">
                                 <div className="flex items-center gap-1">
                                     {[1, 2, 3, 4, 5].map((star) => (
-                                        <FaStar key={star} className="text-yellow-400 text-sm" />
+                                        <FaStar key={star} className={`text-sm ${star <= 4 ? 'text-yellow-400' : 'text-gray-600'}`} />
                                     ))}
-                                    <span className="text-gray-400 text-sm ml-2">4.8 • 124 Reviews</span>
+                                    <span className="text-gray-400 text-sm ml-2">
+                                        Ratings shown below in reviews
+                                    </span>
                                 </div>
                                 <span className="text-green-400 text-sm font-semibold bg-green-400/10 py-1 px-2 rounded-full animate-pulse">In Stock</span>
                             </div>
@@ -433,7 +433,7 @@ const ProductDetail = () => {
                         </div>
 
                         {/* Product Description */}
-                        <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 animate-fade-in-up" style={{animationDelay: '0.1s'}}>
+                        <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                             <h3 className="text-lg font-semibold mb-3 text-cyan-400">Product Description</h3>
                             <p className="text-gray-300 leading-relaxed">
                                 {product.description || `Discover the exceptional quality and style of our ${product.name}. Crafted with precision and attention to detail, this product offers unparalleled comfort and durability. Perfect for everyday use while maintaining a sophisticated appearance that complements any style.`}
@@ -442,7 +442,7 @@ const ProductDetail = () => {
 
                         {/* Size Selector */}
                         {sizeOptions.length > 0 && (
-                            <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 animate-fade-in-up" style={{animationDelay: '0.2s'}}>
+                            <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-cyan-400">
                                     <FaRuler />
                                     Select Size
@@ -453,11 +453,10 @@ const ProductDetail = () => {
                                             key={size}
                                             type="button"
                                             onClick={() => setSelectedSize(size)}
-                                            className={`px-5 py-2.5 border-2 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
-                                                selectedSize === size
-                                                    ? 'border-cyan-400 bg-cyan-400/10 text-cyan-400 scale-105 shadow-lg shadow-cyan-400/20'
-                                                    : 'border-gray-600 text-gray-400 hover:border-cyan-400 hover:text-cyan-400'
-                                            }`}
+                                            className={`px-5 py-2.5 border-2 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${selectedSize === size
+                                                ? 'border-cyan-400 bg-cyan-400/10 text-cyan-400 scale-105 shadow-lg shadow-cyan-400/20'
+                                                : 'border-gray-600 text-gray-400 hover:border-cyan-400 hover:text-cyan-400'
+                                                }`}
                                         >
                                             {size}
                                         </button>
@@ -473,7 +472,7 @@ const ProductDetail = () => {
                         )}
 
                         {/* Quantity Selector */}
-                        <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 animate-fade-in-up" style={{animationDelay: '0.3s'}}>
+                        <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
                             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-cyan-400">
                                 <FaTag />
                                 Quantity
@@ -503,15 +502,14 @@ const ProductDetail = () => {
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{animationDelay: '0.4s'}}>
+                        <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
                             <button
                                 onClick={handleAddToCart}
                                 disabled={sizeOptions.length > 0 && !selectedSize}
-                                className={`flex-1 px-8 py-4 font-semibold rounded-2xl transition-all duration-300 transform flex items-center justify-center gap-3 ${
-                                    (sizeOptions.length === 0 || selectedSize)
-                                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white hover:-translate-y-1 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:scale-105'
-                                        : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                                }`}
+                                className={`flex-1 px-8 py-4 font-semibold rounded-2xl transition-all duration-300 transform flex items-center justify-center gap-3 ${(sizeOptions.length === 0 || selectedSize)
+                                    ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white hover:-translate-y-1 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:scale-105'
+                                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                                    }`}
                             >
                                 <FaShoppingCart />
                                 {sizeOptions.length > 0 && !selectedSize ? 'Select Size First' : 'Add to Cart'}
@@ -519,18 +517,17 @@ const ProductDetail = () => {
                             <button
                                 onClick={buyNow}
                                 disabled={sizeOptions.length > 0 && !selectedSize}
-                                className={`flex-1 px-8 py-4 font-semibold rounded-2xl transition-all duration-300 transform flex items-center justify-center gap-3 ${
-                                    (sizeOptions.length === 0 || selectedSize)
-                                        ? 'bg-white hover:bg-gray-100 text-gray-900 hover:-translate-y-1 shadow-lg hover:shadow-xl hover:scale-105'
-                                        : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                                }`}
+                                className={`flex-1 px-8 py-4 font-semibold rounded-2xl transition-all duration-300 transform flex items-center justify-center gap-3 ${(sizeOptions.length === 0 || selectedSize)
+                                    ? 'bg-white hover:bg-gray-100 text-gray-900 hover:-translate-y-1 shadow-lg hover:shadow-xl hover:scale-105'
+                                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                                    }`}
                             >
                                 {sizeOptions.length > 0 && !selectedSize ? 'Select Size First' : 'Buy Now'}
                             </button>
                         </div>
 
                         {/* Share Button */}
-                        <div className="flex gap-4 animate-fade-in-up" style={{animationDelay: '0.5s'}}>
+                        <div className="flex gap-4 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
                             <button
                                 onClick={nativeShare}
                                 className="px-6 py-3 border border-gray-600 text-gray-400 hover:border-cyan-400 hover:text-cyan-400 rounded-2xl transition-all duration-300 flex items-center gap-2 flex-1 justify-center hover:scale-105"
@@ -562,7 +559,7 @@ const ProductDetail = () => {
                         {/* Features Grid */}
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                             {features.map((feature, index) => (
-                                <div key={index} className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-xl p-4 text-center hover:border-cyan-400/30 transition-all duration-300 group hover:transform hover:-translate-y-1 animate-fade-in-up" style={{animationDelay: `${0.6 + index * 0.1}s`}}>
+                                <div key={index} className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-xl p-4 text-center hover:border-cyan-400/30 transition-all duration-300 group hover:transform hover:-translate-y-1 animate-fade-in-up" style={{ animationDelay: `${0.6 + index * 0.1}s` }}>
                                     <div className={`text-xl mb-2 flex justify-center ${feature.color} group-hover:scale-110 transition-transform duration-300`}>
                                         {feature.icon}
                                     </div>
@@ -595,30 +592,8 @@ const ProductDetail = () => {
                         </div>
                     </div>
 
-                    {/* Customer Reviews Preview */}
-                    <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 animate-fade-in-up">
-                        <h3 className="text-xl font-semibold mb-6 text-cyan-400">Customer Reviews</h3>
-                        <div className="space-y-4">
-                            {[
-                                { name: "Sarah M.", rating: 5, comment: "Absolutely love this product! The quality is amazing.", date: "2 days ago" },
-                                { name: "John D.", rating: 4, comment: "Great value for money. Fast delivery too!", date: "1 week ago" },
-                                { name: "Emma L.", rating: 5, comment: "Perfect fit and excellent quality. Highly recommend!", date: "2 weeks ago" }
-                            ].map((review, index) => (
-                                <div key={index} className="border-b border-gray-700 pb-4 last:border-b-0 last:pb-0">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className="font-semibold text-white">{review.name}</span>
-                                        <div className="flex items-center gap-1">
-                                            {[...Array(5)].map((_, i) => (
-                                                <FaStar key={i} className={`text-sm ${i < review.rating ? 'text-yellow-400' : 'text-gray-600'}`} />
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <p className="text-gray-300 text-sm mb-2">{review.comment}</p>
-                                    <span className="text-gray-500 text-xs">{review.date}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                    {/* Customer Reviews Component */}
+                    <ProductReviews productId={id} />
                 </div>
             </div>
 
