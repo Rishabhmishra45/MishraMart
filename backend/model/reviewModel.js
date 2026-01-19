@@ -6,51 +6,52 @@ const reviewSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "product",
       required: true,
-      index: true,
     },
+
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
-      index: true,
     },
+
     userName: {
       type: String,
       required: true,
       trim: true,
-      maxlength: 80,
     },
+
     rating: {
       type: Number,
       required: true,
       min: 1,
       max: 5,
     },
+
     comment: {
       type: String,
       required: true,
       trim: true,
-      maxlength: 500,
+      minlength: 5,
     },
 
-    // ✅ NEW: support up to 3 images
-    images: {
-      type: [String], // Cloudinary URLs
-      default: [],
-    },
+    // ✅ max 3 images store
+    images: [
+      {
+        url: { type: String, required: true },
+        publicId: { type: String, default: "" },
+      },
+    ],
 
-    // ✅ keep old field for backward compatibility (optional)
-    image: {
-      type: String,
-      default: "",
-    },
+    // ✅ old support
+    image: { type: String, default: "" },
   },
   { timestamps: true }
 );
 
-// ✅ same user cannot review same product twice
+// ✅ one user can review one product only
 reviewSchema.index({ productId: 1, userId: 1 }, { unique: true });
 
-const Review = mongoose.model("review", reviewSchema);
+const Review =
+  mongoose.models.review || mongoose.model("review", reviewSchema);
 
 export default Review;
