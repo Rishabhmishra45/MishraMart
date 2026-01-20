@@ -27,7 +27,7 @@ export const generateInvoice = async (order) => {
    return new Promise(async (resolve, reject) => {
       try {
          // Absolute path to logo.png in your public folder
-         const logoPath = path.resolve(process.cwd(), 'public', 'logo.png');
+         const logoPath = path.resolve(process.cwd(), 'public', 'newLogo.png');
 
          const doc = new PDFDocument({
             margin: 30,

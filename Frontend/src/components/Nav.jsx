@@ -8,7 +8,7 @@ import {
   FaPhone,
 } from "react-icons/fa";
 import { MdOutlineShoppingCart } from "react-icons/md";
-import Logo from "../assets/logo.png";
+import Logo from "../assets/newLogo.png";
 import { userDataContext } from "../context/UserContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import axios from "axios";
@@ -189,15 +189,18 @@ const Nav = () => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="flex items-center justify-between">
             {/* Left - Logo */}
-            <div className="flex-shrink-0 flex items-center h-[60px]">
+            <div className="flex-shrink-0 flex items-center h-[60px] w-[120px] sm:w-[140px] lg:w-[170px] overflow-hidden">
               <img
-                className="h-[52px] w-auto object-contain cursor-pointer select-none"
+                className="h-full w-auto object-contain cursor-pointer select-none
+               scale-[2.2] sm:scale-[2.5] lg:scale-[2.8] origin-left
+               transition-transform duration-300 hover:scale-[2.4] sm:hover:scale-[2.7] lg:hover:scale-[3]"
                 src={Logo}
                 alt="Logo"
                 draggable={false}
                 onClick={() => navigate("/")}
               />
             </div>
+
 
             {/* Desktop Nav Links */}
             <div className="hidden md:flex items-center gap-6 lg:gap-8 mx-4">
