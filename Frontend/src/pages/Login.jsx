@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
 import google from "../assets/google.png";
-import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
+import { IoEyeOutline, IoEyeOffOutline, IoArrowBack } from "react-icons/io5";
 import { authDataContext } from "../context/AuthContext";
 import axios from "axios";
 import {
@@ -18,22 +18,23 @@ const Toast = ({ type = "success", message, onClose }) => {
   if (!message) return null;
 
   return (
-    <div className="fixed top-[92px] left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-6 z-[9999] w-[92%] sm:w-[420px]">
+    <div className="fixed top-[76px] sm:top-[88px] left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-4 z-[9999] w-[92%] sm:w-96 pointer-events-none">
       <div
-        className={`p-4 rounded-2xl border backdrop-blur-xl shadow-2xl animate-[fadeIn_.25s_ease-out] ${
+        className={`pointer-events-auto p-3 sm:p-4 rounded-2xl border backdrop-blur-xl shadow-xl animate-fade-in ${
           type === "success"
-            ? "bg-green-500/15 border-green-500/30 text-green-100"
-            : "bg-red-500/15 border-red-500/30 text-red-100"
+            ? "bg-green-500/10 border-green-500/20 text-green-400"
+            : "bg-red-500/10 border-red-500/20 text-red-400"
         }`}
       >
-        <div className="flex items-start gap-3">
-          <div className="flex-1 text-sm leading-relaxed whitespace-pre-line">
+        <div className="flex items-start gap-2 sm:gap-3">
+          <div className="flex-1 text-xs sm:text-sm leading-relaxed whitespace-pre-line">
             {message}
           </div>
           <button
-            className="text-xs font-semibold opacity-80 hover:opacity-100"
+            className="text-base opacity-80 hover:opacity-100 transition"
             onClick={onClose}
             type="button"
+            aria-label="Close toast"
           >
             ✕
           </button>
@@ -49,7 +50,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [toastType, setToastType] = useState("success");
@@ -60,7 +60,7 @@ const Login = () => {
   const showToast = (type, msg) => {
     setToastType(type);
     setToastMsg(msg);
-    setTimeout(() => setToastMsg(""), 6500);
+    setTimeout(() => setToastMsg(""), 5000);
   };
 
   const handleSubmit = async (e) => {
@@ -139,139 +139,162 @@ const Login = () => {
   };
 
   return (
-    <div className="w-full min-h-screen overflow-x-hidden flex flex-col bg-gradient-to-tr from-[#0f2027] via-[#203a43] to-[#2c5364] text-white select-none">
+    <div className="min-h-[100svh] pb-[20px] bg-[color:var(--background)] text-[color:var(--text)] overflow-hidden overflow-x-hidden">
       <Toast
         type={toastType}
         message={toastMsg}
         onClose={() => setToastMsg("")}
       />
 
-      <div className="w-full h-[70px] sm:h-[80px] flex items-center px-4 sm:px-8">
-        <img
-          className="h-[120px] sm:h-[160px] w-auto object-contain cursor-pointer"
-          src={Logo}
-          alt="Logo"
-          draggable={false}
-          onClick={() => !loading && navigate("/")}
-        />
-      </div>
+      {/* Navbar offset */}
+      <div className="pt-[88px] sm:pt-[96px]">
+        {/* Mobile: top aligned + margin | Desktop: centered */}
+        <div className="min-h-[calc(100svh-88px)] sm:min-h-[calc(100svh-96px)] flex justify-center px-4">
+          <div className="w-full max-w-sm sm:max-w-md">
+            <div className="min-h-[calc(100svh-88px)] sm:min-h-[calc(100svh-96px)] flex items-start sm:items-center justify-center">
+              {/* Mobile: push up + keep bottom safe space */}
+              <div className="w-full mt-6 sm:mt-0">
+                <div className="text-center mb-5 sm:mb-7">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 leading-tight">
+                    Welcome back
+                  </h1>
+                  <p className="text-[color:var(--muted)] text-sm sm:text-base leading-relaxed">
+                    Sign in to Your
+                    <span className="text-cyan-500 font-semibold">
+                      {" "}
+                      MishraMart
+                    </span>{" "}
+                    Account and start shopping today!
+                  </p>
+                </div>
 
-      <div className="w-full text-center mt-2 sm:mt-4 px-4">
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-wide">
-          Welcome back
-        </h1>
-        <p className="text-gray-300 mt-2 text-sm sm:text-base">
-          Sign in to Your
-          <span className="text-[#4aa4b5] font-semibold"> MishraMart</span>{" "}
-          Account and start shopping today!
-        </p>
-      </div>
+                <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8">
+                  <button
+                    onClick={!loading ? googlelogin : undefined}
+                    className={`w-full min-h-[44px] flex items-center justify-center gap-2 sm:gap-3 bg-[color:var(--surface-2)] border border-[color:var(--border)] rounded-xl py-3 px-4 mb-4 transition ${
+                      loading
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:bg-[color:var(--surface)] active:scale-[0.99]"
+                    }`}
+                    disabled={loading}
+                  >
+                    <img
+                      src={google}
+                      alt="Google"
+                      className="w-4 h-4 sm:w-5 sm:h-5 object-contain"
+                      draggable={false}
+                    />
+                    <span className="font-semibold text-sm sm:text-base">
+                      Continue with Google
+                    </span>
+                  </button>
 
-      <div className="flex-1 flex items-center justify-center px-3 sm:px-6 py-6">
-        <div className="w-full max-w-sm sm:max-w-md bg-white/10 border border-white/20 backdrop-blur-xl shadow-xl rounded-2xl p-6 sm:p-8">
-          <div
-            className={`w-full flex items-center justify-center gap-3 bg-[#ffffff1a] border border-white/20 rounded-lg py-3 mb-6 transition 
-              ${
-                loading
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:bg-white/20 cursor-pointer"
-              }`}
-            onClick={!loading ? googlelogin : undefined}
-          >
-            <img
-              src={google}
-              alt="Google"
-              className="w-5 h-5 sm:w-6 sm:h-6 object-contain rounded-full"
-              draggable={false}
-            />
-            <span className="font-medium text-white text-sm sm:text-base">
-              Continue with Google
-            </span>
-          </div>
+                  <div className="flex items-center justify-center gap-2 text-[color:var(--muted)] mb-4 sm:mb-6">
+                    <div className="flex-1 h-px bg-[color:var(--border)]"></div>
+                    <span className="text-xs sm:text-sm px-2">OR</span>
+                    <div className="flex-1 h-px bg-[color:var(--border)]"></div>
+                  </div>
 
-          <div className="flex items-center justify-center gap-2 text-gray-400 mb-6">
-            <div className="flex-1 h-[1px] bg-white/20"></div>
-            <span className="text-xs sm:text-sm">OR</span>
-            <div className="flex-1 h-[1px] bg-white/20"></div>
-          </div>
+                  <form className="space-y-4" onSubmit={handleSubmit}>
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-[color:var(--muted)] mb-2">
+                        Email Address <span className="text-red-400">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="Enter your email"
+                        className="w-full min-h-[44px] px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-transparent border border-[color:var(--border)] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300 text-sm sm:text-base"
+                        required
+                        value={email}
+                        disabled={loading}
+                        onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="email"
+                      />
+                    </div>
 
-          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-            <input
-              type="email"
-              placeholder="Email"
-              className="w-full h-11 sm:h-12 px-4 rounded-lg bg-white/10 border border-white/20 
-                focus:outline-none focus:border-[#4aa4b5] text-white placeholder-gray-300 text-sm sm:text-base"
-              required
-              value={email}
-              disabled={loading}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-[color:var(--muted)] mb-2">
+                        Password <span className="text-red-400">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter your password"
+                          className="w-full min-h-[44px] px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-transparent border border-[color:var(--border)] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300 text-sm sm:text-base pr-11"
+                          required
+                          value={password}
+                          disabled={loading}
+                          onChange={(e) => setPassword(e.target.value)}
+                          autoComplete="current-password"
+                        />
+                        <button
+                          type="button"
+                          disabled={loading}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 min-h-[40px] min-w-[40px] grid place-items-center rounded-lg text-[color:var(--muted)] hover:text-[color:var(--text)] transition focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                          }
+                        >
+                          {showPassword ? (
+                            <IoEyeOffOutline size={18} />
+                          ) : (
+                            <IoEyeOutline size={18} />
+                          )}
+                        </button>
+                      </div>
+                    </div>
 
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                className="w-full h-11 sm:h-12 px-4 pr-10 rounded-lg bg-white/10 border border-white/20 
-                  focus:outline-none focus:border-[#4aa4b5] text-white placeholder-gray-300 text-sm sm:text-base"
-                required
-                value={password}
-                disabled={loading}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <button
-                type="button"
-                disabled={loading}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white transition"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <IoEyeOffOutline size={18} />
-                ) : (
-                  <IoEyeOutline size={18} />
-                )}
-              </button>
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => !loading && navigate("/forgot-password")}
+                        className={`text-cyan-500 text-xs sm:text-sm font-semibold ${
+                          loading
+                            ? "cursor-not-allowed opacity-50"
+                            : "hover:underline"
+                        }`}
+                        disabled={loading}
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className={`w-full min-h-[48px] px-4 sm:px-6 py-3 sm:py-3.5 rounded-xl font-extrabold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 ${
+                        loading
+                          ? "bg-gray-500 cursor-not-allowed text-white"
+                          : "bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-95 text-white hover:-translate-y-0.5 active:translate-y-0"
+                      }`}
+                    >
+                      {loading ? "Signing in..." : "Sign In"}
+                    </button>
+
+                    <p className="text-center text-[color:var(--muted)] text-xs sm:text-sm mt-4">
+                      Don't have an account?{" "}
+                      <button
+                        type="button"
+                        onClick={() => !loading && navigate("/signup")}
+                        className={`text-cyan-500 font-semibold ${
+                          loading
+                            ? "cursor-not-allowed opacity-50"
+                            : "hover:underline"
+                        }`}
+                        disabled={loading}
+                      >
+                        Create Account
+                      </button>
+                    </p>
+                  </form>
+                </div>
+
+                {/* Mobile bottom safe space so it never touches bottom nav */}
+                <div className="h-12 sm:hidden" />
+              </div>
             </div>
-
-            <div className="text-right mt-1">
-              <span
-                className={`text-[#4aa4b5] text-xs sm:text-sm font-semibold ${
-                  loading
-                    ? "cursor-not-allowed opacity-50"
-                    : "cursor-pointer hover:underline"
-                }`}
-                onClick={() => !loading && navigate("/forgot-password")}
-              >
-                Forgot Password?
-              </span>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full h-11 sm:h-12 rounded-lg text-white font-semibold mt-4 transition
-                ${
-                  loading
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-[#4aa4b5] hover:bg-[#3a8c9a]"
-                }`}
-            >
-              {loading ? "Signing in..." : "Sign In"}
-            </button>
-
-            <p className="text-center text-gray-300 mt-3 text-xs sm:text-sm">
-              Don’t have an account?{" "}
-              <span
-                className={`text-[#4aa4b5] font-semibold ${
-                  loading
-                    ? "cursor-not-allowed opacity-50"
-                    : "cursor-pointer hover:underline"
-                }`}
-                onClick={() => !loading && navigate("/signup")}
-              >
-                Create Account
-              </span>
-            </p>
-          </form>
+          </div>
         </div>
       </div>
     </div>

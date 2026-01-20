@@ -70,14 +70,14 @@ const Nav = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        (desktopDropdownRef.current &&
-          desktopDropdownRef.current.contains(event.target)) ||
-        (mobileDropdownRef.current &&
-          mobileDropdownRef.current.contains(event.target))
-      ) {
-        return;
-      }
+      const inDesktop =
+        desktopDropdownRef.current &&
+        desktopDropdownRef.current.contains(event.target);
+      const inMobile =
+        mobileDropdownRef.current &&
+        mobileDropdownRef.current.contains(event.target);
+
+      if (inDesktop || inMobile) return;
       setIsDropdownOpen(false);
     };
 
@@ -171,10 +171,22 @@ const Nav = () => {
       {/* Top Navbar */}
       <nav
         className="w-full fixed top-0 left-0 z-50 h-[60px] flex items-center select-none pointer-events-auto
-        bg-[color:var(--nav-bg)] text-[color:var(--text)] border-b border-[color:var(--border)]
-        shadow-md"
+        border-b border-[color:var(--border)] shadow-md isolation-isolate"
+        style={{
+          background: "var(--nav-bg)", // ensures navbar never looks transparent
+          color: "var(--text)",
+        }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        {/* subtle overlay for stronger contrast */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(to bottom, color-mix(in oklab, var(--nav-bg) 92%, transparent), var(--nav-bg))",
+          }}
+        />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="flex items-center justify-between">
             {/* Left - Logo */}
             <div className="flex-shrink-0 flex items-center h-[60px]">
@@ -188,26 +200,35 @@ const Nav = () => {
             </div>
 
             {/* Desktop Nav Links */}
-            <div className="hidden md:flex space-x-8 mx-4">
-              <Link to="/" className="hover:text-cyan-500 font-medium">
+            <div className="hidden md:flex items-center gap-6 lg:gap-8 mx-4">
+              <Link
+                to="/"
+                className="font-semibold text-sm lg:text-base hover:text-cyan-500 transition-colors"
+              >
                 Home
               </Link>
               <Link
                 to="/collections"
-                className="hover:text-cyan-500 font-medium"
+                className="font-semibold text-sm lg:text-base hover:text-cyan-500 transition-colors"
               >
                 Collection
               </Link>
-              <Link to="/about" className="hover:text-cyan-500 font-medium">
+              <Link
+                to="/about"
+                className="font-semibold text-sm lg:text-base hover:text-cyan-500 transition-colors"
+              >
                 About
               </Link>
-              <Link to="/contact" className="hover:text-cyan-500 font-medium">
+              <Link
+                to="/contact"
+                className="font-semibold text-sm lg:text-base hover:text-cyan-500 transition-colors"
+              >
                 Contact
               </Link>
             </div>
 
             {/* Right Side (Desktop) */}
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden md:flex items-center gap-2 lg:gap-4">
               {/* Theme Toggle */}
               <ThemeToggle />
 
@@ -217,7 +238,7 @@ const Nav = () => {
                   <form
                     onSubmit={handleSearchSubmit}
                     className="flex items-center rounded-full border border-[color:var(--border)]
-                    bg-[color:var(--surface)]"
+                    bg-[color:var(--surface)] shadow-sm"
                   >
                     <input
                       type="text"
@@ -225,21 +246,22 @@ const Nav = () => {
                       onChange={handleSearchChange}
                       onClick={handleSearchInputClick}
                       placeholder="Search products..."
-                      className="py-2 px-3 w-44 outline-none text-sm rounded-l-full
+                      className="py-2 px-3 w-44 lg:w-56 outline-none text-sm rounded-l-full
                       bg-transparent text-[color:var(--text)] placeholder:text-[color:var(--muted)]"
                       autoFocus
                     />
                     <button
                       type="submit"
-                      className="p-2 hover:text-cyan-500"
+                      className="min-h-[40px] px-2 hover:text-cyan-500 transition-colors"
                       title="Search"
                     >
                       <FaSearch />
                     </button>
                     <button
                       type="button"
-                      className="pr-3 text-[color:var(--muted)] hover:text-[color:var(--text)]"
+                      className="min-h-[40px] pr-3 text-[color:var(--muted)] hover:text-[color:var(--text)] transition-colors"
                       onClick={handleSearchToggle}
+                      aria-label="Close search"
                     >
                       &times;
                     </button>
@@ -247,8 +269,9 @@ const Nav = () => {
                 ) : (
                   <button
                     onClick={handleSearchToggle}
-                    className="hover:text-cyan-500 p-2"
+                    className="min-h-[44px] min-w-[44px] grid place-items-center rounded-xl hover:bg-[color:var(--surface-2)] transition"
                     title="Search"
+                    type="button"
                   >
                     <FaSearch className="text-xl" />
                   </button>
@@ -259,7 +282,10 @@ const Nav = () => {
               <div className="relative" ref={desktopDropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="hover:text-cyan-500 p-2 flex items-center gap-2"
+                  className="min-h-[44px] px-2 rounded-xl hover:bg-[color:var(--surface-2)] transition flex items-center gap-2"
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={isDropdownOpen}
                 >
                   {!userData ? (
                     <div
@@ -268,13 +294,13 @@ const Nav = () => {
                       hover:bg-[color:var(--surface-2)]"
                     >
                       <FaUserCircle className="text-xl text-[color:var(--muted)] group-hover:text-cyan-500" />
-                      <span className="text-sm font-medium">Login</span>
+                      <span className="text-sm font-semibold">Login</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
                       <div
-                        className="w-[34px] h-[34px] rounded-full flex items-center justify-center cursor-pointer overflow-hidden
-                        border border-[color:var(--border)]"
+                        className="w-[36px] h-[36px] rounded-full flex items-center justify-center cursor-pointer overflow-hidden
+                        border border-[color:var(--border)] bg-[color:var(--surface)]"
                       >
                         {profileImage ? (
                           <img
@@ -283,12 +309,12 @@ const Nav = () => {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full bg-black text-white rounded-full flex items-center justify-center text-sm font-medium">
+                          <div className="w-full h-full bg-black text-white rounded-full flex items-center justify-center text-sm font-bold">
                             {userData?.name?.slice(0, 1)?.toUpperCase() || "U"}
                           </div>
                         )}
                       </div>
-                      <span className="text-sm font-medium hidden lg:block">
+                      <span className="text-sm font-semibold hidden lg:block max-w-[120px] truncate">
                         {userData?.name?.split(" ")[0]}
                       </span>
                     </div>
@@ -298,40 +324,55 @@ const Nav = () => {
                 {/* Dropdown Menu */}
                 {isDropdownOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-52 rounded-xl shadow-lg p-2 space-y-2 z-50
+                    className="absolute right-0 mt-2 w-56 rounded-2xl shadow-xl p-2 space-y-1 z-50
                     border border-[color:var(--border)] bg-[color:var(--surface)]"
+                    role="menu"
                   >
                     {userData ? (
                       <>
                         <div className="px-3 py-2 text-sm border-b border-[color:var(--border)]">
-                          Hello, {userData.name}
+                          <span className="text-[color:var(--muted)]">
+                            Hello,
+                          </span>{" "}
+                          <span className="font-semibold truncate inline-block max-w-[160px] align-bottom">
+                            {userData.name}
+                          </span>
                         </div>
 
                         <button
                           onClick={() => handleDropdownAction("orders")}
-                          className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[color:var(--surface-2)] cursor-pointer"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          type="button"
                         >
                           My Orders
                         </button>
 
                         <button
                           onClick={() => handleDropdownAction("wishlist")}
-                          className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[color:var(--surface-2)] cursor-pointer"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          type="button"
                         >
-                          My Wishlist
+                          My Wishlist{" "}
+                          {wishlistCount > 0 && (
+                            <span className="ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500 text-white">
+                              {wishlistCount}
+                            </span>
+                          )}
                         </button>
 
                         <button
                           onClick={() => handleDropdownAction("profile")}
-                          className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[color:var(--surface-2)] cursor-pointer"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          type="button"
                         >
                           My Profile
                         </button>
 
                         <button
                           onClick={() => handleDropdownAction("logout")}
-                          className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[color:var(--surface-2)]
-                          cursor-pointer text-red-400 hover:text-red-300"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)]
+                          cursor-pointer transition text-red-400 hover:text-red-300"
+                          type="button"
                         >
                           Logout
                         </button>
@@ -343,7 +384,8 @@ const Nav = () => {
                             navigate("/login");
                             setIsDropdownOpen(false);
                           }}
-                          className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[color:var(--surface-2)] cursor-pointer"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          type="button"
                         >
                           Login
                         </button>
@@ -352,7 +394,8 @@ const Nav = () => {
                             navigate("/signup");
                             setIsDropdownOpen(false);
                           }}
-                          className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[color:var(--surface-2)] cursor-pointer"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          type="button"
                         >
                           Sign Up
                         </button>
@@ -365,13 +408,14 @@ const Nav = () => {
               {/* Cart */}
               <div className="relative">
                 <button
-                  className="hover:text-cyan-500 p-2 relative"
+                  className="min-h-[44px] min-w-[44px] grid place-items-center rounded-xl hover:bg-[color:var(--surface-2)] transition relative"
                   onClick={() => navigate("/cart")}
                   title="Cart"
+                  type="button"
                 >
                   <MdOutlineShoppingCart className="text-2xl" />
                   {cartItemsCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-cyan-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                    <span className="absolute -top-1 -right-1 bg-cyan-500 text-white rounded-full min-w-5 h-5 px-1 flex items-center justify-center text-xs font-extrabold">
                       {cartItemsCount}
                     </span>
                   )}
@@ -380,7 +424,7 @@ const Nav = () => {
             </div>
 
             {/* Mobile Right */}
-            <div className="flex md:hidden items-center space-x-3">
+            <div className="flex md:hidden items-center gap-2">
               {/* Theme */}
               <ThemeToggle />
 
@@ -389,7 +433,7 @@ const Nav = () => {
                 <form
                   onSubmit={handleSearchSubmit}
                   className="flex items-center rounded-full border border-[color:var(--border)]
-                  bg-[color:var(--surface)]"
+                  bg-[color:var(--surface)] shadow-sm"
                 >
                   <input
                     type="text"
@@ -401,19 +445,29 @@ const Nav = () => {
                     bg-transparent text-[color:var(--text)] placeholder:text-[color:var(--muted)]"
                     autoFocus
                   />
-                  <button type="submit" className="p-2 hover:text-cyan-500">
+                  <button
+                    type="submit"
+                    className="min-h-[40px] px-2 hover:text-cyan-500 transition-colors"
+                    aria-label="Search"
+                  >
                     <FaSearch />
                   </button>
                   <button
                     type="button"
-                    className="pr-2 text-[color:var(--muted)] hover:text-[color:var(--text)]"
+                    className="min-h-[40px] pr-2 text-[color:var(--muted)] hover:text-[color:var(--text)] transition-colors"
                     onClick={handleSearchToggle}
+                    aria-label="Close search"
                   >
                     &times;
                   </button>
                 </form>
               ) : (
-                <button onClick={handleSearchToggle} className="p-2 hover:text-cyan-500">
+                <button
+                  onClick={handleSearchToggle}
+                  className="min-h-[44px] min-w-[44px] grid place-items-center rounded-xl hover:bg-[color:var(--surface-2)] transition"
+                  type="button"
+                  aria-label="Open search"
+                >
                   <FaSearch className="text-xl" />
                 </button>
               )}
@@ -422,16 +476,23 @@ const Nav = () => {
               <div className="relative" ref={mobileDropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="hover:text-cyan-500 p-2"
+                  className="min-h-[44px] min-w-[44px] grid place-items-center rounded-xl hover:bg-[color:var(--surface-2)] transition"
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={isDropdownOpen}
                 >
                   {!userData ? (
                     <FaUserCircle className="text-2xl cursor-pointer" />
                   ) : (
-                    <div className="w-[32px] h-[32px] rounded-full overflow-hidden border border-[color:var(--border)]">
+                    <div className="w-[34px] h-[34px] rounded-full overflow-hidden border border-[color:var(--border)] bg-[color:var(--surface)]">
                       {profileImage ? (
-                        <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                        <img
+                          src={profileImage}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
                       ) : (
-                        <div className="w-full h-full bg-black text-white rounded-full flex items-center justify-center text-sm font-medium">
+                        <div className="w-full h-full bg-black text-white rounded-full flex items-center justify-center text-sm font-bold">
                           {userData?.name?.slice(0, 1)?.toUpperCase() || "U"}
                         </div>
                       )}
@@ -441,40 +502,55 @@ const Nav = () => {
 
                 {isDropdownOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-52 rounded-xl shadow-lg p-2 space-y-2 z-50
+                    className="absolute right-0 mt-2 w-56 rounded-2xl shadow-xl p-2 space-y-1 z-50
                     border border-[color:var(--border)] bg-[color:var(--surface)]"
+                    role="menu"
                   >
                     {userData ? (
                       <>
                         <div className="px-3 py-2 text-sm border-b border-[color:var(--border)]">
-                          Hello, {userData.name}
+                          <span className="text-[color:var(--muted)]">
+                            Hello,
+                          </span>{" "}
+                          <span className="font-semibold truncate inline-block max-w-[160px] align-bottom">
+                            {userData.name}
+                          </span>
                         </div>
 
                         <button
                           onClick={() => handleDropdownAction("orders")}
-                          className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[color:var(--surface-2)] cursor-pointer"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          type="button"
                         >
                           My Orders
                         </button>
 
                         <button
                           onClick={() => handleDropdownAction("wishlist")}
-                          className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[color:var(--surface-2)] cursor-pointer"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          type="button"
                         >
-                          My Wishlist
+                          My Wishlist{" "}
+                          {wishlistCount > 0 && (
+                            <span className="ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500 text-white">
+                              {wishlistCount}
+                            </span>
+                          )}
                         </button>
 
                         <button
                           onClick={() => handleDropdownAction("profile")}
-                          className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[color:var(--surface-2)] cursor-pointer"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          type="button"
                         >
                           My Profile
                         </button>
 
                         <button
                           onClick={() => handleDropdownAction("logout")}
-                          className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[color:var(--surface-2)]
-                          cursor-pointer text-red-400 hover:text-red-300"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)]
+                          cursor-pointer transition text-red-400 hover:text-red-300"
+                          type="button"
                         >
                           Logout
                         </button>
@@ -486,7 +562,8 @@ const Nav = () => {
                             navigate("/login");
                             setIsDropdownOpen(false);
                           }}
-                          className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[color:var(--surface-2)] cursor-pointer"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          type="button"
                         >
                           Login
                         </button>
@@ -496,7 +573,8 @@ const Nav = () => {
                             navigate("/signup");
                             setIsDropdownOpen(false);
                           }}
-                          className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[color:var(--surface-2)] cursor-pointer"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          type="button"
                         >
                           Sign Up
                         </button>
@@ -512,35 +590,56 @@ const Nav = () => {
 
       {/* Bottom Navigation (Mobile only) */}
       <div
-        className="fixed bottom-0 left-0 w-full z-50 md:hidden
-        bg-[color:var(--nav-bg)] border-t border-[color:var(--border)]"
+        className="fixed bottom-0 left-0 w-full z-50 md:hidden border-t border-[color:var(--border)] shadow-[0_-6px_30px_rgba(0,0,0,0.08)]"
+        style={{
+          background: "var(--nav-bg)",
+          color: "var(--text)",
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
       >
         <div className="flex justify-around items-center py-2">
-          <button onClick={() => navigate("/")} className="flex flex-col items-center hover:text-cyan-500">
+          <button
+            onClick={() => navigate("/")}
+            className="min-w-[68px] min-h-[52px] flex flex-col items-center justify-center gap-0.5 rounded-xl hover:text-cyan-500 transition"
+            type="button"
+          >
             <FaHome className="text-xl" />
-            <span className="text-xs">Home</span>
+            <span className="text-[11px] font-medium">Home</span>
           </button>
 
-          <Link to="/collections" className="flex flex-col items-center hover:text-cyan-500">
+          <Link
+            to="/collections"
+            className="min-w-[68px] min-h-[52px] flex flex-col items-center justify-center gap-0.5 rounded-xl hover:text-cyan-500 transition"
+          >
             <FaThLarge className="text-xl" />
-            <span className="text-xs">Collection</span>
+            <span className="text-[11px] font-medium">Collection</span>
           </Link>
 
-          <Link to="/about" className="flex flex-col items-center hover:text-cyan-500">
+          <Link
+            to="/about"
+            className="min-w-[68px] min-h-[52px] flex flex-col items-center justify-center gap-0.5 rounded-xl hover:text-cyan-500 transition"
+          >
             <FaInfoCircle className="text-xl" />
-            <span className="text-xs">About</span>
+            <span className="text-[11px] font-medium">About</span>
           </Link>
 
-          <Link to="/contact" className="flex flex-col items-center hover:text-cyan-500">
+          <Link
+            to="/contact"
+            className="min-w-[68px] min-h-[52px] flex flex-col items-center justify-center gap-0.5 rounded-xl hover:text-cyan-500 transition"
+          >
             <FaPhone className="text-xl" />
-            <span className="text-xs">Contact</span>
+            <span className="text-[11px] font-medium">Contact</span>
           </Link>
 
-          <button onClick={() => navigate("/cart")} className="relative flex flex-col items-center hover:text-cyan-500">
+          <button
+            onClick={() => navigate("/cart")}
+            className="relative min-w-[68px] min-h-[52px] flex flex-col items-center justify-center gap-0.5 rounded-xl hover:text-cyan-500 transition"
+            type="button"
+          >
             <MdOutlineShoppingCart className="text-xl" />
-            <span className="text-xs">Cart</span>
+            <span className="text-[11px] font-medium">Cart</span>
             {cartItemsCount > 0 && (
-              <span className="absolute -top-1 right-2 bg-cyan-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
+              <span className="absolute top-1 right-5 bg-cyan-500 text-white rounded-full min-w-4 h-4 px-1 flex items-center justify-center text-[10px] font-extrabold">
                 {cartItemsCount}
               </span>
             )}

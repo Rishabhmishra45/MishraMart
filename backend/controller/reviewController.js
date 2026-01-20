@@ -23,16 +23,53 @@ const normalizeImages = (review) => {
     .filter(Boolean);
 };
 
-// ✅ GET Reviews
+// ✅ GET Reviews (PUBLIC) - only visible reviews
 export const getProductReviews = async (req, res) => {
   try {
     const { productId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid productId",
-      });
+      return res.status(400).json({ success: false, message: "Invalid productId" });
+    }
+
+    const reviews = await Review.find({ productId, isHidden: false })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const normalized = reviews.map((r) => ({
+      ...r,
+      images: normalizeImages(r),
+    }));
+
+    const total = normalized.length;
+    const avgRating =
+      total === 0
+        ? 0
+        : Number(
+            (
+              normalized.reduce((sum, r) => sum + (r.rating || 0), 0) / total
+            ).toFixed(1)
+          );
+
+    return res.status(200).json({
+      success: true,
+      total,
+      avgRating,
+      reviews: normalized,
+    });
+  } catch (err) {
+    console.log("getProductReviews error:", err);
+    return res.status(500).json({ success: false, message: "Failed to fetch reviews" });
+  }
+};
+
+// ✅ GET Reviews (ADMIN) - include hidden reviews
+export const getProductReviewsAdmin = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ success: false, message: "Invalid productId" });
     }
 
     const reviews = await Review.find({ productId })
@@ -61,11 +98,8 @@ export const getProductReviews = async (req, res) => {
       reviews: normalized,
     });
   } catch (err) {
-    console.log("getProductReviews error:", err);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch reviews",
-    });
+    console.log("getProductReviewsAdmin error:", err);
+    return res.status(500).json({ success: false, message: "Failed to fetch reviews" });
   }
 };
 
@@ -141,6 +175,7 @@ export const addReview = async (req, res) => {
       rating: numericRating,
       comment: trimmedComment,
       images: uploadedImages,
+      isHidden: false,
     });
 
     return res.status(201).json({
@@ -275,7 +310,7 @@ export const editReview = async (req, res) => {
   }
 };
 
-// ✅ DELETE Review
+// ✅ DELETE Review (also delete cloudinary)
 export const deleteReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
@@ -313,6 +348,37 @@ export const deleteReview = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to delete review",
+    });
+  }
+};
+
+// ✅ ADMIN: Hide/Unhide
+export const toggleHideReview = async (req, res) => {
+  try {
+    const { reviewId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(reviewId)) {
+      return res.status(400).json({ success: false, message: "Invalid reviewId" });
+    }
+
+    const review = await Review.findById(reviewId);
+    if (!review) {
+      return res.status(404).json({ success: false, message: "Review not found" });
+    }
+
+    review.isHidden = !review.isHidden;
+    await review.save();
+
+    return res.status(200).json({
+      success: true,
+      message: review.isHidden ? "Review hidden" : "Review unhidden",
+      review,
+    });
+  } catch (err) {
+    console.log("toggleHideReview error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to toggle review",
     });
   }
 };

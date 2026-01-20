@@ -11,7 +11,11 @@ const Collections = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { products, search } = useContext(shopDataContext);
-  const { showCartNotification, notificationProduct, setShowCartNotification } = useCart();
+  const {
+    showCartNotification,
+    notificationProduct,
+    setShowCartNotification,
+  } = useCart();
   const [filteredProducts, setFilteredProducts] = useState([]);
 
   // Filter states
@@ -20,8 +24,12 @@ const Collections = () => {
   const [sortType, setSortType] = useState("relevant");
 
   // Available categories and subcategories from actual products
-  const categories = [...new Set(products.map(item => item.category).filter(Boolean))];
-  const subcategories = [...new Set(products.map(item => item.subcategory).filter(Boolean))];
+  const categories = [
+    ...new Set(products.map((item) => item.category).filter(Boolean)),
+  ];
+  const subcategories = [
+    ...new Set(products.map((item) => item.subcategory).filter(Boolean)),
+  ];
 
   // Initialize products with loading state
   useEffect(() => {
@@ -68,7 +76,6 @@ const Collections = () => {
         filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         break;
       default:
-        // Relevant - keep original order
         break;
     }
 
@@ -109,8 +116,14 @@ const Collections = () => {
     }
   }, [products]);
 
+  const activeFiltersCount =
+    selectedCategories.length + selectedSubcategories.length;
+
   return (
-    <div className="w-full min-h-screen bg-gradient-to-l from-[#141414] to-[#0c2025] flex pt-[60px] text-white overflow-x-hidden pb-[100px]">
+    <div
+      className="w-full min-h-screen flex pt-[60px] overflow-x-hidden pb-[92px]"
+      style={{ background: "var(--bg)", color: "var(--text)" }}
+    >
       {/* Cart Notification */}
       <CartNotification
         product={notificationProduct}
@@ -121,60 +134,127 @@ const Collections = () => {
       {/* ================= Sidebar Filters ================= */}
       <div
         className={`fixed top-[65px] h-[calc(100vh-60px)]
-          w-[75vw] sm:w-[60vw] md:w-[280px] lg:w-[300px] bg-gradient-to-b from-[#0f1b1d] to-[#0a1517] border-r border-gray-700/50 p-5 pt-[35px]
-          transition-transform duration-300 z-40 overflow-y-auto 
+          w-[82vw] sm:w-[62vw] md:w-[280px] lg:w-[300px]
+          border-r p-5 pt-[28px]
+          transition-transform duration-300 z-40 overflow-y-auto
           ${showFilter ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-          shadow-2xl shadow-black/30`}
+          shadow-2xl`}
+        style={{
+          background: "var(--bg)",
+          borderColor: "var(--border)",
+        }}
       >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-cyan-400 flex items-center gap-2">
-            <FaFilter className="text-lg" />
-            FILTERS
-          </h2>
-          <div className="flex items-center gap-2">
-            {(selectedCategories.length > 0 ||
-              selectedSubcategories.length > 0) && (
-                <button
-                  onClick={clearAllFilters}
-                  className="text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 px-2 py-1 rounded cursor-pointer transition-colors border border-red-500/30"
-                >
-                  Clear All
-                </button>
-              )}
+        <div className="flex items-start justify-between gap-3 mb-5">
+          <div className="min-w-0">
+            <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+              <span
+                className="inline-flex items-center justify-center w-8 h-8 rounded-xl border"
+                style={{
+                  background: "var(--card)",
+                  borderColor: "var(--border)",
+                }}
+              >
+                <FaFilter className="text-sm opacity-90" />
+              </span>
+              <span className="truncate">Filters</span>
+            </h2>
+            <p className="text-xs sm:text-sm opacity-70 mt-1">
+              Refine your results quickly
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {activeFiltersCount > 0 && (
+              <button
+                onClick={clearAllFilters}
+                className="text-xs px-3 py-2 rounded-xl border transition active:scale-[0.98]"
+                style={{
+                  background: "color-mix(in oklab, var(--card) 80%, transparent)",
+                  borderColor: "var(--border)",
+                }}
+              >
+                Clear
+              </button>
+            )}
             <button
-              className="md:hidden p-1 hover:text-red-400 transition-colors"
+              className="md:hidden h-10 w-10 grid place-items-center rounded-xl border transition active:scale-[0.98]"
               onClick={() => setShowFilter(false)}
+              style={{
+                background:
+                  "color-mix(in oklab, var(--card) 75%, transparent)",
+                borderColor: "var(--border)",
+              }}
+              aria-label="Close filters"
             >
-              <FaTimes className="text-xl" />
+              <FaTimes className="text-lg" />
             </button>
           </div>
         </div>
 
         {/* Search Results Info */}
         {search && (
-          <div className="mb-4 p-3 bg-gradient-to-r from-blue-900/30 to-cyan-900/20 rounded-xl border border-cyan-700/30 backdrop-blur-sm">
-            <p className="text-sm text-cyan-300 flex items-center gap-2">
-              <FaSearch className="text-xs" />
-              Search: "<span className="font-semibold">{search}</span>"
+          <div
+            className="mb-4 p-3 rounded-2xl border"
+            style={{
+              background:
+                "color-mix(in oklab, var(--card) 78%, transparent)",
+              borderColor: "var(--border)",
+            }}
+          >
+            <p className="text-sm font-medium flex items-center gap-2">
+              <FaSearch className="text-xs opacity-80" />
+              <span className="truncate">
+                Search: <span className="font-semibold">"{search}"</span>
+              </span>
             </p>
-            <p className="text-xs text-gray-400 mt-1">
-              {filteredProducts.length} {filteredProducts.length === 1 ? "product" : "products"} found
+            <p className="text-xs opacity-70 mt-1">
+              {filteredProducts.length}{" "}
+              {filteredProducts.length === 1 ? "product" : "products"} found
             </p>
           </div>
         )}
 
         {/* Active Filters */}
-        {(selectedCategories.length > 0 || selectedSubcategories.length > 0) && (
-          <div className="mb-4 p-3 bg-gradient-to-r from-purple-900/20 to-pink-900/10 rounded-xl border border-purple-700/30">
-            <h4 className="text-sm font-semibold text-purple-300 mb-2">Active Filters:</h4>
-            <div className="flex flex-wrap gap-1">
-              {selectedCategories.map(cat => (
-                <span key={cat} className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded border border-purple-500/30">
+        {activeFiltersCount > 0 && (
+          <div
+            className="mb-4 p-3 rounded-2xl border"
+            style={{
+              background:
+                "color-mix(in oklab, var(--card) 70%, transparent)",
+              borderColor: "var(--border)",
+            }}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <h4 className="text-sm font-semibold">Active filters</h4>
+              <span className="text-xs opacity-70">
+                {activeFiltersCount} selected
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-2 mt-3">
+              {selectedCategories.map((cat) => (
+                <span
+                  key={cat}
+                  className="text-xs px-2.5 py-1 rounded-full border"
+                  style={{
+                    background:
+                      "color-mix(in oklab, var(--card) 85%, transparent)",
+                    borderColor: "var(--border)",
+                  }}
+                >
                   {cat}
                 </span>
               ))}
-              {selectedSubcategories.map(sub => (
-                <span key={sub} className="text-xs bg-pink-500/20 text-pink-300 px-2 py-1 rounded border border-pink-500/30">
+              {selectedSubcategories.map((sub) => (
+                <span
+                  key={sub}
+                  className="text-xs px-2.5 py-1 rounded-full border"
+                  style={{
+                    background:
+                      "color-mix(in oklab, var(--card) 85%, transparent)",
+                    borderColor: "var(--border)",
+                  }}
+                >
                   {sub}
                 </span>
               ))}
@@ -185,22 +265,33 @@ const Collections = () => {
         {/* Categories */}
         {categories.length > 0 && (
           <div className="mb-4">
-            <h3 className="text-lg font-semibold mb-3 text-gray-200 border-b border-gray-700/50 pb-2">CATEGORIES</h3>
-            <div className="space-y-1">
+            <h3
+              className="text-sm sm:text-base font-semibold mb-3 pb-2 border-b"
+              style={{ borderColor: "var(--border)" }}
+            >
+              Categories
+            </h3>
+
+            <div className="space-y-1.5">
               {categories.map((category) => (
                 <label
                   key={category}
-                  className="flex items-center gap-3 text-sm cursor-pointer hover:text-cyan-400 p-2 rounded-lg hover:bg-white/5 transition-all duration-200 group"
+                  className="flex items-center gap-3 text-sm cursor-pointer p-2 rounded-xl transition active:scale-[0.99]"
+                  style={{
+                    background: selectedCategories.includes(category)
+                      ? "color-mix(in oklab, var(--card) 85%, transparent)"
+                      : "transparent",
+                  }}
                 >
                   <input
                     type="checkbox"
                     checked={selectedCategories.includes(category)}
                     onChange={() => handleCategoryChange(category)}
-                    className="w-4 h-4 accent-cyan-500 rounded border-gray-600"
+                    className="w-4 h-4 accent-cyan-500 rounded"
                   />
-                  <span className="group-hover:translate-x-1 transition-transform duration-200">{category}</span>
-                  <span className="text-xs text-gray-500 ml-auto">
-                    ({products.filter(p => p.category === category).length})
+                  <span className="truncate">{category}</span>
+                  <span className="text-xs opacity-60 ml-auto">
+                    ({products.filter((p) => p.category === category).length})
                   </span>
                 </label>
               ))}
@@ -211,22 +302,36 @@ const Collections = () => {
         {/* Subcategories */}
         {subcategories.length > 0 && (
           <div className="mb-4">
-            <h3 className="text-lg font-semibold mb-3 text-gray-200 border-b border-gray-700/50 pb-2">SUB-CATEGORIES</h3>
-            <div className="space-y-1">
+            <h3
+              className="text-sm sm:text-base font-semibold mb-3 pb-2 border-b"
+              style={{ borderColor: "var(--border)" }}
+            >
+              Sub-categories
+            </h3>
+
+            <div className="space-y-1.5">
               {subcategories.map((subcategory) => (
                 <label
                   key={subcategory}
-                  className="flex items-center gap-3 text-sm cursor-pointer hover:text-cyan-400 p-2 rounded-lg hover:bg-white/5 transition-all duration-200 group"
+                  className="flex items-center gap-3 text-sm cursor-pointer p-2 rounded-xl transition active:scale-[0.99]"
+                  style={{
+                    background: selectedSubcategories.includes(subcategory)
+                      ? "color-mix(in oklab, var(--card) 85%, transparent)"
+                      : "transparent",
+                  }}
                 >
                   <input
                     type="checkbox"
                     checked={selectedSubcategories.includes(subcategory)}
                     onChange={() => handleSubcategoryChange(subcategory)}
-                    className="w-4 h-4 accent-cyan-500 rounded border-gray-600"
+                    className="w-4 h-4 accent-cyan-500 rounded"
                   />
-                  <span className="group-hover:translate-x-1 transition-transform duration-200">{subcategory}</span>
-                  <span className="text-xs text-gray-500 ml-auto">
-                    ({products.filter(p => p.subcategory === subcategory).length})
+                  <span className="truncate">{subcategory}</span>
+                  <span className="text-xs opacity-60 ml-auto">
+                    (
+                    {products.filter((p) => p.subcategory === subcategory)
+                      .length}
+                    )
                   </span>
                 </label>
               ))}
@@ -235,12 +340,20 @@ const Collections = () => {
         )}
 
         {/* Sort Options in Sidebar for Mobile */}
-        <div className="md:hidden mt-6 pt-2 border-t border-gray-700/50">
-          <h3 className="text-lg font-semibold mb-3 text-gray-200">SORT BY</h3>
+        <div
+          className="md:hidden mt-6 pt-4 border-t"
+          style={{ borderColor: "var(--border)" }}
+        >
+          <h3 className="text-sm sm:text-base font-semibold mb-3">Sort by</h3>
           <select
             value={sortType}
             onChange={(e) => setSortType(e.target.value)}
-            className="w-full bg-[#0a1517] border border-gray-600 hover:border-cyan-500 text-white px-3 py-2 rounded-lg text-sm transition-colors"
+            className="w-full h-11 px-3 rounded-xl border text-sm focus:outline-none focus:ring-2"
+            style={{
+              background:
+                "color-mix(in oklab, var(--card) 88%, transparent)",
+              borderColor: "var(--border)",
+            }}
           >
             <option value="relevant">Most Relevant</option>
             <option value="newest">Newest First</option>
@@ -253,86 +366,151 @@ const Collections = () => {
       {/* ================= Mobile Overlay ================= */}
       {showFilter && (
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-30 md:hidden transition-opacity duration-300"
+          className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-30 md:hidden transition-opacity duration-300"
           onClick={() => setShowFilter(false)}
         />
       )}
 
       {/* ================= Main Content ================= */}
       <div className="flex-1 relative min-h-[calc(100vh-60px)] overflow-y-auto md:ml-[280px] lg:ml-[300px]">
-        <div className="p-4 sm:p-6 lg:p-8">
+        <div className="p-3 sm:p-6 lg:p-8">
           {/* Mobile Header */}
-          <div className="md:hidden mb-4 mt-3 px-4">
-            {/* Custom mobile title */}
+          <div className="md:hidden mb-4 mt-1 px-1">
             <div className="mb-3">
-              <h1 className="text-xl font-bold">
-                <span className="text-cyan-400">EXPLORE</span>
-                <span className="text-white"> COLLECTIONS</span>
+              <h1 className="text-lg sm:text-xl font-bold leading-tight">
+                <span className="opacity-80">Explore</span>{" "}
+                <span className="font-extrabold">Collections</span>
               </h1>
-              <div className="h-1 w-12 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full mt-1"></div>
+              <div
+                className="h-1 w-10 rounded-full mt-2"
+                style={{ background: "var(--accent)" }}
+              />
             </div>
 
             {search && (
-              <div className="mb-2 bg-gradient-to-r from-cyan-900/15 to-blue-900/10 border border-cyan-700/20 rounded-lg p-2">
-                <div className="flex items-center gap-2">
-                  <FaSearch className="text-cyan-400 text-xs" />
-                  <p className="text-cyan-300 text-xs truncate">"{search}"</p>
+              <div
+                className="mb-2 border rounded-xl p-2"
+                style={{
+                  background:
+                    "color-mix(in oklab, var(--card) 78%, transparent)",
+                  borderColor: "var(--border)",
+                }}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <FaSearch className="opacity-70 text-xs" />
+                  <p className="text-xs truncate opacity-80">"{search}"</p>
                 </div>
               </div>
             )}
 
-            <div className="flex items-center justify-between bg-gradient-to-r from-[#0f1b1d] to-[#0a1517] border border-gray-700/30 rounded-lg p-2">
-              <p className="text-gray-300 text-xs">
-                <span className="text-cyan-400 font-bold">{filteredProducts.length}</span> products found
+            <div
+              className="flex items-center justify-between border rounded-xl p-2"
+              style={{
+                background:
+                  "color-mix(in oklab, var(--card) 78%, transparent)",
+                borderColor: "var(--border)",
+              }}
+            >
+              <p className="text-xs opacity-80">
+                <span className="font-bold">{filteredProducts.length}</span>{" "}
+                products
               </p>
-              <div className="text-[10px] text-gray-400">
-                {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+              <div className="text-[10px] opacity-60">
+                {new Date().toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                })}
               </div>
             </div>
           </div>
 
-          {/* Mobile Filter Button - Compact for mobile */}
-          <div className="md:hidden flex items-center justify-between mb-6 p-3 bg-gradient-to-r from-[#0f1b1d] to-[#0a1517] rounded-xl border border-gray-700/30 shadow-md">
+          {/* Mobile Filter Button */}
+          <div
+            className="md:hidden flex items-center justify-between mb-6 p-3 rounded-2xl border shadow-sm"
+            style={{
+              background:
+                "color-mix(in oklab, var(--card) 80%, transparent)",
+              borderColor: "var(--border)",
+            }}
+          >
             <button
               onClick={() => setShowFilter(true)}
-              className="flex items-center gap-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 border border-cyan-500/30 hover:border-cyan-400 px-3 py-2 rounded-lg transition-all duration-200 active:scale-95 group"
+              className="min-h-[44px] px-4 py-2 rounded-xl border transition active:scale-[0.98] flex items-center gap-2"
+              style={{
+                background:
+                  "color-mix(in oklab, var(--card) 88%, transparent)",
+                borderColor: "var(--border)",
+              }}
             >
-              <FaFilter className="text-cyan-400 text-sm group-hover:scale-110 transition-transform" />
-              <span className="font-medium text-white text-sm">Filters</span>
-              <FaArrowRightToBracket className="text-cyan-400 text-xs group-hover:translate-x-0.5 transition-transform" />
+              <FaFilter className="text-sm opacity-80" />
+              <span className="font-semibold text-sm">Filters</span>
+              <FaArrowRightToBracket className="text-xs opacity-70" />
+              {activeFiltersCount > 0 && (
+                <span
+                  className="ml-1 text-[10px] font-bold px-2 py-0.5 rounded-full border"
+                  style={{
+                    background:
+                      "color-mix(in oklab, var(--card) 95%, transparent)",
+                    borderColor: "var(--border)",
+                  }}
+                >
+                  {activeFiltersCount}
+                </span>
+              )}
             </button>
 
             <div className="text-center min-w-[70px]">
-              <div className="text-xl font-bold text-cyan-400">{filteredProducts.length}</div>
-              <div className="text-[10px] text-gray-400">Items</div>
+              <div className="text-lg font-extrabold">
+                {filteredProducts.length}
+              </div>
+              <div className="text-[10px] opacity-60">Items</div>
             </div>
           </div>
 
           {/* Desktop Header */}
-          <div className="hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8 bg-gradient-to-r from-[#0f1b1d] to-[#0a1517] p-6 rounded-2xl border border-gray-700/50 shadow-xl">
-            <div className="flex-1">
+          <div
+            className="hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8 rounded-3xl border p-6 shadow-sm"
+            style={{
+              background:
+                "color-mix(in oklab, var(--card) 85%, transparent)",
+              borderColor: "var(--border)",
+            }}
+          >
+            <div className="flex-1 min-w-0">
               <Tittle text1="EXPLORE" text2="COLLECTIONS" />
               {search && (
-                <p className="text-cyan-300 text-sm mt-2 flex items-center gap-2">
-                  <FaSearch className="text-xs" />
-                  Search results for: "<span className="font-semibold">{search}</span>"
+                <p className="opacity-80 text-sm mt-2 flex items-center gap-2 min-w-0">
+                  <FaSearch className="text-xs opacity-70" />
+                  <span className="truncate">
+                    Search results for:{" "}
+                    <span className="font-semibold">"{search}"</span>
+                  </span>
                 </p>
               )}
-              <p className="text-gray-300 text-sm mt-1">
+              <p className="opacity-70 text-sm mt-1">
                 Discover amazing products tailored for you
               </p>
             </div>
+
             <div className="flex items-center gap-6">
               <div className="text-center">
-                <div className="text-3xl font-bold text-cyan-400">{filteredProducts.length}</div>
-                <div className="text-sm text-gray-400">Products Found</div>
+                <div className="text-3xl font-extrabold">
+                  {filteredProducts.length}
+                </div>
+                <div className="text-sm opacity-60">Products Found</div>
               </div>
+
               <div className="flex flex-col gap-2">
-                <label className="text-sm text-gray-400">Sort By</label>
+                <label className="text-sm opacity-70">Sort by</label>
                 <select
                   value={sortType}
                   onChange={(e) => setSortType(e.target.value)}
-                  className="bg-[#0a1517] border border-gray-600 hover:border-cyan-500 text-white px-4 py-2 rounded-xl transition-colors min-w-[180px]"
+                  className="h-11 px-4 rounded-xl border transition focus:outline-none focus:ring-2 min-w-[190px]"
+                  style={{
+                    background:
+                      "color-mix(in oklab, var(--bg) 92%, transparent)",
+                    borderColor: "var(--border)",
+                  }}
                 >
                   <option value="relevant">Most Relevant</option>
                   <option value="newest">Newest First</option>
@@ -345,17 +523,22 @@ const Collections = () => {
 
           {/* Products Grid */}
           {isLoading ? (
-            // Loading State
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-500 mb-4"></div>
-              <h3 className="text-xl font-semibold text-cyan-400 mb-2">Loading Products...</h3>
-              <p className="text-gray-400">Discovering amazing products for you</p>
+            <div className="flex flex-col items-center justify-center py-16 sm:py-20 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 sm:h-14 sm:w-14 border-2 border-current border-t-transparent mb-4 opacity-80" />
+              <h3 className="text-base sm:text-lg font-semibold mb-1">
+                Loading products...
+              </h3>
+              <p className="text-sm opacity-70">
+                Finding the best picks for you
+              </p>
             </div>
           ) : filteredProducts.length > 0 ? (
-            // Products Grid - Mobile: 2 columns, Desktop: same as before
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 md:gap-7">
               {filteredProducts.map((item, index) => (
-                <div key={item._id} className="flex justify-center items-center transform hover:scale-[1.02] transition-transform duration-300">
+                <div
+                  key={item._id}
+                  className="flex justify-center items-center transition-transform duration-200 hover:scale-[1.02]"
+                >
                   <Card
                     id={item._id}
                     name={item.name}
@@ -368,29 +551,45 @@ const Collections = () => {
               ))}
             </div>
           ) : (
-            // No Products Found State
-            <div className="flex flex-col items-center justify-center py-20 text-center bg-gradient-to-br from-[#0f1b1d]/50 to-[#0a1517]/30 rounded-3xl border border-gray-700/30 backdrop-blur-sm">
-              <div className="text-7xl mb-6 opacity-60">🔍</div>
-              <h3 className="text-2xl font-bold text-gray-300 mb-3">
+            <div
+              className="flex flex-col items-center justify-center py-16 sm:py-20 text-center rounded-3xl border"
+              style={{
+                background:
+                  "color-mix(in oklab, var(--card) 78%, transparent)",
+                borderColor: "var(--border)",
+              }}
+            >
+              <div className="text-6xl sm:text-7xl mb-5 opacity-60">🔍</div>
+              <h3 className="text-xl sm:text-2xl font-bold mb-3">
                 {search ? "No matching products found" : "No products available"}
               </h3>
-              <p className="text-gray-400 mb-6 max-w-md">
+              <p className="text-sm sm:text-base opacity-70 mb-6 max-w-md px-3">
                 {search
                   ? `We couldn't find any products matching "${search}". Try different keywords or browse all categories.`
-                  : "Check back later for new arrivals or try adjusting your filters."
-                }
+                  : "Check back later for new arrivals or try adjusting your filters."}
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={clearAllFilters}
-                  className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:-translate-y-1 shadow-lg shadow-cyan-500/20"
+                  className="min-h-[44px] px-7 py-3 rounded-2xl font-semibold transition active:scale-[0.98] border"
+                  style={{
+                    background:
+                      "color-mix(in oklab, var(--card) 92%, transparent)",
+                    borderColor: "var(--border)",
+                  }}
                 >
                   {search ? "Clear Search" : "Reset Filters"}
                 </button>
+
                 {search && (
                   <button
-                    onClick={() => window.location.href = '/collections'}
-                    className="border border-gray-600 hover:border-cyan-500 text-gray-300 hover:text-cyan-400 px-8 py-3 rounded-xl font-semibold transition-all duration-300"
+                    onClick={() => (window.location.href = "/collections")}
+                    className="min-h-[44px] px-7 py-3 rounded-2xl font-semibold transition active:scale-[0.98] border opacity-90 hover:opacity-100"
+                    style={{
+                      background: "transparent",
+                      borderColor: "var(--border)",
+                    }}
                   >
                     View All Products
                   </button>

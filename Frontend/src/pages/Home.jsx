@@ -18,7 +18,7 @@ const Home = () => {
 
   return (
     <div
-      className="w-full min-h-screen overflow-x-hidden"
+      className="w-full min-h-screen overflow-x-hidden pb-[50px]"
       style={{
         background: "var(--bg)",
         color: "var(--text)",

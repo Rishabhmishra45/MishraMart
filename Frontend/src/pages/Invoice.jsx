@@ -157,11 +157,11 @@ const Invoice = () => {
   const getPaymentMethodIcon = (method) => {
     switch (method) {
       case "razorpay":
-        return <FaCreditCard className="text-cyan-400" />;
+        return <FaCreditCard className="text-cyan-500" />;
       case "cod":
-        return <FaMoneyBillWave className="text-green-400" />;
+        return <FaMoneyBillWave className="text-green-500" />;
       default:
-        return <FaCreditCard className="text-gray-400" />;
+        return <FaCreditCard className="text-gray-500" />;
     }
   };
 
@@ -179,30 +179,30 @@ const Invoice = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case "delivered":
-        return "text-green-400";
+        return "text-green-500";
       case "shipped":
-        return "text-blue-400";
+        return "text-blue-500";
       case "processing":
-        return "text-yellow-400";
+        return "text-yellow-500";
       case "cancelled":
-        return "text-red-400";
+        return "text-red-500";
       default:
-        return "text-gray-400";
+        return "text-gray-500";
     }
   };
 
   const getStatusIcon = (status) => {
     switch (status) {
       case "delivered":
-        return <FaCheckCircle className="text-green-400" />;
+        return <FaCheckCircle className="text-green-500" />;
       case "shipped":
-        return <FaTruck className="text-blue-400" />;
+        return <FaTruck className="text-blue-500" />;
       case "processing":
-        return <FaReceipt className="text-yellow-400" />;
+        return <FaReceipt className="text-yellow-500" />;
       case "cancelled":
-        return <FaCheckCircle className="text-red-400" />;
+        return <FaCheckCircle className="text-red-500" />;
       default:
-        return <FaReceipt className="text-gray-400" />;
+        return <FaReceipt className="text-gray-500" />;
     }
   };
 
@@ -227,10 +227,10 @@ const Invoice = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0F1C20] pt-16 flex items-center justify-center">
+      <div className="min-h-screen bg-[color:var(--background)] pt-16 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-cyan-400 text-base sm:text-lg">Loading invoice...</p>
+          <p className="text-cyan-500 text-base sm:text-lg">Loading invoice...</p>
         </div>
       </div>
     );
@@ -238,21 +238,21 @@ const Invoice = () => {
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-[#0F1C20] pt-16">
+      <div className="min-h-screen bg-[color:var(--background)] pt-16">
         <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-          <div className="bg-gradient-to-br from-[#1A2A30] to-[#0F1C20] rounded-2xl p-6 sm:p-8 shadow-lg border border-red-800">
+          <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl p-6 sm:p-8 shadow-lg">
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaFileInvoice className="text-2xl sm:text-3xl text-red-400" />
+              <FaFileInvoice className="text-2xl sm:text-3xl text-red-500" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-3">
+            <h2 className="text-xl sm:text-2xl font-bold mb-3">
               Invoice Not Found
             </h2>
-            <p className="text-gray-400 mb-6 text-sm sm:text-base">
+            <p className="text-[color:var(--muted)] mb-6 text-sm sm:text-base">
               {error || "Order not found"}
             </p>
             <button
               onClick={() => navigate("/orders")}
-              className="px-6 sm:px-8 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-300"
+              className="px-6 sm:px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-95 text-white font-semibold rounded-xl transition-all duration-300"
             >
               Back to Orders
             </button>
@@ -269,34 +269,19 @@ const Invoice = () => {
   const total = order.totalAmount || subtotal + tax + shipping;
 
   return (
-    <div className="min-h-screen bg-[#0F1C20] pt-16">
-      {/* Mobile Header */}
-      <div className="bg-[#1A2A30] shadow-lg border-b border-gray-700 lg:hidden sticky top-16 z-30">
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => navigate("/orders")}
-              className="flex items-center gap-2 text-gray-300 hover:text-cyan-400 transition-colors"
-            >
-              <FaArrowLeft />
-              <span className="font-medium text-sm">Back</span>
-            </button>
-            <h1 className="text-base font-bold text-white">Invoice</h1>
-            <div className="w-6"></div>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen pt-[70px] sm:pt-[88px] pb-[50px] bg-[color:var(--background)]">
+
 
       <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-8 py-4 lg:py-8">
-        <div className="bg-gradient-to-br from-[#1A2A30] to-[#0F1C20] rounded-2xl shadow-2xl overflow-hidden border border-gray-700">
+        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl sm:rounded-2xl shadow-xl overflow-hidden">
           {/* Invoice Header */}
-          <div className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white p-5 sm:p-6 lg:p-8 relative overflow-hidden">
+          <div className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white p-4 sm:p-6 lg:p-8 relative overflow-hidden">
             <div className="absolute inset-0 bg-black/20"></div>
-            <div className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
-              <div className="flex items-center gap-4 w-full lg:w-auto">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20 w-full sm:w-auto">
-                  <div className="flex items-center gap-3 justify-center sm:justify-start">
-                    <FaStore className="text-2xl text-white" />
+            <div className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+              <div className="flex items-center gap-3 w-full lg:w-auto">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20 w-full sm:w-auto">
+                  <div className="flex items-center gap-2 sm:gap-3 justify-center sm:justify-start">
+                    <FaStore className="text-xl sm:text-2xl text-white" />
                     <div>
                       <h1 className="text-lg sm:text-xl font-bold tracking-wider">
                         MISHRA MART
@@ -324,8 +309,8 @@ const Invoice = () => {
           </div>
 
           {/* Desktop Actions */}
-          <div className="bg-[#1A2A30] px-4 sm:px-6 lg:px-8 py-4 hidden lg:flex justify-between items-center border-b border-gray-700">
-            <div className="flex items-center text-green-400 font-semibold text-base">
+          <div className="bg-[color:var(--surface-2)] px-4 sm:px-6 lg:px-8 py-4 hidden lg:flex justify-between items-center border-b border-[color:var(--border)]">
+            <div className="flex items-center text-green-500 font-semibold text-base">
               <FaCheckCircle className="mr-3 text-lg" />
               <span className="capitalize">Payment Successful • {order.status}</span>
             </div>
@@ -334,7 +319,7 @@ const Invoice = () => {
               <button
                 onClick={handleDownload}
                 disabled={isGeneratingPDF}
-                className="flex items-center px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl transition text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl transition text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FaDownload className="mr-2" />
                 {isGeneratingPDF ? "Generating..." : "Download PDF"}
@@ -342,7 +327,7 @@ const Invoice = () => {
 
               <button
                 onClick={handlePrint}
-                className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition text-sm font-semibold"
+                className="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition text-sm font-semibold"
               >
                 <FaPrint className="mr-2" />
                 Print
@@ -351,7 +336,7 @@ const Invoice = () => {
               <button
                 onClick={handleShare}
                 disabled={isGeneratingPDF}
-                className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl transition text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl transition text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FaShare className="mr-2" />
                 Share
@@ -360,47 +345,47 @@ const Invoice = () => {
           </div>
 
           {/* Invoice Content */}
-          <div className="p-4 sm:p-6 lg:p-8 space-y-7">
+          <div className="p-4 sm:p-6 lg:p-8 space-y-6">
             {/* Company & Customer */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-3">
-                <h3 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
-                  <FaStore className="text-cyan-400" />
+                <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+                  <FaStore className="text-cyan-500" />
                   From:
                 </h3>
 
-                <div className="bg-black/20 p-4 sm:p-6 rounded-xl border border-gray-600 space-y-3">
+                <div className="bg-[color:var(--surface-2)] p-3 sm:p-4 rounded-xl border border-[color:var(--border)] space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 bg-cyan-500/10 rounded-lg flex items-center justify-center">
-                      <FaStore className="text-xl sm:text-2xl text-cyan-400" />
+                      <FaStore className="text-xl sm:text-2xl text-cyan-500" />
                     </div>
                     <div>
-                      <p className="font-bold text-white text-lg sm:text-xl tracking-wider">
+                      <p className="font-bold text-lg sm:text-xl tracking-wider">
                         MISHRA MART
                       </p>
-                      <p className="text-gray-400 text-xs sm:text-sm">
+                      <p className="text-[color:var(--muted)] text-xs sm:text-sm">
                         Mumbai, Maharashtra
                       </p>
                     </div>
                   </div>
 
                   <div className="space-y-1 text-xs sm:text-sm">
-                    <p className="text-gray-400">
+                    <p className="text-[color:var(--muted)]">
                       123 Business Avenue, Tech Park
                     </p>
-                    <p className="text-gray-400">Mumbai - 400001</p>
-                    <div className="flex items-center gap-2 text-gray-400">
+                    <p className="text-[color:var(--muted)]">Mumbai - 400001</p>
+                    <div className="flex items-center gap-2 text-[color:var(--muted)]">
                       <FaPhone className="text-xs" />
                       <span>+91 98765 43210</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-400">
+                    <div className="flex items-center gap-2 text-[color:var(--muted)]">
                       <FaEnvelope className="text-xs" />
                       <span>support@mishramart.com</span>
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-gray-600">
-                    <p className="text-gray-400 text-xs sm:text-sm font-medium">
+                  <div className="pt-3 border-t border-[color:var(--border)]">
+                    <p className="text-[color:var(--muted)] text-xs sm:text-sm font-medium">
                       GSTIN: 27AABCU9603R1ZM
                     </p>
                   </div>
@@ -408,32 +393,32 @@ const Invoice = () => {
               </div>
 
               <div className="space-y-3">
-                <h3 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
-                  <FaMapMarkerAlt className="text-cyan-400" />
+                <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+                  <FaMapMarkerAlt className="text-cyan-500" />
                   Bill To:
                 </h3>
 
-                <div className="bg-black/20 p-4 sm:p-6 rounded-xl border border-gray-600 space-y-3">
-                  <p className="font-bold text-white text-base sm:text-xl break-words">
+                <div className="bg-[color:var(--surface-2)] p-3 sm:p-4 rounded-xl border border-[color:var(--border)] space-y-3">
+                  <p className="font-bold text-base sm:text-xl break-words">
                     {order.shippingAddress?.name || "Customer"}
                   </p>
 
                   <div className="space-y-1 text-xs sm:text-sm">
-                    <p className="text-gray-400 break-words">
+                    <p className="text-[color:var(--muted)] break-words">
                       {order.shippingAddress?.address}
                     </p>
-                    <p className="text-gray-400 break-words">
+                    <p className="text-[color:var(--muted)] break-words">
                       {order.shippingAddress?.city},{" "}
                       {order.shippingAddress?.state} -{" "}
                       {order.shippingAddress?.pincode}
                     </p>
 
-                    <div className="flex items-center gap-2 text-gray-400">
+                    <div className="flex items-center gap-2 text-[color:var(--muted)]">
                       <FaPhone className="text-xs" />
                       <span>{order.shippingAddress?.phone}</span>
                     </div>
 
-                    <p className="text-gray-400 break-all">
+                    <p className="text-[color:var(--muted)] break-all">
                       {order.shippingAddress?.email}
                     </p>
                   </div>
@@ -442,7 +427,7 @@ const Invoice = () => {
             </div>
 
             {/* Mini Info Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
               {[
                 ["INVOICE NO", order.orderId],
                 ["INVOICE DATE", formatDate(order.createdAt)],
@@ -451,12 +436,12 @@ const Invoice = () => {
               ].map(([label, value], idx) => (
                 <div
                   key={idx}
-                  className="bg-cyan-500/10 p-3 sm:p-4 rounded-xl border border-cyan-500/20"
+                  className="bg-cyan-500/10 p-2 sm:p-3 rounded-xl border border-cyan-500/20"
                 >
-                  <p className="text-[10px] sm:text-xs text-cyan-400 font-semibold mb-1">
+                  <p className="text-[10px] sm:text-xs text-cyan-500 font-semibold mb-1">
                     {label}
                   </p>
-                  <p className="font-bold text-white text-xs sm:text-sm break-words">
+                  <p className="font-bold text-xs sm:text-sm break-words">
                     {idx === 3 ? (
                       <span className="flex items-center gap-2">
                         {getPaymentMethodIcon(order.paymentMethod)}
@@ -471,31 +456,31 @@ const Invoice = () => {
             </div>
 
             {/* Status */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-              <div className="bg-green-500/10 p-4 sm:p-6 rounded-xl border border-green-500/20">
-                <h4 className="font-semibold text-white mb-3 text-base sm:text-lg flex items-center gap-2">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+              <div className="bg-green-500/10 p-3 sm:p-4 rounded-xl border border-green-500/20">
+                <h4 className="font-semibold mb-2 text-base sm:text-lg flex items-center gap-2">
                   {getStatusIcon(order.status)}
                   Order Status
                 </h4>
-                <span className={`font-bold text-lg sm:text-xl ${getStatusColor(order.status)} block capitalize`}>
+                <span className={`font-bold text-base sm:text-xl ${getStatusColor(order.status)} block capitalize`}>
                   {order.status}
                 </span>
                 {order.deliveredAt && (
-                  <p className="text-gray-400 text-xs sm:text-sm mt-2">
+                  <p className="text-[color:var(--muted)] text-xs sm:text-sm mt-1">
                     Delivered on {formatDate(order.deliveredAt)}
                   </p>
                 )}
               </div>
 
-              <div className="bg-blue-500/10 p-4 sm:p-6 rounded-xl border border-blue-500/20">
-                <h4 className="font-semibold text-white mb-3 text-base sm:text-lg flex items-center gap-2">
-                  <FaCheckCircle className="text-green-400" />
+              <div className="bg-blue-500/10 p-3 sm:p-4 rounded-xl border border-blue-500/20">
+                <h4 className="font-semibold mb-2 text-base sm:text-lg flex items-center gap-2">
+                  <FaCheckCircle className="text-green-500" />
                   Payment Status
                 </h4>
-                <span className="font-bold text-green-400 text-lg sm:text-xl block capitalize">
+                <span className="font-bold text-green-500 text-base sm:text-xl block capitalize">
                   {order.paymentStatus || "paid"}
                 </span>
-                <p className="text-gray-400 text-xs sm:text-sm mt-2">
+                <p className="text-[color:var(--muted)] text-xs sm:text-sm mt-1">
                   Paid via {getPaymentMethodText(order.paymentMethod)}
                 </p>
               </div>
@@ -503,55 +488,55 @@ const Invoice = () => {
 
             {/* Items */}
             <div className="space-y-4">
-              <h3 className="text-lg sm:text-2xl font-bold text-white border-b border-gray-600 pb-3">
+              <h3 className="text-lg sm:text-xl font-bold border-b border-[color:var(--border)] pb-3">
                 Order Items
               </h3>
 
               {/* Desktop Table */}
-              <div className="hidden lg:block bg-black/20 border border-gray-600 rounded-xl overflow-hidden">
+              <div className="hidden lg:block bg-[color:var(--surface-2)] border border-[color:var(--border)] rounded-xl overflow-hidden">
                 <table className="min-w-full">
-                  <thead className="bg-black/30 border-b border-gray-600">
+                  <thead className="bg-[color:var(--surface)] border-b border-[color:var(--border)]">
                     <tr>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300 uppercase tracking-wider w-2/5">
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-[color:var(--muted)] uppercase tracking-wider w-2/5">
                         Product
                       </th>
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-300 uppercase tracking-wider w-1/5">
+                      <th className="px-4 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-[color:var(--muted)] uppercase tracking-wider w-1/5">
                         Price
                       </th>
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-300 uppercase tracking-wider w-1/5">
+                      <th className="px-4 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-[color:var(--muted)] uppercase tracking-wider w-1/5">
                         Qty
                       </th>
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-300 uppercase tracking-wider w-1/5">
+                      <th className="px-4 sm:px-6 py-3 text-right text-xs sm:text-sm font-semibold text-[color:var(--muted)] uppercase tracking-wider w-1/5">
                         Total
                       </th>
                     </tr>
                   </thead>
 
-                  <tbody className="divide-y divide-gray-600">
+                  <tbody className="divide-y divide-[color:var(--border)]">
                     {order.items?.map((item, index) => (
                       <tr
                         key={item._id || index}
-                        className="hover:bg-black/30 transition-colors"
+                        className="hover:bg-[color:var(--surface)] transition-colors"
                       >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-4 min-w-0">
+                        <td className="px-4 sm:px-6 py-4">
+                          <div className="flex items-center gap-3 min-w-0">
                             <img
                               src={getProductImage(item)}
                               alt={item.productId?.name}
-                              className="w-16 h-16 object-cover rounded-lg border border-gray-600 flex-shrink-0"
+                              className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg border border-[color:var(--border)] flex-shrink-0"
                               onError={(e) => {
                                 e.target.src =
                                   "https://images.unsplash.com/photo-1560769684-5507c64551f9?w=150";
                                 e.target.className =
-                                  "w-16 h-16 object-cover rounded-lg border border-gray-600 flex-shrink-0 bg-gray-700";
+                                  "w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg border border-[color:var(--border)] flex-shrink-0 bg-[color:var(--surface-2)]";
                               }}
                             />
                             <div className="min-w-0">
-                              <h4 className="text-base font-semibold text-white break-words">
+                              <h4 className="text-sm sm:text-base font-semibold break-words">
                                 {item.productId?.name}
                               </h4>
                               {item.size && (
-                                <p className="text-sm text-gray-400 mt-1">
+                                <p className="text-xs sm:text-sm text-[color:var(--muted)] mt-1">
                                   Size: {item.size}
                                 </p>
                               )}
@@ -559,22 +544,22 @@ const Invoice = () => {
                           </div>
                         </td>
 
-                        <td className="px-6 py-4 text-right">
-                          <span className="text-base text-gray-300 flex items-center justify-end gap-1 whitespace-nowrap">
-                            <FaRupeeSign className="text-sm" />
+                        <td className="px-4 sm:px-6 py-4 text-right">
+                          <span className="text-sm sm:text-base flex items-center justify-end gap-1 whitespace-nowrap">
+                            <FaRupeeSign className="text-xs sm:text-sm" />
                             {item.price?.toLocaleString("en-IN")}
                           </span>
                         </td>
 
-                        <td className="px-6 py-4 text-right">
-                          <span className="text-base text-gray-300 whitespace-nowrap">
+                        <td className="px-4 sm:px-6 py-4 text-right">
+                          <span className="text-sm sm:text-base whitespace-nowrap">
                             {item.quantity}
                           </span>
                         </td>
 
-                        <td className="px-6 py-4 text-right">
-                          <span className="text-base font-bold text-cyan-400 flex items-center justify-end gap-1 whitespace-nowrap">
-                            <FaRupeeSign className="text-sm" />
+                        <td className="px-4 sm:px-6 py-4 text-right">
+                          <span className="text-sm sm:text-base font-bold text-cyan-500 flex items-center justify-end gap-1 whitespace-nowrap">
+                            <FaRupeeSign className="text-xs sm:text-sm" />
                             {(item.price * item.quantity)?.toLocaleString("en-IN")}
                           </span>
                         </td>
@@ -589,50 +574,50 @@ const Invoice = () => {
                 {order.items?.map((item, index) => (
                   <div
                     key={item._id || index}
-                    className="bg-black/20 border border-gray-600 rounded-xl p-4"
+                    className="bg-[color:var(--surface-2)] border border-[color:var(--border)] rounded-xl p-3"
                   >
                     <div className="flex items-start gap-3">
                       <img
                         src={getProductImage(item)}
                         alt={item.productId?.name}
-                        className="w-16 h-16 object-cover rounded-lg border border-gray-600 flex-shrink-0"
+                        className="w-12 h-12 object-cover rounded-lg border border-[color:var(--border)] flex-shrink-0"
                         onError={(e) => {
                           e.target.src =
                             "https://images.unsplash.com/photo-1560769684-5507c64551f9?w=150";
                           e.target.className =
-                            "w-16 h-16 object-cover rounded-lg border border-gray-600 flex-shrink-0 bg-gray-700";
+                            "w-12 h-12 object-cover rounded-lg border border-[color:var(--border)] flex-shrink-0 bg-[color:var(--surface-2)]";
                         }}
                       />
 
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-semibold text-white break-words">
+                        <h4 className="text-sm font-semibold break-words">
                           {item.productId?.name}
                         </h4>
 
                         {item.size && (
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="text-xs text-[color:var(--muted)] mt-1">
                             Size: {item.size}
                           </p>
                         )}
 
                         <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
                           <div>
-                            <p className="text-gray-400">Price</p>
-                            <p className="font-semibold text-gray-200 flex items-center gap-1">
+                            <p className="text-[color:var(--muted)]">Price</p>
+                            <p className="font-semibold flex items-center gap-1">
                               <FaRupeeSign />
                               {item.price?.toLocaleString("en-IN")}
                             </p>
                           </div>
                           <div>
-                            <p className="text-gray-400">Qty</p>
-                            <p className="font-semibold text-gray-200">
+                            <p className="text-[color:var(--muted)]">Qty</p>
+                            <p className="font-semibold">
                               {item.quantity}
                             </p>
                           </div>
 
-                          <div className="col-span-2 pt-3 border-t border-gray-600">
-                            <p className="text-gray-400 text-xs">Total</p>
-                            <p className="font-bold text-cyan-400 text-base flex items-center gap-1">
+                          <div className="col-span-2 pt-3 border-t border-[color:var(--border)]">
+                            <p className="text-[color:var(--muted)] text-xs">Total</p>
+                            <p className="font-bold text-cyan-500 text-base flex items-center gap-1">
                               <FaRupeeSign />
                               {(item.price * item.quantity)?.toLocaleString("en-IN")}
                             </p>
@@ -646,38 +631,38 @@ const Invoice = () => {
             </div>
 
             {/* Totals */}
-            <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-xl p-4 sm:p-6 border border-cyan-500/20">
-              <div className="max-w-md ml-auto space-y-3 text-sm sm:text-base">
+            <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-xl p-3 sm:p-4 border border-cyan-500/20">
+              <div className="max-w-md ml-auto space-y-2 text-sm sm:text-base">
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-gray-300 font-medium">Subtotal:</span>
-                  <span className="font-semibold text-white flex items-center gap-1">
-                    <FaRupeeSign className="text-sm" />
+                  <span className="font-medium">Subtotal:</span>
+                  <span className="font-semibold flex items-center gap-1">
+                    <FaRupeeSign className="text-xs sm:text-sm" />
                     {subtotal.toLocaleString("en-IN")}
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-gray-300 font-medium">Shipping Fee:</span>
-                  <span className="font-semibold text-white flex items-center gap-1">
-                    <FaRupeeSign className="text-sm" />
+                  <span className="font-medium">Shipping Fee:</span>
+                  <span className="font-semibold flex items-center gap-1">
+                    <FaRupeeSign className="text-xs sm:text-sm" />
                     {shipping.toLocaleString("en-IN")}
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-gray-300 font-medium">Tax (18% GST):</span>
-                  <span className="font-semibold text-white flex items-center gap-1">
-                    <FaRupeeSign className="text-sm" />
+                  <span className="font-medium">Tax (18% GST):</span>
+                  <span className="font-semibold flex items-center gap-1">
+                    <FaRupeeSign className="text-xs sm:text-sm" />
                     {tax.toFixed(2)}
                   </span>
                 </div>
 
-                <div className="border-t border-cyan-500/30 pt-3 mt-2">
+                <div className="border-t border-cyan-500/30 pt-2 mt-2">
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-white text-base sm:text-lg">
+                    <span className="font-bold text-base sm:text-lg">
                       Total Amount:
                     </span>
-                    <span className="font-bold text-cyan-400 flex items-center gap-1 text-lg sm:text-2xl">
+                    <span className="font-bold text-cyan-500 flex items-center gap-1 text-lg sm:text-2xl">
                       <FaRupeeSign className="text-sm sm:text-lg" />
                       {total.toLocaleString("en-IN")}
                     </span>
@@ -689,7 +674,7 @@ const Invoice = () => {
             {/* Mobile Actions */}
             <div className="lg:hidden space-y-3">
               <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3">
-                <div className="flex items-center justify-center text-green-400 font-semibold text-sm">
+                <div className="flex items-center justify-center text-green-500 font-semibold text-sm">
                   <FaCheckCircle className="mr-2 text-base" />
                   <span className="capitalize">
                     Payment Successful • {order.status}
@@ -701,7 +686,7 @@ const Invoice = () => {
                 <button
                   onClick={handleDownload}
                   disabled={isGeneratingPDF}
-                  className="flex items-center justify-center px-3 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-semibold transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center px-3 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl font-semibold transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <FaDownload className="mr-2" />
                   {isGeneratingPDF ? "..." : "Download"}
@@ -709,7 +694,7 @@ const Invoice = () => {
 
                 <button
                   onClick={handlePrint}
-                  className="flex items-center justify-center px-3 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition text-sm"
+                  className="flex items-center justify-center px-3 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold transition text-sm"
                 >
                   <FaPrint className="mr-2" />
                   Print
@@ -719,7 +704,7 @@ const Invoice = () => {
               <button
                 onClick={handleShare}
                 disabled={isGeneratingPDF}
-                className="w-full flex items-center justify-center px-3 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center px-3 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-semibold transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FaShare className="mr-2" />
                 Share PDF
@@ -727,25 +712,25 @@ const Invoice = () => {
             </div>
 
             {/* Thank You */}
-            <div className="text-center p-6 sm:p-8 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl relative overflow-hidden">
+            <div className="text-center p-4 sm:p-6 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl relative overflow-hidden">
               <div className="absolute inset-0 bg-black/20"></div>
               <div className="relative">
-                <h3 className="text-xl sm:text-3xl font-bold text-white mb-3">
+                <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-2 sm:mb-3">
                   Thank You for Your Order!
                 </h3>
 
-                <p className="text-cyan-100 text-sm sm:text-lg max-w-2xl mx-auto leading-relaxed">
+                <p className="text-cyan-100 text-xs sm:text-sm lg:text-base max-w-2xl mx-auto leading-relaxed">
                   We appreciate your business and trust in MishraMart. If you have
                   any questions about your order, please contact customer support.
                 </p>
 
-                <div className="mt-5 flex flex-col sm:flex-row gap-4 justify-center items-center text-sm sm:text-lg">
+                <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center items-center text-xs sm:text-sm">
                   <div className="flex items-center gap-2 text-cyan-100">
-                    <FaEnvelope className="text-base sm:text-xl" />
+                    <FaEnvelope className="text-sm sm:text-base" />
                     <span>support@mishramart.com</span>
                   </div>
                   <div className="flex items-center gap-2 text-cyan-100">
-                    <FaPhone className="text-base sm:text-xl" />
+                    <FaPhone className="text-sm sm:text-base" />
                     <span>+91 98765 43210</span>
                   </div>
                 </div>
@@ -753,11 +738,11 @@ const Invoice = () => {
             </div>
 
             {/* Footer */}
-            <div className="text-center pt-4 border-t border-gray-700">
-              <p className="text-gray-400 text-xs sm:text-sm">
+            <div className="text-center pt-3 border-t border-[color:var(--border)]">
+              <p className="text-[color:var(--muted)] text-xs">
                 MISHRA MART • 123 Business Avenue, Tech Park, Mumbai - 400001
               </p>
-              <p className="text-gray-500 text-xs sm:text-sm mt-1">
+              <p className="text-[color:var(--muted)] text-xs mt-1">
                 GSTIN: 27AABCU9603R1ZM • support@mishramart.com • +91 98765 43210
               </p>
             </div>
@@ -768,7 +753,7 @@ const Invoice = () => {
         <div className="hidden lg:flex justify-between items-center mt-6">
           <button
             onClick={() => navigate("/orders")}
-            className="flex items-center gap-3 px-6 py-3 bg-[#1A2A30] border border-gray-700 hover:border-cyan-500 text-white font-semibold rounded-xl transition"
+            className="flex items-center gap-3 px-6 py-3 bg-[color:var(--surface)] border border-[color:var(--border)] hover:border-cyan-500 font-semibold rounded-xl transition"
           >
             <FaArrowLeft />
             Back to Orders
@@ -776,7 +761,7 @@ const Invoice = () => {
 
           <button
             onClick={() => navigate("/")}
-            className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-semibold rounded-xl transition"
+            className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-95 text-white font-semibold rounded-xl transition"
           >
             Back to Home
           </button>

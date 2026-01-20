@@ -44,6 +44,9 @@ const reviewSchema = new mongoose.Schema(
 
     // ✅ old support
     image: { type: String, default: "" },
+
+    // ✅ Admin control: hide/unhide
+    isHidden: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
@@ -51,7 +54,6 @@ const reviewSchema = new mongoose.Schema(
 // ✅ one user can review one product only
 reviewSchema.index({ productId: 1, userId: 1 }, { unique: true });
 
-const Review =
-  mongoose.models.review || mongoose.model("review", reviewSchema);
+const Review = mongoose.models.review || mongoose.model("review", reviewSchema);
 
 export default Review;

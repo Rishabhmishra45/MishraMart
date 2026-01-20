@@ -1,22 +1,37 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { authDataContext } from "../context/AuthContext";
 import axios from "axios";
 
+const normalizeProducts = (data) => {
+  // Handles: [ ... ] OR { success, products: [...] } OR { products: [...] }
+  if (Array.isArray(data)) return data;
+  if (data?.products && Array.isArray(data.products)) return data.products;
+  if (data?.data?.products && Array.isArray(data.data.products)) return data.data.products;
+  return [];
+};
+
 const Lists = () => {
-  const [list, setList] = useState([]);
   const { serverUrl } = useContext(authDataContext);
+
+  const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
+
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("all");
 
   const fetchList = async () => {
     try {
       setLoading(true);
-      const result = await axios.get(serverUrl + "/api/product/list", {
+      const res = await axios.get(`${serverUrl}/api/product/list`, {
         withCredentials: true,
       });
-      setList(result.data);
+
+      const products = normalizeProducts(res.data);
+      setList(products);
     } catch (error) {
-      console.log(error);
+      console.log("fetchList error:", error?.response?.data || error.message);
+      setList([]);
     } finally {
       setLoading(false);
     }
@@ -25,14 +40,21 @@ const Lists = () => {
   const removeList = async (id) => {
     try {
       setDeletingId(id);
-      let result = await axios.post(`${serverUrl}/api/product/remove/${id}`, {}, { withCredentials: true });
-      if (result.data) {
+
+      const res = await axios.post(
+        `${serverUrl}/api/product/remove/${id}`,
+        {},
+        { withCredentials: true }
+      );
+
+      if (res?.data?.success || res?.data) {
         await fetchList();
       } else {
-        console.log("Failed to remove Product");
+        alert("Failed to remove product");
       }
     } catch (error) {
-      console.log(error);
+      console.log("removeList error:", error?.response?.data || error.message);
+      alert("Failed to remove product");
     } finally {
       setDeletingId(null);
     }
@@ -40,53 +62,145 @@ const Lists = () => {
 
   useEffect(() => {
     fetchList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const categories = useMemo(() => {
+    const set = new Set(list?.map((p) => p?.category).filter(Boolean));
+    return ["all", ...Array.from(set)];
+  }, [list]);
+
+  const filtered = useMemo(() => {
+    let arr = [...list];
+
+    if (category !== "all") {
+      arr = arr.filter((p) => p?.category === category);
+    }
+
+    const q = search.trim().toLowerCase();
+    if (q) {
+      arr = arr.filter((p) => {
+        const name = (p?.name || "").toLowerCase();
+        const cat = (p?.category || "").toLowerCase();
+        return name.includes(q) || cat.includes(q) || String(p?.price || "").includes(q);
+      });
+    }
+
+    return arr;
+  }, [list, search, category]);
 
   return (
     <div className="px-3 xs:px-4 sm:px-6 lg:px-8 min-h-screen overflow-y-auto">
-      <div className="max-w-5xl mx-auto pb-6 sm:pb-10 mt-4 sm:mt-[30px]">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-400 to-cyan-400 bg-clip-text text-transparent">
-          Product Inventory
-        </h1>
-        <p className="text-gray-300 mt-2 mb-4 sm:mb-8 text-sm sm:text-base">Manage your listed products</p>
+      <div className="max-w-6xl mx-auto pb-10 mt-4 sm:mt-[30px]">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-green-400 to-cyan-400 bg-clip-text text-transparent">
+              Product Inventory
+            </h1>
+            <p className="text-gray-300 mt-2 text-xs sm:text-base">
+              Manage and delete listed products
+            </p>
+          </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center py-10 sm:py-20">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-b-2 border-blue-500 mx-auto mb-3 sm:mb-4"></div>
-              <p className="text-gray-400 text-sm sm:text-base">Loading products...</p>
+          <button
+            onClick={fetchList}
+            className="w-full sm:w-auto px-5 py-3 rounded-xl border border-gray-700 text-gray-200 hover:bg-white/5 transition font-semibold text-sm"
+          >
+            Refresh
+          </button>
+        </div>
+
+        {/* Filters */}
+        <div className="mt-6 bg-gray-900/40 border border-gray-800 rounded-2xl p-4 sm:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name, category, price..."
+              className="w-full px-4 py-3 rounded-xl bg-gray-950/40 border border-gray-800 text-white text-sm outline-none focus:border-cyan-500"
+            />
+
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl bg-gray-950/40 border border-gray-800 text-white text-sm outline-none focus:border-cyan-500"
+            >
+              {categories.map((c) => (
+                <option key={c} value={c}>
+                  {c === "all" ? "All Categories" : c}
+                </option>
+              ))}
+            </select>
+
+            <div className="w-full px-4 py-3 rounded-xl bg-gray-950/40 border border-gray-800 text-gray-300 text-sm flex items-center justify-between">
+              <span>Total</span>
+              <span className="text-cyan-400 font-bold">{filtered.length}</span>
             </div>
           </div>
-        ) : (
-          <div className="grid gap-3 sm:gap-4 lg:gap-6">
-            {list?.length > 0 ? (
-              list.map((item) => (
+        </div>
+
+        {/* List */}
+        <div className="mt-6">
+          {loading ? (
+            <div className="flex justify-center items-center py-16">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-14 w-14 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+                <p className="text-gray-300 text-sm">Loading products...</p>
+              </div>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-16 bg-gray-900/30 rounded-3xl border border-gray-800">
+              <div className="text-5xl mb-3">📦</div>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-white">No Products Found</h2>
+              <p className="text-gray-400 text-xs sm:text-base mt-2">
+                Add products from “Add Items”, then refresh.
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:gap-4 lg:gap-6">
+              {filtered.map((item) => (
                 <div
                   key={item._id}
-                  className="bg-gray-800/40 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-6 border border-gray-700/50 hover:border-gray-600/70 transition-all duration-300 hover:shadow-xl"
+                  className="bg-gray-900/40 border border-gray-800 rounded-2xl p-4 sm:p-6 shadow-xl"
                 >
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 lg:gap-6">
-                    <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
-                      <div className="flex-shrink-0">
-                        <img
-                          src={item.image1}
-                          alt={item.name || "Product"}
-                          className="w-12 h-12 xs:w-16 xs:h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-cover rounded-lg sm:rounded-xl shadow-lg"
-                        />
-                      </div>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-start gap-4 flex-1 min-w-0">
+                      <img
+                        src={item?.image1 || item?.images?.[0] || "https://via.placeholder.com/150"}
+                        alt={item?.name || "Product"}
+                        className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl border border-gray-800"
+                        onError={(e) => {
+                          e.target.src = "https://via.placeholder.com/150";
+                        }}
+                      />
+
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-base sm:text-lg lg:text-xl font-semibold truncate text-white mb-1">{item.name}</h3>
-                        <div className="flex flex-wrap gap-1 sm:gap-2 mb-2">
-                          <span className="px-2 py-1 sm:px-3 sm:py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs sm:text-sm">{item.category}</span>
-                          <span className="px-2 py-1 sm:px-3 sm:py-1 bg-green-500/20 text-green-300 rounded-full text-xs sm:text-sm font-medium">₹{item.price}</span>
-                          {item.bestseller && (
-                            <span className="px-2 py-1 sm:px-3 sm:py-1 bg-yellow-500/20 text-yellow-300 rounded-full text-xs sm:text-sm">⭐ Best Seller</span>
+                        <h3 className="text-base sm:text-xl font-bold text-white truncate">
+                          {item?.name}
+                        </h3>
+
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {item?.category && (
+                            <span className="px-3 py-1 rounded-full text-xs bg-blue-500/15 text-blue-200 border border-blue-500/20">
+                              {item.category}
+                            </span>
+                          )}
+                          {item?.price != null && (
+                            <span className="px-3 py-1 rounded-full text-xs bg-green-500/15 text-green-200 border border-green-500/20 font-bold">
+                              ₹{item.price}
+                            </span>
+                          )}
+                          {item?.bestseller && (
+                            <span className="px-3 py-1 rounded-full text-xs bg-yellow-500/15 text-yellow-200 border border-yellow-500/20">
+                              ⭐ Best Seller
+                            </span>
                           )}
                         </div>
-                        {item.sizes && item.sizes.length > 0 && (
-                          <div className="text-xs sm:text-sm text-gray-300">
-                            <span className="text-gray-400">Sizes: </span>{item.sizes.join(", ")}
-                          </div>
+
+                        {Array.isArray(item?.sizes) && item.sizes.length > 0 && (
+                          <p className="mt-2 text-xs sm:text-sm text-gray-400">
+                            Sizes: <span className="text-gray-200">{item.sizes.join(", ")}</span>
+                          </p>
                         )}
                       </div>
                     </div>
@@ -94,39 +208,22 @@ const Lists = () => {
                     <button
                       onClick={() => removeList(item._id)}
                       disabled={deletingId === item._id}
-                      className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 disabled:from-red-400 disabled:to-red-300 text-white font-semibold rounded-lg sm:rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
+                      className="w-full sm:w-auto px-5 py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white font-bold transition disabled:opacity-60"
                     >
-                      {deletingId === item._id ? (
-                        <>
-                          <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Deleting</span>
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                          <span>Delete</span>
-                        </>
-                      )}
+                      {deletingId === item._id ? "Deleting..." : "Delete"}
                     </button>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-10 sm:py-20">
-                <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">📦</div>
-                <h3 className="text-xl sm:text-2xl font-semibold text-gray-300 mb-2">No Products Found</h3>
-                <p className="text-gray-400 text-sm sm:text-base">Get started by adding your first product.</p>
-              </div>
-            )}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
 
-        {!loading && list.length > 0 && (
-          <div className="text-center mt-6 sm:mt-8">
+        {!loading && filtered.length > 0 && (
+          <div className="text-center mt-8">
             <p className="text-gray-400 text-xs sm:text-sm">
-              Showing <span className="text-white font-semibold">{list.length}</span> product{list.length !== 1 ? "s" : ""}
+              Showing <span className="text-white font-semibold">{filtered.length}</span>{" "}
+              product{filtered.length !== 1 ? "s" : ""}
             </p>
           </div>
         )}

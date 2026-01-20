@@ -8,7 +8,7 @@ const Hero = () => {
 
   return (
     <section
-      className="relative w-full min-h-[92vh] flex items-center pt-[70px]"
+      className="relative w-full min-h-[92vh] flex items-center pt-[30px]"
       style={{
         background: "linear-gradient(135deg, var(--bg), var(--surface))",
         color: "var(--text)",

@@ -1,61 +1,61 @@
-import axios from 'axios'
-import React from 'react'
-import { useEffect } from 'react'
-import { useContext } from 'react'
-import { useState } from 'react'
-import { createContext } from 'react'
-import { authDataContext } from './AuthContext'
+import axios from "axios";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { authDataContext } from "./AuthContext";
 
-export const adminDataContext = createContext()
+export const adminDataContext = createContext();
+
 const AdminContext = ({ children }) => {
-    let [adminData, setAdminData] = useState(null)
-    let [loading, setLoading] = useState(true) // Add loading state
-    let { serverUrl } = useContext(authDataContext)
+  const [adminData, setAdminData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    const getAdmin = async () => {
-        try {
-            setLoading(true)
-            let result = await axios.get(serverUrl + "/api/user/getadmin",
-                { withCredentials: true })
+  const { serverUrl } = useContext(authDataContext);
 
-            setAdminData(result.data)
-            console.log("Admin data:", result.data)
-        } catch (error) {
-            setAdminData(null)
-            console.log("Admin error:", error)
-        } finally {
-            setLoading(false)
-        }
+  const getAdmin = async () => {
+    try {
+      setLoading(true);
+
+      if (!serverUrl) {
+        console.warn("⚠️ VITE_SERVER_URL missing in admin panel env");
+        setAdminData(null);
+        return;
+      }
+
+      const result = await axios.get(`${serverUrl}/api/user/getadmin`, {
+        withCredentials: true,
+      });
+
+      setAdminData(result.data);
+      // console.log("Admin data:", result.data);
+    } catch (error) {
+      setAdminData(null);
+      console.log("Admin error:", error?.response?.data || error.message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const clearAdmin = () => {
-        setAdminData(null)
-        setLoading(false)
-    }
+  const clearAdmin = () => {
+    setAdminData(null);
+    setLoading(false);
+  };
 
-    useEffect(() => {
-        getAdmin()
-    }, [])
+  useEffect(() => {
+    getAdmin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverUrl]);
 
-    // Check if admin is actually logged in
-    const isAdminLoggedIn = adminData && adminData.success && adminData.email
+  const isAdminLoggedIn = adminData && adminData.success && adminData.email;
 
-    let value = {
-        adminData, 
-        setAdminData, 
-        getAdmin,
-        clearAdmin,
-        isAdminLoggedIn,
-        loading
-    }
+  const value = {
+    adminData,
+    setAdminData,
+    getAdmin,
+    clearAdmin,
+    isAdminLoggedIn,
+    loading,
+  };
 
-    return (
-        <div>
-            <adminDataContext.Provider value={value}>
-                {children}
-            </adminDataContext.Provider>
-        </div>
-    )
-}
+  return <adminDataContext.Provider value={value}>{children}</adminDataContext.Provider>;
+};
 
-export default AdminContext
+export default AdminContext;

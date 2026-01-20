@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
-import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
+import { IoEyeOutline, IoEyeOffOutline, IoArrowBack } from "react-icons/io5";
 import { authDataContext } from "../context/AuthContext";
 import axios from "axios";
 
@@ -15,10 +15,8 @@ const ResetPassword = () => {
   const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -75,134 +73,170 @@ const ResetPassword = () => {
 
   if (!email) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white">
-        Invalid access
+      <div className="min-h-screen bg-[color:var(--background)] flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl p-6 sm:p-8">
+            <h2 className="text-xl font-bold mb-3">Invalid Access</h2>
+            <p className="text-[color:var(--muted)] mb-4">Please request a password reset first.</p>
+            <button
+              onClick={() => navigate("/forgot-password")}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-95 text-white font-semibold rounded-xl transition"
+            >
+              Go to Forgot Password
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-[#0f2027] via-[#203a43] to-[#2c5364] text-white flex flex-col">
-      {/* Logo */}
-      <div className="w-full px-4 py-6">
-        <img
-          src={Logo}
-          alt="Logo"
-          className="h-16 cursor-pointer hover:scale-105 transition"
-          draggable={false}
-          onClick={() => navigate("/")}
-        />
+    <div className="min-h-screen bg-[color:var(--background)] text-[color:var(--text)]">
+      <div className="px-4 sm:px-6 lg:px-8 py-4">
+        <div className="flex items-center justify-between">
+          <img
+            src={Logo}
+            alt="Logo"
+            className="h-12 sm:h-16 w-auto cursor-pointer"
+            draggable={false}
+            onClick={() => navigate("/")}
+          />
+          <button
+            onClick={() => navigate("/login")}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[color:var(--surface)] border border-[color:var(--border)] hover:bg-[color:var(--surface-2)] transition text-xs sm:text-sm"
+          >
+            <IoArrowBack className="text-sm" />
+            <span className="hidden sm:inline">Back to Login</span>
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-4">
-        <div className="w-full max-w-md bg-white/10 border border-white/20 backdrop-blur-lg rounded-2xl shadow-lg p-6">
-          <h1 className="text-3xl font-bold text-center mb-1">Reset Password</h1>
-
-          <p className="text-center text-gray-300 mb-4 text-sm">
-            OTP expires in{" "}
-            <span className="text-[#4aa4b5] font-semibold">
-              {Math.floor(timeLeft / 60)}:
-              {(timeLeft % 60).toString().padStart(2, "0")}
-            </span>
-          </p>
-
-          {message && (
-            <div className="mb-4 p-3 bg-green-500/20 border border-green-500/40 rounded text-green-300 text-sm">
-              {message}
-            </div>
-          )}
-
-          {error && (
-            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/40 rounded text-red-300 text-sm">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* OTP */}
-            <input
-              type="text"
-              placeholder="Enter 6-digit OTP"
-              className="w-full h-11 px-4 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-[#4aa4b5] tracking-widest text-center"
-              required
-              value={otp}
-              maxLength={6}
-              disabled={loading}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-            />
-
-            {/* Password (Visible but disabled until OTP filled ✅) */}
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="New Password"
-                className={`w-full h-11 px-4 pr-10 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-[#4aa4b5]
-                  ${!otpValid ? "opacity-60 cursor-not-allowed" : ""}`}
-                required
-                value={password}
-                disabled={!otpValid || loading}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <span
-                className={`absolute right-3 top-3 text-gray-300 transition ${
-                  !otpValid || loading ? "cursor-not-allowed opacity-60" : "cursor-pointer"
-                }`}
-                onClick={() => {
-                  if (!otpValid || loading) return;
-                  setShowPassword(!showPassword);
-                }}
-              >
-                {showPassword ? <IoEyeOffOutline /> : <IoEyeOutline />}
+      <div className="flex-1 flex items-center justify-center px-4 py-6">
+        <div className="w-full max-w-sm sm:max-w-md">
+          <div className="text-center mb-6">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">Reset Password</h1>
+            <p className="text-[color:var(--muted)] text-sm">
+              OTP expires in{" "}
+              <span className="text-cyan-500 font-semibold">
+                {Math.floor(timeLeft / 60)}:
+                {(timeLeft % 60).toString().padStart(2, "0")}
               </span>
-            </div>
+            </p>
+          </div>
 
-            {/* Confirm Password */}
-            <div className="relative">
-              <input
-                type={showConfirm ? "text" : "password"}
-                placeholder="Confirm Password"
-                className={`w-full h-11 px-4 pr-10 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-[#4aa4b5]
-                  ${!otpValid ? "opacity-60 cursor-not-allowed" : ""}`}
-                required
-                value={confirmPassword}
-                disabled={!otpValid || loading}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-              <span
-                className={`absolute right-3 top-3 text-gray-300 transition ${
-                  !otpValid || loading ? "cursor-not-allowed opacity-60" : "cursor-pointer"
-                }`}
-                onClick={() => {
-                  if (!otpValid || loading) return;
-                  setShowConfirm(!showConfirm);
-                }}
-              >
-                {showConfirm ? <IoEyeOffOutline /> : <IoEyeOutline />}
-              </span>
-            </div>
+          <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl">
+            {message && (
+              <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-sm">
+                {message}
+              </div>
+            )}
 
-            {/* Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full h-11 rounded-lg font-semibold transition-all
-                ${
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-[color:var(--muted)] mb-2">
+                  6-digit OTP *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter 6-digit OTP"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-transparent border border-[color:var(--border)] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300 text-center text-lg tracking-widest"
+                  required
+                  value={otp}
+                  maxLength={6}
+                  disabled={loading}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-[color:var(--muted)] mb-2">
+                  New Password *
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter new password"
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-transparent border border-[color:var(--border)] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300 pr-10 ${
+                      !otpValid ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                    required
+                    value={password}
+                    disabled={!otpValid || loading}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    disabled={!otpValid || loading}
+                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 transition ${
+                      !otpValid || loading
+                        ? "text-[color:var(--muted)] cursor-not-allowed"
+                        : "text-[color:var(--text)] hover:text-cyan-500"
+                    }`}
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <IoEyeOffOutline size={18} /> : <IoEyeOutline size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-[color:var(--muted)] mb-2">
+                  Confirm Password *
+                </label>
+                <div className="relative">
+                  <input
+                    type={showConfirm ? "text" : "password"}
+                    placeholder="Confirm new password"
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-transparent border border-[color:var(--border)] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300 pr-10 ${
+                      !otpValid ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                    required
+                    value={confirmPassword}
+                    disabled={!otpValid || loading}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    disabled={!otpValid || loading}
+                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 transition ${
+                      !otpValid || loading
+                        ? "text-[color:var(--muted)] cursor-not-allowed"
+                        : "text-[color:var(--text)] hover:text-cyan-500"
+                    }`}
+                    onClick={() => setShowConfirm(!showConfirm)}
+                  >
+                    {showConfirm ? <IoEyeOffOutline size={18} /> : <IoEyeOutline size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full px-4 sm:px-6 py-3 sm:py-3.5 rounded-lg font-semibold transition-all duration-300 ${
                   loading
                     ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-[#4aa4b5] hover:bg-[#3a8c9a] active:scale-95"
+                    : "bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-95 text-white hover:-translate-y-0.5 active:translate-y-0"
                 }`}
-            >
-              {loading ? "Resetting..." : "Reset Password"}
-            </button>
-          </form>
+              >
+                {loading ? "Resetting..." : "Reset Password"}
+              </button>
+            </form>
 
-          <div className="text-center mt-4">
-            <span
-              className="text-[#4aa4b5] cursor-pointer hover:underline"
-              onClick={() => navigate("/login")}
-            >
-              ← Back to Login
-            </span>
+            <p className="text-center text-[color:var(--muted)] text-xs sm:text-sm mt-4">
+              <button
+                onClick={() => navigate("/login")}
+                className="text-cyan-500 hover:underline"
+              >
+                ← Back to Login
+              </button>
+            </p>
           </div>
         </div>
       </div>

@@ -55,16 +55,19 @@ const Cart = () => {
     // If cart context is not available
     if (!useCart) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-[#141414] via-[#0c2025] to-[#141414] text-white pt-[70px] flex items-center justify-center">
-                <div className="text-center">
-                    <h2 className="text-2xl font-bold mb-4">Cart Error</h2>
-                    <p className="text-gray-400 mb-6">Cart functionality is currently unavailable.</p>
-                    <button
-                        onClick={() => navigate('/collections')}
-                        className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition duration-300"
-                    >
-                        Continue Shopping
-                    </button>
+            <div className="min-h-screen pt-[70px] flex items-center justify-center bg-[color:var(--background)] text-[color:var(--text)]">
+                <div className="text-center max-w-md mx-4">
+                    <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-2xl p-8 shadow-xl">
+                        <FaExclamationTriangle className="text-4xl text-amber-500 mx-auto mb-4" />
+                        <h2 className="text-xl font-bold mb-3">Cart Error</h2>
+                        <p className="text-[color:var(--muted)] mb-6">Cart functionality is currently unavailable.</p>
+                        <button
+                            onClick={() => navigate('/collections')}
+                            className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-95 text-white font-semibold rounded-xl transition-all duration-300 w-full"
+                        >
+                            Continue Shopping
+                        </button>
+                    </div>
                 </div>
             </div>
         );
@@ -72,18 +75,18 @@ const Cart = () => {
 
     if (isCartEmpty) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-[#141414] via-[#0c2025] to-[#141414] text-white pt-[70px]">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="min-h-screen pt-[70px] bg-[color:var(--background)] text-[color:var(--text)]">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16">
                     <div className="text-center">
-                        <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-12 shadow-2xl shadow-blue-900/20">
-                            <FaShoppingBag className="text-6xl text-gray-500 mx-auto mb-6" />
-                            <h2 className="text-3xl font-bold text-white mb-4">Your Cart is Empty</h2>
-                            <p className="text-gray-400 text-lg mb-8">
+                        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-2xl p-6 sm:p-12 shadow-xl">
+                            <FaShoppingBag className="text-5xl sm:text-6xl text-gray-400 mx-auto mb-4 sm:mb-6" />
+                            <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Your Cart is Empty</h2>
+                            <p className="text-[color:var(--muted)] text-sm sm:text-lg mb-6 sm:mb-8">
                                 Looks like you haven't added any items to your cart yet.
                             </p>
                             <button
                                 onClick={() => navigate('/collections')}
-                                className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold rounded-2xl transition-all duration-300 transform hover:-translate-y-1 shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-3 mx-auto"
+                                className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-95 text-white font-semibold rounded-xl transition-all duration-300 transform hover:-translate-y-1 shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-3 mx-auto w-full max-w-xs"
                             >
                                 <FaArrowLeft />
                                 Continue Shopping
@@ -96,7 +99,7 @@ const Cart = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#141414] via-[#0c2025] to-[#141414] text-white pt-[70px]">
+        <div className="min-h-screen pt-[70px] bg-[color:var(--background)] text-[color:var(--text)]">
             {/* Cart Notification */}
             <CartNotification
                 product={notificationProduct}
@@ -104,14 +107,14 @@ const Cart = () => {
                 onClose={handleCloseNotification}
             />
             
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <h1 className="text-3xl sm:text-4xl font-bold">Shopping Cart</h1>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">Shopping Cart</h1>
                     <button
                         onClick={() => navigate('/collections')}
-                        className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition"
+                        className="flex items-center gap-2 text-cyan-500 hover:text-cyan-400 transition text-sm sm:text-base"
                     >
                         <FaArrowLeft />
                         Continue Shopping
@@ -120,26 +123,26 @@ const Cart = () => {
 
                 {/* Guest User Notice */}
                 {!userData && (
-                    <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-2xl p-6 mb-6">
-                        <div className="flex items-center gap-3">
-                            <FaUser className="text-yellow-400 text-xl" />
-                            <div>
-                                <h3 className="text-yellow-400 font-semibold text-lg">Shopping as Guest</h3>
-                                <p className="text-yellow-300 text-sm">
+                    <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-2xl p-4 sm:p-6 mb-6">
+                        <div className="flex items-start sm:items-center gap-3">
+                            <FaUser className="text-yellow-500 text-lg sm:text-xl mt-1 sm:mt-0" />
+                            <div className="flex-1">
+                                <h3 className="text-yellow-500 font-semibold text-base sm:text-lg">Shopping as Guest</h3>
+                                <p className="text-yellow-400 text-xs sm:text-sm mt-1">
                                     You can add items to cart and browse. Login for checkout and wishlist features.
                                 </p>
                             </div>
                         </div>
-                        <div className="flex gap-3 mt-3">
+                        <div className="flex gap-3 mt-3 sm:mt-4">
                             <button
                                 onClick={() => navigate('/login', { state: { from: '/cart' } })}
-                                className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition duration-300 text-sm"
+                                className="px-3 sm:px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition duration-300 text-xs sm:text-sm flex-1"
                             >
                                 Login
                             </button>
                             <button
                                 onClick={() => navigate('/signup')}
-                                className="px-4 py-2 border border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-white rounded-lg transition duration-300 text-sm"
+                                className="px-3 sm:px-4 py-2 border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white rounded-lg transition duration-300 text-xs sm:text-sm flex-1"
                             >
                                 Create Account
                             </button>
@@ -147,44 +150,42 @@ const Cart = () => {
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
                     {/* Cart Items */}
-                    <div className="lg:col-span-2 space-y-4">
+                    <div className="lg:col-span-2 space-y-4 sm:space-y-6">
                         {cartItems.map((item, index) => (
                             <div 
                                 key={`${item.id}-${item.size || 'no-size'}`} 
-                                className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 animate-slide-up"
-                                style={{ animationDelay: `${index * 0.1}s` }}
+                                className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-2xl p-4 sm:p-6 shadow-xl"
                             >
                                 <div className="flex flex-col sm:flex-row gap-4">
                                     {/* Product Image */}
-                                    <div className="flex-shrink-0">
+                                    <div className="flex-shrink-0 mx-auto sm:mx-0">
                                         <img
                                             src={item.image}
                                             alt={item.name}
-                                            className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-lg"
+                                            className="w-20 h-20 sm:w-28 sm:h-28 object-cover rounded-lg"
                                         />
                                     </div>
 
                                     {/* Product Details */}
                                     <div className="flex-1">
                                         <div className="flex justify-between items-start">
-                                            <div>
-                                                <h3 className="text-lg font-semibold text-white mb-2">
+                                            <div className="flex-1">
+                                                <h3 className="text-base sm:text-lg font-semibold mb-2 line-clamp-2">
                                                     {item.name}
                                                 </h3>
                                                 {item.size && (
-                                                    <p className="text-cyan-300 text-sm mb-2">
+                                                    <p className="text-cyan-500 text-xs sm:text-sm mb-2">
                                                         Size: {item.size}
                                                     </p>
                                                 )}
-                                                <p className="text-cyan-400 text-lg font-bold mb-4">
+                                                <p className="text-cyan-500 text-lg sm:text-xl font-bold mb-3">
                                                     {currency} {item.price}
                                                 </p>
                                                 {item.discountPercentage > 0 && (
                                                     <div className="flex items-center gap-2 mb-2">
-                                                        <span className="text-sm text-gray-400 line-through">
+                                                        <span className="text-xs sm:text-sm text-gray-400 line-through">
                                                             {currency} {item.originalPrice}
                                                         </span>
                                                         <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded-full">
@@ -195,33 +196,36 @@ const Cart = () => {
                                             </div>
                                             <button
                                                 onClick={() => handleRemoveFromCart(item.id)}
-                                                className="text-red-400 hover:text-red-300 transition p-2 hover:scale-110"
+                                                className="text-red-400 hover:text-red-300 transition p-1 sm:p-2 hover:scale-110 ml-2"
+                                                aria-label="Remove item"
                                             >
-                                                <FaTrash />
+                                                <FaTrash className="text-base sm:text-lg" />
                                             </button>
                                         </div>
 
                                         {/* Quantity Controls */}
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center border border-gray-600 rounded-lg">
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4">
+                                            <div className="flex items-center border border-[color:var(--border)] rounded-lg overflow-hidden">
                                                 <button
                                                     onClick={() => handleQuantityChange(item.id, 'decrement')}
-                                                    className="px-4 py-2 text-gray-400 hover:text-white transition hover:bg-gray-700/50"
+                                                    className="px-3 sm:px-4 py-2 text-[color:var(--muted)] hover:text-[color:var(--text)] transition hover:bg-[color:var(--surface-2)]"
+                                                    aria-label="Decrease quantity"
                                                 >
-                                                    <FaMinus />
+                                                    <FaMinus className="text-xs sm:text-sm" />
                                                 </button>
-                                                <span className="px-4 py-2 border-l border-r border-gray-600 min-w-[60px] text-center">
+                                                <span className="px-3 sm:px-4 py-2 border-l border-r border-[color:var(--border)] min-w-[40px] sm:min-w-[60px] text-center text-sm sm:text-base">
                                                     {item.quantity}
                                                 </span>
                                                 <button
                                                     onClick={() => handleQuantityChange(item.id, 'increment')}
-                                                    className="px-4 py-2 text-gray-400 hover:text-white transition hover:bg-gray-700/50"
+                                                    className="px-3 sm:px-4 py-2 text-[color:var(--muted)] hover:text-[color:var(--text)] transition hover:bg-[color:var(--surface-2)]"
+                                                    aria-label="Increase quantity"
                                                 >
-                                                    <FaPlus />
+                                                    <FaPlus className="text-xs sm:text-sm" />
                                                 </button>
                                             </div>
                                             <div className="text-right">
-                                                <div className="text-white font-semibold">
+                                                <div className="text-base sm:text-lg font-semibold">
                                                     Total: {currency} {(item.price * item.quantity).toFixed(2)}
                                                 </div>
                                             </div>
@@ -234,20 +238,20 @@ const Cart = () => {
 
                     {/* Order Summary */}
                     <div className="lg:col-span-1">
-                        <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20 sticky top-24">
-                            <h3 className="text-xl font-semibold mb-6">Order Summary</h3>
+                        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-2xl p-4 sm:p-6 shadow-xl sticky top-24">
+                            <h3 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">Order Summary</h3>
 
-                            <div className="space-y-4 mb-6">
-                                <div className="flex justify-between text-gray-300">
+                            <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+                                <div className="flex justify-between text-[color:var(--muted)] text-sm sm:text-base">
                                     <span>Subtotal ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
                                     <span>{currency} {subtotal.toFixed(2)}</span>
                                 </div>
-                                <div className="flex justify-between text-gray-300">
+                                <div className="flex justify-between text-[color:var(--muted)] text-sm sm:text-base">
                                     <span>Delivery Fee</span>
                                     <span>{currency} {delivery_fee || 50}</span>
                                 </div>
-                                <div className="border-t border-gray-600 pt-4">
-                                    <div className="flex justify-between text-lg font-semibold text-white">
+                                <div className="border-t border-[color:var(--border)] pt-3 sm:pt-4">
+                                    <div className="flex justify-between text-base sm:text-lg font-semibold">
                                         <span>Total</span>
                                         <span>{currency} {total.toFixed(2)}</span>
                                     </div>
@@ -256,27 +260,29 @@ const Cart = () => {
 
                             <button
                                 onClick={proceedToCheckout}
-                                className={`w-full px-8 py-4 text-white font-semibold rounded-2xl transition-all duration-300 transform shadow-lg flex items-center justify-center gap-3 ${
+                                className={`w-full px-4 sm:px-6 py-3 sm:py-4 text-white font-semibold rounded-xl transition-all duration-300 hover:opacity-95 shadow-lg flex items-center justify-center gap-2 sm:gap-3 ${
                                     userData 
-                                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 hover:-translate-y-1 shadow-cyan-500/20'
-                                        : 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 hover:-translate-y-1 shadow-yellow-500/20'
+                                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500'
+                                        : 'bg-gradient-to-r from-yellow-500 to-orange-500'
                                 }`}
                             >
                                 <FaCreditCard />
-                                {userData ? 'Proceed to Checkout' : 'Login to Checkout'}
+                                <span className="text-sm sm:text-base">
+                                    {userData ? 'Proceed to Checkout' : 'Login to Checkout'}
+                                </span>
                             </button>
 
                             <button
                                 onClick={() => clearCart && clearCart()}
-                                className="w-full px-8 py-3 border border-red-500 text-red-400 hover:bg-red-500 hover:text-white mt-4 rounded-2xl transition-all duration-300 hover:scale-105"
+                                className="w-full px-4 sm:px-6 py-3 border border-red-500 text-red-400 hover:bg-red-500 hover:text-white mt-3 sm:mt-4 rounded-xl transition-all duration-300 text-sm sm:text-base"
                             >
                                 Clear Cart
                             </button>
 
                             {/* Guest User Benefits */}
                             {!userData && (
-                                <div className="mt-4 p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
-                                    <p className="text-cyan-400 text-xs text-center">
+                                <div className="mt-3 sm:mt-4 p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
+                                    <p className="text-cyan-500 text-xs text-center">
                                         Create an account to save your cart and get faster checkout
                                     </p>
                                 </div>

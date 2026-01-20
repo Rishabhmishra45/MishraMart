@@ -341,13 +341,13 @@ const ProductReviews = ({ productId }) => {
   const hasMore = visibleCount < reviews.length;
 
   return (
-    <div className="bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-6 shadow-2xl shadow-blue-900/20">
-      <div className="flex items-start justify-between gap-4 mb-4">
+    <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl sm:rounded-2xl p-4 sm:p-6">
+      <div className="flex items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
         <div>
-          <h3 className="text-xl font-semibold text-cyan-400">
+          <h3 className="text-base sm:text-lg font-semibold text-cyan-500">
             Customer Reviews
           </h3>
-          <p className="text-gray-400 text-sm mt-1">
+          <p className="text-[color:var(--muted)] text-xs sm:text-sm mt-1">
             {reviews.length} review{reviews.length !== 1 ? "s" : ""} • Avg{" "}
             {avgRating ? avgRating.toFixed(1) : "0.0"}
           </p>
@@ -357,10 +357,10 @@ const ProductReviews = ({ productId }) => {
           {[1, 2, 3, 4, 5].map((star) => (
             <FaStar
               key={star}
-              className={`text-sm ${
+              className={`text-xs sm:text-sm ${
                 star <= Math.round(avgRating || 0)
                   ? "text-yellow-400"
-                  : "text-gray-600"
+                  : "text-gray-500"
               }`}
             />
           ))}
@@ -368,16 +368,16 @@ const ProductReviews = ({ productId }) => {
       </div>
 
       {/* Review Form */}
-      <div className="border border-gray-700 rounded-2xl p-4 bg-black/20 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-white font-semibold text-sm">Write a review</p>
+      <div className="border border-[color:var(--border)] rounded-xl p-3 sm:p-4 bg-[color:var(--surface-2)] mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <p className="font-semibold text-xs sm:text-sm">Write a review</p>
           {!userData && (
-            <p className="text-yellow-400 text-xs">Login required to review</p>
+            <p className="text-yellow-500 text-xs">Login required to review</p>
           )}
         </div>
 
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-gray-400 text-sm">Rating:</span>
+          <span className="text-[color:var(--muted)] text-xs sm:text-sm">Rating:</span>
           <div className="flex items-center gap-1">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
@@ -385,11 +385,11 @@ const ProductReviews = ({ productId }) => {
                 type="button"
                 onClick={() => setRating(star)}
                 disabled={!userData}
-                className="hover:scale-110 transition"
+                className="hover:scale-110 transition disabled:opacity-50"
               >
                 <FaStar
-                  className={`text-lg ${
-                    star <= rating ? "text-yellow-400" : "text-gray-600"
+                  className={`text-base sm:text-lg ${
+                    star <= rating ? "text-yellow-400" : "text-gray-500"
                   }`}
                 />
               </button>
@@ -405,19 +405,19 @@ const ProductReviews = ({ productId }) => {
           }
           disabled={!userData}
           rows={3}
-          className="w-full rounded-xl bg-gray-800/50 border border-gray-700 p-3 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          className="w-full rounded-lg sm:rounded-xl bg-transparent border border-[color:var(--border)] p-3 text-sm text-[color:var(--text)] placeholder:text-[color:var(--muted)] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300"
         />
 
-        <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
+        <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <label
-            className={`flex items-center gap-2 text-xs px-3 py-2 rounded-xl border cursor-pointer transition ${
+            className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg sm:rounded-xl border cursor-pointer transition ${
               !userData
-                ? "border-gray-700 text-gray-500 cursor-not-allowed"
-                : "border-gray-600 text-gray-300 hover:border-cyan-400"
+                ? "border-[color:var(--border)] text-[color:var(--muted)] cursor-not-allowed"
+                : "border-[color:var(--border)] text-[color:var(--muted)] hover:border-cyan-500 hover:text-cyan-500"
             }`}
           >
             <FaImages />
-            <span>
+            <span className="text-xs">
               {images.length > 0
                 ? `${images.length} image(s) selected`
                 : "Add images (max 3)"}
@@ -437,10 +437,10 @@ const ProductReviews = ({ productId }) => {
             type="button"
             onClick={submitReview}
             disabled={!userData || submitLoading}
-            className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all ${
+            className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 ${
               !userData || submitLoading
-                ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-                : "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white"
+                ? "bg-gray-500 text-gray-400 cursor-not-allowed"
+                : "bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-95 text-white"
             }`}
           >
             {submitLoading ? "Submitting..." : "Submit"}
@@ -454,42 +454,42 @@ const ProductReviews = ({ productId }) => {
                 key={i}
                 src={url}
                 alt="preview"
-                className="w-20 h-20 object-cover rounded-xl border border-gray-700"
+                className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg sm:rounded-xl border border-[color:var(--border)]"
               />
             ))}
           </div>
         )}
 
-        {err && <p className="text-red-400 text-xs mt-2">{err}</p>}
+        {err && <p className="text-red-500 text-xs mt-2">{err}</p>}
       </div>
 
-      {/* List */}
+      {/* Reviews List */}
       {loading ? (
-        <p className="text-gray-400 text-sm">Loading reviews...</p>
+        <p className="text-[color:var(--muted)] text-sm">Loading reviews...</p>
       ) : reviews.length === 0 ? (
-        <div className="text-center py-10">
-          <p className="text-gray-400">No reviews yet.</p>
-          <p className="text-gray-500 text-sm mt-1">
+        <div className="text-center py-6 sm:py-8">
+          <p className="text-[color:var(--muted)]">No reviews yet.</p>
+          <p className="text-[color:var(--muted)] text-xs sm:text-sm mt-1">
             Be the first to review this product.
           </p>
         </div>
       ) : (
         <>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {displayedReviews.map((review) => {
               const normalized = normalizeReviewImages(review.images);
 
               return (
                 <div
                   key={review._id}
-                  className="border-b border-gray-700 pb-4 last:border-b-0 last:pb-0"
+                  className="border-b border-[color:var(--border)] pb-3 sm:pb-4 last:border-b-0 last:pb-0"
                 >
-                  <div className="flex justify-between items-start mb-2">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
                     <div>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-sm sm:text-base">
                         {review.userName}
                       </span>
-                      <div className="text-gray-500 text-xs mt-0.5">
+                      <div className="text-[color:var(--muted)] text-xs mt-0.5">
                         {new Date(review.createdAt).toLocaleDateString("en-IN", {
                           day: "2-digit",
                           month: "short",
@@ -498,54 +498,54 @@ const ProductReviews = ({ productId }) => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap justify-end">
+                    <div className="flex items-center gap-2 flex-wrap justify-between sm:justify-end">
                       <div className="flex items-center gap-1">
                         {[...Array(5)].map((_, i) => (
                           <FaStar
                             key={i}
-                            className={`text-sm ${
+                            className={`text-xs sm:text-sm ${
                               i < (review.rating || 0)
                                 ? "text-yellow-400"
-                                : "text-gray-600"
+                                : "text-gray-500"
                             }`}
                           />
                         ))}
                       </div>
 
                       {canManage(review) && (
-                        <>
+                        <div className="flex items-center gap-1">
                           <button
                             onClick={() => openEdit(review)}
-                            className="text-xs px-2 py-1 rounded-lg border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 transition flex items-center gap-1"
+                            className="text-xs px-2 py-1 rounded-lg border border-cyan-500/30 text-cyan-500 hover:bg-cyan-500/10 transition flex items-center gap-1"
                           >
-                            <FaEdit />
+                            <FaEdit className="text-xs" />
                             Edit
                           </button>
 
                           <button
                             onClick={() => deleteReview(review._id)}
-                            className="text-xs px-2 py-1 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition flex items-center gap-1"
+                            className="text-xs px-2 py-1 rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500/10 transition flex items-center gap-1"
                           >
-                            <FaTrash />
+                            <FaTrash className="text-xs" />
                             Delete
                           </button>
-                        </>
+                        </div>
                       )}
                     </div>
                   </div>
 
-                  <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">
+                  <p className="text-[color:var(--text)] text-sm leading-relaxed whitespace-pre-line">
                     {review.comment}
                   </p>
 
                   {normalized.length > 0 && (
-                    <div className="mt-3 flex gap-2 flex-wrap">
+                    <div className="mt-2 sm:mt-3 flex gap-2 flex-wrap">
                       {normalized.slice(0, MAX_IMAGES).map((img, i) => (
                         <img
                           key={i}
                           src={img.url}
                           alt="review"
-                          className="w-24 h-24 object-cover rounded-xl border border-gray-700"
+                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg sm:rounded-xl border border-[color:var(--border)]"
                         />
                       ))}
                     </div>
@@ -562,9 +562,9 @@ const ProductReviews = ({ productId }) => {
                 onClick={() =>
                   setVisibleCount((prev) => prev + LOAD_MORE_STEP)
                 }
-                className="text-sm px-4 py-2 rounded-xl border border-gray-600 text-gray-200 hover:border-cyan-400 hover:text-cyan-300 transition flex items-center gap-2"
+                className="text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-[color:var(--border)] text-[color:var(--text)] hover:border-cyan-500 hover:text-cyan-500 transition flex items-center gap-1 sm:gap-2"
               >
-                See more reviews <FaChevronDown />
+                See more reviews <FaChevronDown className="text-xs" />
               </button>
             </div>
           )}
@@ -573,20 +573,20 @@ const ProductReviews = ({ productId }) => {
 
       {/* ✅ EDIT MODAL */}
       {editOpen && (
-        <div className="fixed inset-0 z-[999] bg-black/60 backdrop-blur-sm flex items-center justify-center px-4">
-          <div className="w-full max-w-2xl bg-gradient-to-br from-[#0f1b1d] to-[#1a2a2f] border border-gray-700 rounded-2xl p-5 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold text-lg">Edit Review</h3>
+        <div className="fixed inset-0 z-[999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="w-full max-w-2xl bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="font-semibold text-base sm:text-lg">Edit Review</h3>
               <button
                 onClick={closeEdit}
-                className="text-gray-400 hover:text-white transition"
+                className="text-[color:var(--muted)] hover:text-[color:var(--text)] transition"
               >
                 <FaTimes />
               </button>
             </div>
 
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-gray-400 text-sm">Rating:</span>
+              <span className="text-[color:var(--muted)] text-xs sm:text-sm">Rating:</span>
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -596,8 +596,8 @@ const ProductReviews = ({ productId }) => {
                     className="hover:scale-110 transition"
                   >
                     <FaStar
-                      className={`text-lg ${
-                        star <= editRating ? "text-yellow-400" : "text-gray-600"
+                      className={`text-base sm:text-lg ${
+                        star <= editRating ? "text-yellow-400" : "text-gray-500"
                       }`}
                     />
                   </button>
@@ -609,12 +609,12 @@ const ProductReviews = ({ productId }) => {
               value={editComment}
               onChange={(e) => setEditComment(e.target.value)}
               rows={3}
-              className="w-full rounded-xl bg-gray-800/50 border border-gray-700 p-3 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="w-full rounded-lg sm:rounded-xl bg-transparent border border-[color:var(--border)] p-3 text-sm text-[color:var(--text)] placeholder:text-[color:var(--muted)] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300"
             />
 
             {editExistingImages.length > 0 && (
-              <div className="mt-4">
-                <p className="text-gray-300 text-sm font-semibold mb-2">
+              <div className="mt-3 sm:mt-4">
+                <p className="text-[color:var(--text)] text-xs sm:text-sm font-semibold mb-2">
                   Existing images
                 </p>
 
@@ -627,8 +627,8 @@ const ProductReviews = ({ productId }) => {
                     return (
                       <div
                         key={idx}
-                        className={`relative w-24 h-24 rounded-xl border overflow-hidden ${
-                          keep ? "border-cyan-500" : "border-gray-700 opacity-40"
+                        className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl border overflow-hidden ${
+                          keep ? "border-cyan-500" : "border-[color:var(--border)] opacity-40"
                         }`}
                       >
                         <img
@@ -641,10 +641,10 @@ const ProductReviews = ({ productId }) => {
                           <button
                             type="button"
                             onClick={() => removeExistingImage(img)}
-                            className="absolute top-1 right-1 bg-black/60 text-white p-1 rounded-lg hover:bg-black/80 transition"
+                            className="absolute top-1 right-1 bg-black/60 text-white p-1 rounded hover:bg-black/80 transition"
                             title="Remove"
                           >
-                            <FaTimes size={12} />
+                            <FaTimes size={10} />
                           </button>
                         )}
                       </div>
@@ -652,14 +652,14 @@ const ProductReviews = ({ productId }) => {
                   })}
                 </div>
 
-                <p className="text-gray-500 text-xs mt-2">
+                <p className="text-[color:var(--muted)] text-xs mt-2">
                   (Click ❌ to remove image from review)
                 </p>
               </div>
             )}
 
-            <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
-              <label className="flex items-center gap-2 text-xs px-3 py-2 rounded-xl border border-gray-600 text-gray-300 hover:border-cyan-400 cursor-pointer transition">
+            <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <label className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg sm:rounded-xl border border-[color:var(--border)] text-[color:var(--muted)] hover:border-cyan-500 hover:text-cyan-500 cursor-pointer transition">
                 <FaPlus />
                 <span>Add new images</span>
 
@@ -676,10 +676,10 @@ const ProductReviews = ({ productId }) => {
                 type="button"
                 onClick={submitEdit}
                 disabled={editLoading}
-                className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all ${
+                className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 ${
                   editLoading
-                    ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-                    : "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white"
+                    ? "bg-gray-500 text-gray-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-95 text-white"
                 }`}
               >
                 {editLoading ? "Updating..." : "Update"}
@@ -693,13 +693,13 @@ const ProductReviews = ({ productId }) => {
                     key={i}
                     src={url}
                     alt="new"
-                    className="w-20 h-20 object-cover rounded-xl border border-gray-700"
+                    className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg sm:rounded-xl border border-[color:var(--border)]"
                   />
                 ))}
               </div>
             )}
 
-            {editErr && <p className="text-red-400 text-xs mt-3">{editErr}</p>}
+            {editErr && <p className="text-red-500 text-xs mt-3">{editErr}</p>}
           </div>
         </div>
       )}

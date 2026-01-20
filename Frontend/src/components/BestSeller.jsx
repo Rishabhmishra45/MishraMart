@@ -14,26 +14,28 @@ const BestSeller = () => {
   }, [products]);
 
   return (
-    <section className="w-full py-12 sm:py-16">
-      <div className="text-center">
-        <Tittle text1={"BEST"} text2={"SELLERS"} />
-        <p className="m-auto text-xs sm:text-base md:text-lg px-4 max-w-2xl" style={{ color: "var(--muted)" }}>
-          Discover Our Top Picks - Best Sellers Loved by Customers!
-        </p>
-      </div>
+    <section className="w-full py-8 sm:py-12 lg:py-16 bg-[color:var(--background)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-6 sm:mb-8 lg:mb-10">
+          <Tittle text1={"BEST"} text2={"SELLERS"} />
+          <p className="mx-auto text-sm sm:text-base lg:text-lg text-[color:var(--muted)] px-4 max-w-2xl mt-2 sm:mt-3">
+            Discover Our Top Picks - Best Sellers Loved by Customers!
+          </p>
+        </div>
 
-      <div className="mt-10 flex items-center justify-center flex-wrap gap-8 sm:gap-10">
-        {bestSeller.map((item, index) => (
-          <Card
-            key={item?._id || index}
-            id={item._id}
-            name={item.name}
-            image={item.image1}
-            price={item.price}
-            category={item.category}
-            index={index}
-          />
-        ))}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 justify-items-center">
+          {bestSeller.map((item, index) => (
+            <Card
+              key={item?._id || index}
+              id={item._id}
+              name={item.name}
+              image={item.image1}
+              price={item.price}
+              category={item.category}
+              index={index}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );

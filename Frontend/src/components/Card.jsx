@@ -50,19 +50,19 @@ const SizeSelectorModal = ({
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div
         ref={modalRef}
-        className="bg-gradient-to-br from-[#1a1a1a] to-[#0f1a1d] border border-gray-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-float-in"
+        className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-2xl p-4 sm:p-6 max-w-xs sm:max-w-sm w-full shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <FaRuler className="text-cyan-400" />
-          Select Size for {productName}
+        <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+          <FaRuler className="text-cyan-500" />
+          <span className="truncate">Select Size for {productName}</span>
         </h3>
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
           {sizes.map((size) => (
             <button
               key={size}
               onClick={() => onSizeSelect(size)}
-              className="p-3 border-2 border-gray-600 text-gray-300 rounded-xl hover:border-cyan-400 hover:text-cyan-400 transition-all duration-300 hover:scale-105"
+              className="p-2 sm:p-3 border-2 border-[color:var(--border)] text-[color:var(--text)] rounded-lg hover:border-cyan-500 hover:text-cyan-500 transition-all duration-300 hover:scale-105 text-sm sm:text-base"
             >
               {size}
             </button>
@@ -70,7 +70,7 @@ const SizeSelectorModal = ({
         </div>
         <button
           onClick={onClose}
-          className="w-full py-3 border border-gray-600 text-gray-400 rounded-xl hover:border-red-500 hover:text-red-400 transition-all duration-300"
+          className="w-full py-2.5 sm:py-3 border border-[color:var(--border)] text-[color:var(--muted)] rounded-lg hover:border-red-500 hover:text-red-400 transition-all duration-300 text-sm sm:text-base"
         >
           Cancel
         </button>
@@ -166,7 +166,7 @@ const Card = ({ name, image, id, price, category, index }) => {
         type: "info"
       });
 
-      // Auto hide after 3 seconds
+      // Auto hide after 2 seconds
       setTimeout(() => {
         setWishlistNotification({ show: false, message: "", type: "" });
       }, 2000);
@@ -288,13 +288,13 @@ const Card = ({ name, image, id, price, category, index }) => {
 
   const getCategoryColor = () => {
     const colorMap = {
-      electronics: 'from-blue-500/20 to-cyan-600/20 border-blue-500/30',
-      clothing: 'from-purple-500/20 to-pink-600/20 border-purple-500/30',
-      home: 'from-orange-500/20 to-amber-600/20 border-orange-500/30',
-      beauty: 'from-rose-500/20 to-pink-600/20 border-rose-500/30',
-      sports: 'from-green-500/20 to-emerald-600/20 border-green-500/30',
-      books: 'from-indigo-500/20 to-blue-600/20 border-indigo-500/30',
-      default: 'from-gray-500/20 to-slate-600/20 border-gray-500/30'
+      electronics: 'bg-gradient-to-r from-blue-500/10 to-cyan-600/10',
+      clothing: 'bg-gradient-to-r from-purple-500/10 to-pink-600/10',
+      home: 'bg-gradient-to-r from-orange-500/10 to-amber-600/10',
+      beauty: 'bg-gradient-to-r from-rose-500/10 to-pink-600/10',
+      sports: 'bg-gradient-to-r from-green-500/10 to-emerald-600/10',
+      books: 'bg-gradient-to-r from-indigo-500/10 to-blue-600/10',
+      default: 'bg-gradient-to-r from-gray-500/10 to-slate-600/10'
     };
     return colorMap[category] || colorMap.default;
   };
@@ -314,75 +314,53 @@ const Card = ({ name, image, id, price, category, index }) => {
 
       {/* Wishlist Notification */}
       {wishlistNotification.show && (
-        <div className="fixed top-24 right-6 z-50 animate-slide-in-right">
-          <div className={`rounded-2xl p-4 shadow-2xl border max-w-sm backdrop-blur-sm ${wishlistNotification.type === 'info'
-            ? 'bg-gradient-to-r from-blue-500 to-cyan-600 border-blue-400 shadow-blue-500/30'
+        <div className="fixed top-20 right-4 left-4 sm:left-auto sm:right-6 z-50 animate-slide-in-right">
+          <div className={`rounded-xl p-3 shadow-xl border max-w-sm backdrop-blur-sm ${wishlistNotification.type === 'info'
+            ? 'bg-gradient-to-r from-blue-500 to-cyan-600 border-blue-400'
             : wishlistNotification.type === 'success'
-              ? 'bg-gradient-to-r from-green-500 to-emerald-600 border-green-400 shadow-green-500/30'
-              : 'bg-gradient-to-r from-red-500 to-pink-600 border-red-400 shadow-red-500/30'
+              ? 'bg-gradient-to-r from-green-500 to-emerald-600 border-green-400'
+              : 'bg-gradient-to-r from-red-500 to-pink-600 border-red-400'
             }`}>
-            <div className="flex items-center gap-3">
-              <div className="bg-white/20 p-2 rounded-full">
+            <div className="flex items-center gap-2">
+              <div className="bg-white/20 p-1.5 rounded-full">
                 {wishlistNotification.type === 'info' && '🔒'}
                 {wishlistNotification.type === 'success' && '✅'}
                 {wishlistNotification.type === 'error' && '❌'}
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-sm text-white">
+                <p className="font-semibold text-xs sm:text-sm text-white">
                   {wishlistNotification.message}
                 </p>
                 {wishlistNotification.type === 'info' && (
-                  <p className="text-white/80 text-xs mt-1">
+                  <p className="text-white/80 text-xs mt-0.5">
                     Click here to login
                   </p>
                 )}
               </div>
               <button
                 onClick={() => setWishlistNotification({ show: false, message: "", type: "" })}
-                className="text-white/80 hover:text-white text-lg transition-colors duration-200 hover:scale-110"
+                className="text-white/80 hover:text-white text-lg transition-colors duration-200"
               >
                 ×
               </button>
             </div>
-
-            {/* Progress Bar for auto-close - Duration based on notification type */}
-            <div className="mt-2 w-full bg-white/20 rounded-full h-1">
-              <div
-                className="bg-white h-1 rounded-full transition-all ease-linear"
-                style={{
-                  width: '100%',
-                  animation: wishlistNotification.type === 'info'
-                    ? 'progress 2000ms linear forwards'
-                    : wishlistNotification.type === 'success'
-                      ? 'progress 2000ms linear forwards'
-                      : 'progress 3000ms linear forwards'
-                }}
-              ></div>
-            </div>
           </div>
-
-          <style>{`
-            @keyframes progress {
-              from { width: 100%; }
-              to { width: 0%; }
-            }
-          `}</style>
         </div>
       )}
 
-      {/* Card Component - Mobile: hidden save amount and category, Desktop: same as before */}
+      {/* Card Component */}
       <div
         ref={cardRef}
         onClick={handleClick}
-        className={`group w-72 h-80 bg-gradient-to-br from-[#1a1a1a] to-[#0f1a1d] rounded-2xl overflow-hidden cursor-pointer transition-all duration-700 hover:shadow-2xl hover:-translate-y-3 flex flex-col border border-gray-700 relative scroll-card ${isVisible ? 'visible' : ''
+        className={`group w-full max-w-xs sm:w-64 bg-[color:var(--surface)] rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl flex flex-col border border-[color:var(--border)] relative ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}
         style={{
           transitionDelay: isVisible ? `${index * 0.1}s` : '0s'
         }}
       >
-        {/* Discount Badge - Mobile छोटा, Desktop वही */}
-        <div className="absolute top-3 left-3 z-10">
-          <div className="bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs font-bold py-1.5 px-3 rounded-full shadow-lg border border-red-300/30 flex items-center gap-1 animate-pulse-glow">
+        {/* Discount Badge */}
+        <div className="absolute top-2 left-2 z-10">
+          <div className="bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs font-bold py-1 px-2 rounded-full shadow-md border border-red-300/30 flex items-center gap-1">
             <FaFire className="text-xs" />
             {discountPercentage}% OFF
           </div>
@@ -392,10 +370,11 @@ const Card = ({ name, image, id, price, category, index }) => {
         <button
           onClick={handleWishlistClick}
           disabled={wishlistLoading || !authChecked}
-          className={`absolute top-3 right-3 z-10 w-8 h-8 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${isInWishlist(id)
-            ? 'text-red-500 bg-red-500/20 animate-heart-beat'
-            : 'text-white/80 hover:text-red-400 bg-black/60 hover:bg-black/80'
+          className={`absolute top-2 right-2 z-10 w-7 h-7 sm:w-8 sm:h-8 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${isInWishlist(id)
+            ? 'text-red-500 bg-red-500/20'
+            : 'text-[color:var(--text)]/80 hover:text-red-400 bg-black/40 hover:bg-black/60'
             } ${wishlistLoading ? 'opacity-50' : ''}`}
+          aria-label={isInWishlist(id) ? "Remove from wishlist" : "Add to wishlist"}
         >
           {wishlistLoading ? (
             <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
@@ -405,71 +384,68 @@ const Card = ({ name, image, id, price, category, index }) => {
         </button>
 
         {/* Product Image */}
-        <div className="relative w-full h-48 overflow-hidden bg-gray-800">
+        <div className="relative w-full h-40 sm:h-48 overflow-hidden bg-[color:var(--surface-2)]">
           <img
             src={image}
             alt={name}
-            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+            className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
+            loading="lazy"
           />
 
           {/* Overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
 
           {/* Quick Add to Cart Button */}
           <button
-            className="absolute bottom-3 right-3 w-10 h-10 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 hover:scale-110 active:scale-95 shadow-lg hover:shadow-cyan-500/30"
+            className="absolute bottom-2 right-2 w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 hover:scale-110 shadow-lg"
             onClick={handleAddToCart}
             disabled={cartLoading}
+            aria-label="Add to cart"
           >
             {cartLoading ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             ) : (
-              <FaShoppingCart className="text-sm" />
+              <FaShoppingCart className="text-xs sm:text-sm" />
             )}
           </button>
 
           {/* Rating Badge */}
-          <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
+          <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
             <FaStar className="text-yellow-400 text-xs" />
             <span className="text-white text-xs font-medium">4.8</span>
           </div>
-
-          {/* Hover Shine Effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
         </div>
 
         {/* Product Info */}
-        <div className="flex-1 p-4 flex flex-col justify-between">
-          <div>
-            <h3 className="text-white font-semibold text-[15px] mb-2 line-clamp-2 leading-tight group-hover:text-cyan-100 transition-colors duration-300">
+        <div className="flex-1 p-3 sm:p-4 flex flex-col">
+          <div className="mb-2">
+            <h3 className="text-sm sm:text-base font-semibold mb-1 line-clamp-2 leading-tight group-hover:text-cyan-500 transition-colors duration-300 min-h-[2.5rem]">
               {name}
             </h3>
 
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl font-bold text-cyan-400">
+              <span className="text-lg sm:text-xl font-bold text-cyan-500">
                 {currency} {discountedPrice.toFixed(0)}
               </span>
-              <span className="text-sm text-gray-400 line-through">
+              <span className="text-xs sm:text-sm text-[color:var(--muted)] line-through">
                 {currency} {price}
               </span>
             </div>
 
-            {/* Save Amount - Hidden on mobile, shown on desktop with proper width control */}
-            <div className="hidden sm:inline-block text-xs text-green-400 font-medium bg-green-400/10 py-1 px-2 rounded-full animate-bounce-soft whitespace-nowrap">
+            {/* Save Amount */}
+            <div className="text-xs text-green-500 font-medium bg-green-500/10 py-1 px-2 rounded-full inline-block">
               Save {currency} {(price * discountPercentage / 100).toFixed(0)}
             </div>
           </div>
 
-          {/* Category Tag - Hidden on mobile, shown on desktop */}
-          <div
-            className={`hidden sm:block mt-2 text-xs py-1.5 px-3 rounded-full bg-gradient-to-r ${cardColor} text-gray-300 border inline-block self-start transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg`}
-          >
+          {/* Category Tag */}
+          <div className={`mt-2 text-xs py-1 px-3 rounded-full ${cardColor} text-[color:var(--text)] border border-[color:var(--border)] inline-block self-start transition-all duration-300 group-hover:scale-105 truncate max-w-full`}>
             {category || 'Product'}
           </div>
         </div>
 
         {/* Border Glow Effect */}
-        <div className="absolute inset-0 border-2 border-transparent group-hover:border-cyan-400/40 rounded-2xl transition-all duration-500 pointer-events-none group-hover:shadow-cyan-500/20 group-hover:shadow-xl"></div>
+        <div className="absolute inset-0 border-2 border-transparent group-hover:border-cyan-500/30 rounded-xl transition-all duration-300 pointer-events-none"></div>
       </div>
     </>
   );
