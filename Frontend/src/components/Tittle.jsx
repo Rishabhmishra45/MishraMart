@@ -1,11 +1,20 @@
-import React from 'react'
+import React from "react";
 
 const Tittle = ({ text1, text2 }) => {
-    return (
-        <div className='inline-flex gap-2 items-center text-center mb-3 text-[35px] md:text-[40px]'>
-            <p className='text-blue-100'>{text1} <span className='text-[#00D3F3]'>{text2}</span></p>
-        </div>
-    )
-}
+  return (
+    <div className="text-center mb-3 sm:mb-6 px-3">
+      <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-snug">
+        <span className="text-[color:var(--text)]">{text1} </span>
+        <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+          {text2}
+        </span>
+      </h2>
+      <div
+        className="w-16 sm:w-20 h-1 mx-auto mt-3 rounded-full"
+        style={{ background: "linear-gradient(90deg, var(--accent), var(--accent-2))" }}
+      />
+    </div>
+  );
+};
 
-export default Tittle
+export default Tittle;

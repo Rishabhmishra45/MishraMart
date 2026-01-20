@@ -6,23 +6,28 @@ import { BrowserRouter } from "react-router-dom";
 import AuthContextProvider from "./context/AuthContext.jsx";
 import UserContextProvider from "./context/UserContext.jsx";
 import ShopContext from "./context/ShopContext.jsx";
-import { CartProvider } from './context/CartContext';
-import { WishlistProvider } from './context/WishlistContext';
+import { CartProvider } from "./context/CartContext";
+import { WishlistProvider } from "./context/WishlistContext";
+
+// ✅ NEW Theme Provider
+import ThemeProvider from "./context/ThemeContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthContextProvider>
-        <UserContextProvider>
-          <ShopContext>
-            <CartProvider>
-              <WishlistProvider>
-                <App />
-              </WishlistProvider>
-            </CartProvider>
-          </ShopContext>
-        </UserContextProvider>
-      </AuthContextProvider>
+      <ThemeProvider>
+        <AuthContextProvider>
+          <UserContextProvider>
+            <ShopContext>
+              <CartProvider>
+                <WishlistProvider>
+                  <App />
+                </WishlistProvider>
+              </CartProvider>
+            </ShopContext>
+          </UserContextProvider>
+        </AuthContextProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </StrictMode>
 );

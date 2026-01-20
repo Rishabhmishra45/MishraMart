@@ -1,41 +1,32 @@
 @import "tailwindcss";
 
 @keyframes slide-in-right {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
 
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .animate-slide-in-right {
-    animation: slide-in-right 0.3s ease-out;
+  animation: slide-in-right 0.3s ease-out;
 }
-
-
-
-
 
 /* Chatbot Responsive Utilities */
 @media (max-width: 320px) {
-    .chatbot-mobile-xs {
-        font-size: 0.75rem;
-    }
+  .chatbot-mobile-xs {
+    font-size: 0.75rem;
+  }
 }
 
 /* Ensure smooth scrolling on mobile */
 .chatbot-messages-container {
-    -webkit-overflow-scrolling: touch;
+  -webkit-overflow-scrolling: touch;
 }
-
-
-
-
-
 
 /* Custom Animations for Smooth Experience */
 @keyframes fade-in-up {
@@ -61,7 +52,8 @@
 }
 
 @keyframes heart-beat {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -70,7 +62,8 @@
 }
 
 @keyframes pulse-slow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -79,7 +72,8 @@
 }
 
 @keyframes bounce-slow {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -163,9 +157,6 @@ html {
   opacity: 0;
 }
 
-
-
-
 /* Progress Bar Animation */
 @keyframes progress {
   0% {
@@ -212,19 +203,14 @@ html {
   animation: floatIn 0.6s ease-out forwards;
 }
 
-
-
-
-
-
-
 /* Wishlist Animations */
 .animate-pulse-glow {
   animation: pulseGlow 2s ease-in-out infinite;
 }
 
 @keyframes pulseGlow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(0, 198, 255, 0.3);
   }
   50% {
@@ -237,7 +223,8 @@ html {
 }
 
 @keyframes bounceSoft {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -245,58 +232,15 @@ html {
   }
 }
 
-.animate-float-in {
-  animation: floatIn 0.3s ease-out forwards;
-}
-
-@keyframes floatIn {
-  0% {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.animate-slide-in-right {
-  animation: slideInRight 0.5s ease-out forwards;
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.animate-progress {
-  animation: progress 3s linear forwards;
-}
-
-@keyframes progress {
-  0% {
-    width: 100%;
-  }
-  100% {
-    width: 0%;
-  }
-}
-
-
-
-
-
-
 /* Guest user notifications */
 @keyframes pulse-slow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .animate-pulse-slow {
@@ -324,7 +268,11 @@ html {
 
 /* Guest specific styles */
 .guest-notice {
-  background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 193, 7, 0.1),
+    rgba(255, 152, 0, 0.1)
+  );
   border: 1px solid rgba(255, 193, 7, 0.3);
 }
 
@@ -334,4 +282,115 @@ html {
 
 .guest-checkout:hover {
   background: linear-gradient(135deg, #f57c00, #e65100) !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* ✅ THEME SYSTEM (Project-wide) */
+/* ------------------------------------------------------------------ */
+
+/* ✅ Default theme = light */
+:root {
+  /* Base */
+  --bg: #ecfafa;
+  --text: #0b1720;
+  --muted: #4f616b;
+
+  /* Surfaces */
+  --surface: #ffffff;
+  --surface-2: #e8f3f4;
+
+  /* Borders / shadows */
+  --border: rgba(16, 28, 32, 0.18);
+
+  /* Navbar */
+  --nav-bg: rgba(236, 250, 250, 0.92);
+
+  /* Brand / Accent */
+  --accent: #06b6d4; /* cyan-500 */
+  --accent-2: #3b82f6; /* blue-500 */
+
+  /* Special */
+  --ring: rgba(6, 182, 212, 0.35);
+}
+
+/* ✅ Dark theme */
+:root[data-theme="dark"] {
+  --bg: #0f1c20;
+  --text: #ecfafa;
+  --muted: #9fb3bc;
+
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-2: rgba(255, 255, 255, 0.1);
+
+  --border: rgba(236, 250, 250, 0.18);
+
+  --nav-bg: rgba(15, 28, 32, 0.92);
+
+  --accent: #22d3ee; /* cyan-400 */
+  --accent-2: #60a5fa; /* blue-400 */
+
+  --ring: rgba(34, 211, 238, 0.28);
+}
+
+/* ✅ Global Page Styling */
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ✅ This makes inputs/buttons also match theme */
+input,
+textarea,
+select {
+  color: var(--text);
+}
+
+/* Smooth transitions (nice + fun) */
+* {
+  transition: background-color 180ms ease, color 180ms ease,
+    border-color 180ms ease;
+}
+
+/* ✅ Scrollbar - looks great in both modes */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(127, 127, 127, 0.35);
+  border-radius: 999px;
+}
+:root[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* ✅ Reusable Theme Utility Classes (so whole project auto consistent) */
+.theme-bg {
+  background: var(--bg);
+}
+.theme-surface {
+  background: var(--surface);
+}
+.theme-surface-2 {
+  background: var(--surface-2);
+}
+.theme-text {
+  color: var(--text);
+}
+.theme-muted {
+  color: var(--muted);
+}
+.theme-border {
+  border-color: var(--border);
+}
+.theme-ring:focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* ✅ Optional: make selection look premium */
+::selection {
+  background: rgba(6, 182, 212, 0.25);
 }

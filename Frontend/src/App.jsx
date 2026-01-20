@@ -59,10 +59,33 @@ const App = () => {
 
   if (!appReady) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#141414] via-[#0c2025] to-[#141414] text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-cyan-400 text-sm">Loading...</p>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{
+          background: "var(--bg)",
+          color: "var(--text)",
+        }}
+      >
+        <div
+          className="text-center px-6 py-8 rounded-2xl border shadow-xl"
+          style={{
+            background: "var(--surface)",
+            borderColor: "var(--border)",
+          }}
+        >
+          <div
+            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-3"
+            style={{
+              borderColor: "var(--accent)",
+              borderTopColor: "transparent",
+            }}
+          ></div>
+          <p className="text-sm font-semibold" style={{ color: "var(--accent)" }}>
+            Loading MishraMart...
+          </p>
+          <p className="text-xs mt-2" style={{ color: "var(--muted)" }}>
+            Getting everything ready for you ✨
+          </p>
         </div>
       </div>
     );

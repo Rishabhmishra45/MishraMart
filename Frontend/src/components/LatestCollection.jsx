@@ -1,39 +1,41 @@
-import React, { useContext, useEffect, useState } from 'react'
-import Tittle from './Tittle'
-import { shopDataContext } from '../context/ShopContext';
-import Card from './Card';
+import React, { useContext, useEffect, useState } from "react";
+import Tittle from "./Tittle";
+import { shopDataContext } from "../context/ShopContext";
+import Card from "./Card";
 
 const LatestCollection = () => {
-  let { products } = useContext(shopDataContext);
-  let [latestProducts, setLatestProducts] = useState([]);
+  const { products } = useContext(shopDataContext);
+  const [latestProducts, setLatestProducts] = useState([]);
 
   useEffect(() => {
-    setLatestProducts(products.slice(0, 8));
-  }, [products])
+    const list = Array.isArray(products) ? products : [];
+    setLatestProducts(list.slice(0, 8));
+  }, [products]);
 
   return (
-    <div>
-      <div className='h-[8%] w-[100%] text-center md:mt-[50px]'>
+    <section className="w-full py-12 sm:py-16">
+      <div className="text-center">
         <Tittle text1={"LATEST"} text2={"COLLECTIONS"} />
-        <p className='w-[100%] m-auto text-[13px] md:text-[20px] px-[10px] text-blue-100'>
+        <p className="m-auto text-xs sm:text-base md:text-lg px-4 max-w-2xl" style={{ color: "var(--muted)" }}>
           Step Into Style - New Collection Dropping This Season!
         </p>
       </div>
-      <div className='w-[100%] h-[50%] mt-[30px] flex items-center justify-center flex-wrap gap-[50px]'>
+
+      <div className="mt-10 flex items-center justify-center flex-wrap gap-8 sm:gap-10">
         {latestProducts.map((item, index) => (
-          <Card 
-            key={index} 
-            id={item._id} 
-            name={item.name} 
-            image={item.image1} 
-            price={item.price} 
+          <Card
+            key={item?._id || index}
+            id={item._id}
+            name={item.name}
+            image={item.image1}
+            price={item.price}
             category={item.category}
-            index={index} // Index pass karo for animation delay
+            index={index}
           />
         ))}
       </div>
-    </div>
-  )
-}
+    </section>
+  );
+};
 
-export default LatestCollection
+export default LatestCollection;

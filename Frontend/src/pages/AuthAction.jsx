@@ -15,7 +15,7 @@ const Toast = ({ type = "success", message, onClose }) => {
   if (!message) return null;
 
   return (
-    <div className="fixed top-[92px] left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-6 z-[9999] w-[92%] sm:w-[420px]">
+    <div className="fixed top-[90px] left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-6 z-[9999] w-[92%] sm:w-[420px]">
       <div
         className={`p-4 rounded-2xl border backdrop-blur-xl shadow-2xl animate-[fadeIn_.25s_ease-out] ${
           type === "success"
@@ -199,24 +199,26 @@ const AuthAction = () => {
         onClose={() => setToastMsg("")}
       />
 
-      <div className="w-full h-[70px] sm:h-[80px] flex items-center justify-start px-4 sm:px-8">
+      {/* Top Bar */}
+      <div className="w-full h-[62px] sm:h-[80px] flex items-center justify-start px-4 sm:px-8">
         <img
           src={Logo}
           alt="Logo"
-          className="h-[110px] sm:h-[150px] w-auto object-contain cursor-pointer hover:scale-105 transition-transform"
+          className="h-[90px] sm:h-[150px] w-auto object-contain cursor-pointer hover:scale-105 transition-transform"
           draggable={false}
           onClick={() => navigate("/")}
         />
       </div>
 
+      {/* Body */}
       <div className="flex-1 flex items-start justify-center px-4 pb-10">
-        <div className="w-full max-w-lg pt-4 sm:pt-8">
-          <div className="w-full bg-white/10 border border-white/20 backdrop-blur-xl rounded-3xl shadow-2xl p-6 sm:p-10">
+        <div className="w-full max-w-lg pt-2 sm:pt-8">
+          <div className="w-full bg-white/10 border border-white/20 backdrop-blur-xl rounded-3xl shadow-2xl p-5 sm:p-10">
             <div className="text-center">
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide">
+              <h1 className="text-xl sm:text-3xl font-extrabold tracking-wide">
                 MishraMart Authentication
               </h1>
-              <p className="text-gray-300 mt-2 text-sm sm:text-base">
+              <p className="text-gray-300 mt-2 text-xs sm:text-base">
                 Secure verification and password reset
               </p>
             </div>
@@ -224,13 +226,13 @@ const AuthAction = () => {
             {loading && (
               <div className="mt-8 text-center">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-white mx-auto"></div>
-                <p className="mt-4 text-gray-300 text-sm">{status}</p>
+                <p className="mt-4 text-gray-300 text-xs sm:text-sm">{status}</p>
               </div>
             )}
 
             {!loading && mode !== "resetPassword" && (
               <div
-                className={`mt-6 p-4 rounded-2xl border text-sm sm:text-base ${
+                className={`mt-6 p-4 rounded-2xl border text-xs sm:text-base ${
                   success
                     ? "bg-green-500/15 border-green-500/30 text-green-200"
                     : "bg-red-500/15 border-red-500/30 text-red-200"
@@ -242,7 +244,7 @@ const AuthAction = () => {
 
             {!loading && mode === "resetPassword" && (
               <>
-                <div className="mt-6 p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-100 text-sm">
+                <div className="mt-6 p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-100 text-xs sm:text-sm">
                   Please enter a new password below to reset your account.
                 </div>
 
@@ -251,7 +253,7 @@ const AuthAction = () => {
                     <input
                       type={showPassword ? "text" : "password"}
                       placeholder="New Password"
-                      className="w-full h-12 px-4 pr-16 rounded-xl bg-white/10 border border-white/20 focus:outline-none focus:border-[#4aa4b5] text-white placeholder-gray-300"
+                      className="w-full h-12 px-4 pr-16 rounded-xl bg-white/10 border border-white/20 focus:outline-none focus:border-[#4aa4b5] text-white placeholder-gray-300 text-sm"
                       required
                       disabled={resetLoading}
                       value={newPassword}
@@ -259,7 +261,7 @@ const AuthAction = () => {
                     />
                     <button
                       type="button"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#4aa4b5] hover:text-white transition"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-[#4aa4b5] hover:text-white transition"
                       onClick={() => setShowPassword(!showPassword)}
                       disabled={resetLoading}
                     >
@@ -270,7 +272,7 @@ const AuthAction = () => {
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="Confirm New Password"
-                    className="w-full h-12 px-4 rounded-xl bg-white/10 border border-white/20 focus:outline-none focus:border-[#4aa4b5] text-white placeholder-gray-300"
+                    className="w-full h-12 px-4 rounded-xl bg-white/10 border border-white/20 focus:outline-none focus:border-[#4aa4b5] text-white placeholder-gray-300 text-sm"
                     required
                     disabled={resetLoading}
                     value={confirmNewPassword}
@@ -317,9 +319,8 @@ const AuthAction = () => {
               </div>
             )}
 
-            <p className="text-center text-xs text-gray-400 mt-8 leading-relaxed">
-              If this link is expired, please request a new verification/reset
-              link.
+            <p className="text-center text-[10px] sm:text-xs text-gray-300 mt-8 leading-relaxed">
+              If this link is expired, please request a new verification/reset link.
             </p>
           </div>
         </div>
