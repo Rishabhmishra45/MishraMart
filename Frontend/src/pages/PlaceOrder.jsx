@@ -47,6 +47,7 @@ const PlaceOrder = () => {
   const [btnLabel, setBtnLabel] = useState("");
   const [playBtnVideo, setPlayBtnVideo] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const videoRef = useRef(null);
 
@@ -129,6 +130,25 @@ const PlaceOrder = () => {
       v.removeEventListener("canplaythrough", onReady);
     };
   }, []);
+
+  // ✅ Handle video end
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+
+    const handleVideoEnd = () => {
+      if (playBtnVideo) {
+        // Video ended, start the progress animation
+        setPlayBtnVideo(false);
+        handleAfterVideo();
+      }
+    };
+
+    videoElement.addEventListener("ended", handleVideoEnd);
+    return () => {
+      videoElement.removeEventListener("ended", handleVideoEnd);
+    };
+  }, [playBtnVideo]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -275,14 +295,17 @@ const PlaceOrder = () => {
     try {
       const order = await createOrderInDatabase();
       setOrderId(order.orderId);
-      setOrderPlaced(true);
       clearCart();
+      
+      // Show confirmation immediately after order is placed
+      setOrderPlaced(true);
       showToast("success", "Order placed successfully!");
+      
     } catch (error) {
       console.error("Order failed:", error);
       showToast("error", `Order failed: ${error?.response?.data?.message || error.message}`);
-    } finally {
       setIsProcessing(false);
+      setPlayBtnVideo(false);
     }
   };
 
@@ -307,8 +330,10 @@ const PlaceOrder = () => {
         order_id: order.razorpayOrderId || "",
         handler: async function () {
           setOrderId(order.orderId);
-          setOrderPlaced(true);
           clearCart();
+          
+          // Show confirmation immediately after payment success
+          setOrderPlaced(true);
           showToast("success", "Payment successful!");
         },
         prefill: {
@@ -326,33 +351,26 @@ const PlaceOrder = () => {
       paymentObject.on("payment.failed", function (response) {
         console.error("Payment failed:", response.error);
         showToast("error", "Payment failed. Try again.");
+        setIsProcessing(false);
+        setPlayBtnVideo(false);
       });
     } catch (error) {
       console.error("Razorpay error:", error);
       showToast("error", `Payment failed: ${error?.response?.data?.message || error.message}`);
-    } finally {
       setIsProcessing(false);
+      setPlayBtnVideo(false);
     }
   };
 
-  // ✅ Play video fully and wait for end
-  const playButtonVideoAndWait = async () => {
-    const vid = videoRef.current;
-    if (!vid) return;
+  // ✅ Process after video ends
+  const handleAfterVideo = async () => {
+    setBtnLabel(selectedPayment === "razorpay" ? "Opening payment gateway..." : "Placing your order...");
+    await runButtonProgress(selectedPayment === "razorpay" ? 600 : 900);
 
-    try {
-      vid.currentTime = 0;
-      vid.playbackRate = 1;
-
-      await vid.play();
-
-      await new Promise((resolve) => {
-        const done = () => resolve(true);
-        vid.addEventListener("ended", done, { once: true });
-      });
-    } catch (e) {
-      // fallback if play blocked
-      console.log("Video play blocked:", e);
+    if (selectedPayment === "razorpay") {
+      await handleRazorpayPayment();
+    } else {
+      await handlePlaceOrder();
     }
   };
 
@@ -362,26 +380,28 @@ const PlaceOrder = () => {
     if (!validateForm()) return;
 
     try {
+      setIsProcessing(true);
       setPlayBtnVideo(true);
 
       // Let video mount before play
       await new Promise((r) => requestAnimationFrame(r));
 
-      // ✅ show video first until it ends
-      await playButtonVideoAndWait();
-
-      // ✅ after video ends, show processing
-      setBtnLabel(selectedPayment === "razorpay" ? "Opening payment gateway..." : "Placing your order...");
-      await runButtonProgress(selectedPayment === "razorpay" ? 600 : 900);
-
-      if (selectedPayment === "razorpay") {
-        await handleRazorpayPayment();
+      // Start playing video
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0;
+        await videoRef.current.play().catch(() => {
+          // If video fails to play, continue with order process
+          setPlayBtnVideo(false);
+          handleAfterVideo();
+        });
       } else {
-        await handlePlaceOrder();
+        // Fallback if video ref is not available
+        setPlayBtnVideo(false);
+        handleAfterVideo();
       }
-    } finally {
-      setBtnLabel("");
-      setBtnProgress(0);
+    } catch (error) {
+      console.error("Checkout error:", error);
+      setIsProcessing(false);
       setPlayBtnVideo(false);
     }
   };
@@ -390,20 +410,20 @@ const PlaceOrder = () => {
 
   if (orderPlaced) {
     return (
-      <div className="min-h-screen bg-[color:var(--background)] pt-16">
+      <div className="min-h-screen bg-[color:var(--background)] pt-16 animate-fadeIn">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
           <div className="text-center">
-            <div className="bg-[color:var(--surface)] rounded-2xl p-6 sm:p-10 shadow-xl border border-[color:var(--border)]">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-5 animate-[pop_.45s_ease-out]">
+            <div className="bg-[color:var(--surface)] rounded-2xl p-6 sm:p-10 shadow-xl border border-[color:var(--border)] animate-scaleIn">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-5 animate-pop">
                 <FaCheck className="text-white text-2xl sm:text-3xl" />
               </div>
-              <h2 className="text-xl sm:text-3xl font-extrabold mb-2">Order Placed Successfully!</h2>
-              <p className="text-cyan-500 text-base sm:text-lg font-semibold mb-1">Order ID: {orderId}</p>
-              <p className="text-[color:var(--muted)] text-sm sm:text-base mb-7">
+              <h2 className="text-xl sm:text-3xl font-extrabold mb-2 animate-fadeInUp">Order Placed Successfully!</h2>
+              <p className="text-cyan-500 text-base sm:text-lg font-semibold mb-1 animate-fadeInUp" style={{animationDelay: '0.1s'}}>Order ID: {orderId}</p>
+              <p className="text-[color:var(--muted)] text-sm sm:text-base mb-7 animate-fadeInUp" style={{animationDelay: '0.2s'}}>
                 Confirmation has been sent to {formData.email}
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center animate-fadeInUp" style={{animationDelay: '0.3s'}}>
                 <button
                   onClick={() => navigate("/collections")}
                   className="px-7 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-blue-500 to-cyan-500 hover:opacity-90 transition-all"
@@ -427,6 +447,34 @@ const PlaceOrder = () => {
             0% { transform: scale(.85); opacity:.5 }
             100% { transform: scale(1); opacity:1 }
           }
+          @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
+          @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+          }
+          @keyframes scaleIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+          }
+          .animate-pop { 
+            animation: pop 0.45s ease-out forwards;
+            opacity: 0;
+          }
+          .animate-fadeInUp { 
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+          }
+          .animate-fadeIn { 
+            animation: fadeIn 0.4s ease-out forwards;
+            opacity: 0;
+          }
+          .animate-scaleIn { 
+            animation: scaleIn 0.4s ease-out forwards;
+            opacity: 0;
+          }
         `}</style>
       </div>
     );
@@ -441,18 +489,18 @@ const PlaceOrder = () => {
       hover:opacity-95 transition-all active:scale-[0.99]
       disabled:opacity-60 disabled:cursor-not-allowed"
     >
-      {/* ✅ VIDEO ONLY ON CLICK */}
+      {/* ✅ VIDEO ONLY ON CLICK - Reduced scale to fit better */}
       {playBtnVideo && (
         <>
           <video
             ref={videoRef}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover scale-105"
             src={placeOrderVid}
             muted
             playsInline
             preload="auto"
           />
-          <span className="absolute inset-0 bg-black/25" />
+          <span className="absolute inset-0 bg-black/10" />
         </>
       )}
 
@@ -462,7 +510,7 @@ const PlaceOrder = () => {
       )}
 
       {/* Progress overlay after video ends */}
-      {(isProcessing || btnProgress > 0) && (
+      {(isProcessing || btnProgress > 0) && !playBtnVideo && (
         <span
           className="absolute inset-y-0 left-0 bg-white/20"
           style={{ width: `${btnProgress}%`, transition: "width 120ms linear" }}
@@ -470,13 +518,13 @@ const PlaceOrder = () => {
       )}
 
       {/* Shine */}
-      {(isProcessing || btnProgress > 0) && (
+      {(isProcessing || btnProgress > 0) && !playBtnVideo && (
         <span className="absolute inset-0 opacity-70 animate-[shine_1.2s_linear_infinite] bg-gradient-to-r from-transparent via-white/25 to-transparent" />
       )}
 
       <span className="relative z-10 flex items-center justify-center gap-3">
         {playBtnVideo ? (
-          <span className="text-sm sm:text-base font-extrabold tracking-wide">
+          <span className="text-sm sm:text-base font-extrabold tracking-wide bg-black/30 px-3 py-1 rounded-lg">
             {selectedPayment === "razorpay" ? "Preparing secure payment..." : "Preparing your order..."}
           </span>
         ) : isProcessing || btnProgress > 0 ? (
