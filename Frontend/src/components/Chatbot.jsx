@@ -183,7 +183,7 @@ const Chatbot = () => {
         className="fixed bottom-6 right-4 xs:right-5 sm:right-6 z-40 w-12 h-12 xs:w-14 xs:h-14
         bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600
         text-white rounded-full shadow-2xl shadow-cyan-500/30 flex items-center justify-center
-        transition-all duration-300 hover:scale-110 mb-[30px] sm:mb-0"
+        transition-all duration-300 hover:scale-110 mb-[55px] sm:mb-0"
         aria-label="Open chatbot"
       >
         <FaCommentDots className="text-lg xs:text-xl" />

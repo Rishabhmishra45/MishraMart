@@ -95,7 +95,7 @@ const Contact = () => {
   ];
 
   return (
-    <div className="min-h-screen pt-[70px] overflow-x-hidden" style={{ background: "var(--bg)", color: "var(--text)" }}>
+    <div className="min-h-screen pt-[70px] pb-[60px] sm:pb-[0px] overflow-x-hidden" style={{ background: "var(--bg)", color: "var(--text)" }}>
       {/* Hero */}
       <section className="relative py-12 sm:py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <div className="absolute inset-0 opacity-10 pointer-events-none">

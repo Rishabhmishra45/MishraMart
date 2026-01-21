@@ -74,7 +74,7 @@ const About = () => {
 
   return (
     <div
-      className="min-h-screen pt-[70px] overflow-x-hidden"
+      className="min-h-screen pt-[70px] sm:pb-[0px] pb-[60px] overflow-x-hidden"
       style={{ background: "var(--bg)", color: "var(--text)" }}
     >
       {/* Hero Section */}
