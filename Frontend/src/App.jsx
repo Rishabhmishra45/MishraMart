@@ -17,10 +17,13 @@ import Profile from "./pages/Profile";
 import Invoice from "./pages/Invoice";
 import Chatbot from "./components/Chatbot";
 import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword"; // keep it (do not break services)
+import ResetPassword from "./pages/ResetPassword";
 import Wishlist from "./pages/Wishlist";
 import { authDataContext } from "./context/AuthContext";
 import AuthAction from "./pages/AuthAction";
+
+// 🤖 Voice Assistant
+import VoiceAssistant from "./components/VoiceAssistant";
 
 const App = () => {
   const { userData, userChecked } = useContext(userDataContext);
@@ -29,34 +32,35 @@ const App = () => {
   const location = useLocation();
   const [appReady, setAppReady] = useState(false);
 
-  // public routes
   const publicRoutes = ["/login", "/signup", "/forgot-password", "/reset-password", "/auth/action"];
   const protectedRoutes = ["/place-order", "/orders", "/profile", "/invoice"];
 
   const isPublicRoute = publicRoutes.includes(location.pathname);
   const isProtectedRoute = protectedRoutes.includes(location.pathname);
 
+  // 🔄 wait for auth + user check
   useEffect(() => {
     if (authChecked && userChecked) {
-      setTimeout(() => setAppReady(true), 50);
+      const t = setTimeout(() => setAppReady(true), 400); // smooth delay
+      return () => clearTimeout(t);
     }
   }, [authChecked, userChecked]);
 
+  // 🔐 route protection
   useEffect(() => {
     if (!appReady) return;
 
-    // Not logged in -> trying protected route
     if (!userData && isProtectedRoute) {
       navigate("/login", { replace: true, state: { from: location.pathname } });
       return;
     }
 
-    // Logged in -> don't allow login/signup
     if (userData && isPublicRoute && location.pathname !== "/auth/action") {
       navigate("/", { replace: true });
     }
   }, [userData, appReady, isPublicRoute, isProtectedRoute, navigate, location]);
 
+  // ⏳ PREMIUM LOADING SCREEN
   if (!appReady) {
     return (
       <div
@@ -67,23 +71,33 @@ const App = () => {
         }}
       >
         <div
-          className="text-center px-6 py-8 rounded-2xl border shadow-xl"
+          className="px-8 py-10 rounded-2xl border shadow-2xl text-center
+          backdrop-blur-md animate-fadeIn"
           style={{
             background: "var(--surface)",
             borderColor: "var(--border)",
           }}
         >
+          {/* spinner */}
           <div
-            className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-3"
+            className="w-12 h-12 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-4"
             style={{
               borderColor: "var(--accent)",
               borderTopColor: "transparent",
             }}
           ></div>
-          <p className="text-sm font-semibold" style={{ color: "var(--accent)" }}>
+
+          <p
+            className="text-base font-semibold"
+            style={{ color: "var(--accent)" }}
+          >
             Loading MishraMart...
           </p>
-          <p className="text-xs mt-2" style={{ color: "var(--muted)" }}>
+
+          <p
+            className="text-xs mt-2"
+            style={{ color: "var(--muted)" }}
+          >
             Getting everything ready for you ✨
           </p>
         </div>
@@ -96,20 +110,11 @@ const App = () => {
       <Nav />
 
       <Routes>
-        {/* Auth Routes */}
         <Route path="/login" element={!userData ? <Login /> : <Navigate to="/" replace />} />
         <Route path="/signup" element={!userData ? <Registration /> : <Navigate to="/" replace />} />
-
-        {/* Firebase actions page */}
         <Route path="/auth/action" element={<AuthAction />} />
-
-        {/* Forgot password (firebase reset link) */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
-
-        {/* keep your old reset route */}
         <Route path="/reset-password" element={<ResetPassword />} />
-
-        {/* Public pages */}
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/collections" element={<Collections />} />
@@ -118,16 +123,17 @@ const App = () => {
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/wishlist" element={<Wishlist />} />
-
-        {/* Protected pages */}
         <Route path="/place-order" element={userData ? <PlaceOrder /> : <Navigate to="/login" replace />} />
         <Route path="/orders" element={userData ? <Orders /> : <Navigate to="/login" replace />} />
         <Route path="/profile" element={userData ? <Profile /> : <Navigate to="/login" replace />} />
         <Route path="/invoice/:orderId" element={userData ? <Invoice /> : <Navigate to="/login" replace />} />
-
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
+      {/* 🤖 Voice Assistant */}
+      <VoiceAssistant />
+
+      {/* 🤖 Chatbot */}
       {userData && <Chatbot />}
     </>
   );
