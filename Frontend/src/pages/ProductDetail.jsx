@@ -30,6 +30,7 @@ import {
 } from "react-icons/fa";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ProductReviews from "../components/ProductReviews";
+import RelatedProducts from "../components/RelatedProducts";
 
 const CartNotification = ({ product, isVisible }) => {
   if (!isVisible || !product) return null;
@@ -681,6 +682,9 @@ const ProductDetail = () => {
 
           <ProductReviews productId={id} />
         </div>
+        
+        {/* Related Products */}
+        <RelatedProducts currentProduct={product} />
       </div>
 
       {/* Share Popup */}
