@@ -327,14 +327,17 @@ const Nav = () => {
                 {/* Dropdown Menu */}
                 {isDropdownOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-56 rounded-2xl shadow-xl p-2 space-y-1 z-50
-                    border border-[color:var(--border)] bg-[color:var(--surface)]"
+                    className="absolute right-0 mt-2 w-56 rounded-2xl shadow-2xl p-2 space-y-1 z-[9999] bg-white dark:bg-[#162327] text-gray-900 dark:text-white"
+                    style={{
+                      backdropFilter: 'blur(10px)',
+                      WebkitBackdropFilter: 'blur(10px)'
+                    }}
                     role="menu"
                   >
                     {userData ? (
                       <>
-                        <div className="px-3 py-2 text-sm border-b border-[color:var(--border)]">
-                          <span className="text-[color:var(--muted)]">
+                        <div className="px-3 py-2 text-sm border-b border-gray-200 dark:border-gray-700">
+                          <span className="text-gray-500 dark:text-gray-400">
                             Hello,
                           </span>{" "}
                           <span className="font-semibold truncate inline-block max-w-[160px] align-bottom">
@@ -344,7 +347,7 @@ const Nav = () => {
 
                         <button
                           onClick={() => handleDropdownAction("orders")}
-                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
                           type="button"
                         >
                           My Orders
@@ -352,7 +355,7 @@ const Nav = () => {
 
                         <button
                           onClick={() => handleDropdownAction("wishlist")}
-                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
                           type="button"
                         >
                           My Wishlist{" "}
@@ -365,7 +368,7 @@ const Nav = () => {
 
                         <button
                           onClick={() => handleDropdownAction("profile")}
-                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
                           type="button"
                         >
                           My Profile
@@ -373,8 +376,7 @@ const Nav = () => {
 
                         <button
                           onClick={() => handleDropdownAction("logout")}
-                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)]
-                          cursor-pointer transition text-red-400 hover:text-red-300"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300"
                           type="button"
                         >
                           Logout
@@ -387,7 +389,7 @@ const Nav = () => {
                             navigate("/login");
                             setIsDropdownOpen(false);
                           }}
-                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
                           type="button"
                         >
                           Login
@@ -397,7 +399,7 @@ const Nav = () => {
                             navigate("/signup");
                             setIsDropdownOpen(false);
                           }}
-                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
                           type="button"
                         >
                           Sign Up
@@ -505,14 +507,17 @@ const Nav = () => {
 
                 {isDropdownOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-56 rounded-2xl shadow-xl p-2 space-y-1 z-50
-                    border border-[color:var(--border)] bg-[color:var(--surface)]"
+                    className="absolute right-0 mt-2 w-56 rounded-2xl shadow-2xl p-2 space-y-1 z-[9999] bg-white dark:bg-[#162327] text-gray-900 dark:text-white"
+                    style={{
+                      backdropFilter: 'blur(10px)',
+                      WebkitBackdropFilter: 'blur(10px)'
+                    }}
                     role="menu"
                   >
                     {userData ? (
                       <>
-                        <div className="px-3 py-2 text-sm border-b border-[color:var(--border)]">
-                          <span className="text-[color:var(--muted)]">
+                        <div className="px-3 py-2 text-sm border-b border-gray-200 dark:border-gray-700">
+                          <span className="text-gray-500 dark:text-gray-400">
                             Hello,
                           </span>{" "}
                           <span className="font-semibold truncate inline-block max-w-[160px] align-bottom">
@@ -522,7 +527,7 @@ const Nav = () => {
 
                         <button
                           onClick={() => handleDropdownAction("orders")}
-                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
                           type="button"
                         >
                           My Orders
@@ -530,7 +535,7 @@ const Nav = () => {
 
                         <button
                           onClick={() => handleDropdownAction("wishlist")}
-                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
                           type="button"
                         >
                           My Wishlist{" "}
@@ -543,7 +548,7 @@ const Nav = () => {
 
                         <button
                           onClick={() => handleDropdownAction("profile")}
-                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
                           type="button"
                         >
                           My Profile
@@ -551,8 +556,7 @@ const Nav = () => {
 
                         <button
                           onClick={() => handleDropdownAction("logout")}
-                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)]
-                          cursor-pointer transition text-red-400 hover:text-red-300"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300"
                           type="button"
                         >
                           Logout
@@ -565,7 +569,7 @@ const Nav = () => {
                             navigate("/login");
                             setIsDropdownOpen(false);
                           }}
-                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
                           type="button"
                         >
                           Login
@@ -576,7 +580,7 @@ const Nav = () => {
                             navigate("/signup");
                             setIsDropdownOpen(false);
                           }}
-                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-[color:var(--surface-2)] cursor-pointer transition"
+                          className="block w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
                           type="button"
                         >
                           Sign Up

@@ -29,12 +29,17 @@ const ThemeToggle = () => {
 
   return (
     <div className="relative" ref={ref}>
+      {/* Main Button */}
       <button
         type="button"
         onClick={() => setOpen((p) => !p)}
-        className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[color:var(--border)]
-        bg-[color:var(--surface)] text-[color:var(--text)]
-        hover:bg-[color:var(--surface-2)] transition text-xs sm:text-sm"
+        style={{
+          backgroundColor: mode === 'dark' ? '#162327' : '#ffffff',
+          color: mode === 'dark' ? '#ffffff' : '#000000',
+          borderColor: mode === 'dark' ? '#374151' : '#e5e7eb',
+        }}
+        className="flex items-center gap-2 px-3 py-2 rounded-xl border
+        hover:bg-gray-100 dark:hover:bg-gray-800 transition text-xs sm:text-sm"
         title={`Theme: ${mode} (${theme})`}
       >
         <span className="text-base">{icon()}</span>
@@ -42,48 +47,79 @@ const ThemeToggle = () => {
         <span className="block font-medium text-[11px] sm:text-sm">{label()}</span>
       </button>
 
+      {/* Dropdown */}
       {open && (
         <div
-          className="absolute right-0 mt-2 w-48 rounded-xl border border-[color:var(--border)]
-          bg-[color:var(--surface)] text-[color:var(--text)] shadow-xl overflow-hidden z-[999]"
+          className="absolute right-0 mt-2 w-48 rounded-xl shadow-2xl overflow-hidden z-[9999]"
+          style={{
+            backgroundColor: mode === 'dark' ? '#162327' : '#ffffff',
+            color: mode === 'dark' ? '#ffffff' : '#000000',
+            border: `1px solid ${mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)'
+          }}
         >
+          {/* System Option - NO selected state, only hover */}
           <button
             type="button"
             onClick={() => {
               setMode("system");
               setOpen(false);
             }}
-            className={`w-full px-4 py-3 flex items-center gap-3 text-sm hover:bg-[color:var(--surface-2)] transition ${
-              mode === "system" ? "text-cyan-400 font-semibold" : ""
-            }`}
+            className="w-full px-4 py-3 flex items-center gap-3 text-sm transition"
+            style={{
+              backgroundColor: 'transparent'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = mode === 'dark' ? '#374151' : '#f3f4f6';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
           >
             <FaDesktop />
             System (Default)
           </button>
 
+          {/* Light Option - NO selected state, only hover */}
           <button
             type="button"
             onClick={() => {
               setMode("light");
               setOpen(false);
             }}
-            className={`w-full px-4 py-3 flex items-center gap-3 text-sm hover:bg-[color:var(--surface-2)] transition ${
-              mode === "light" ? "text-cyan-400 font-semibold" : ""
-            }`}
+            className="w-full px-4 py-3 flex items-center gap-3 text-sm transition"
+            style={{
+              backgroundColor: 'transparent'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = mode === 'dark' ? '#374151' : '#f3f4f6';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
           >
             <FaSun />
             Light
           </button>
 
+          {/* Dark Option - NO selected state, only hover */}
           <button
             type="button"
             onClick={() => {
               setMode("dark");
               setOpen(false);
             }}
-            className={`w-full px-4 py-3 flex items-center gap-3 text-sm hover:bg-[color:var(--surface-2)] transition ${
-              mode === "dark" ? "text-cyan-400 font-semibold" : ""
-            }`}
+            className="w-full px-4 py-3 flex items-center gap-3 text-sm transition"
+            style={{
+              backgroundColor: 'transparent'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = mode === 'dark' ? '#374151' : '#f3f4f6';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
           >
             <FaMoon />
             Dark

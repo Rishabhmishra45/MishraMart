@@ -205,6 +205,9 @@ const Chatbot = () => {
               background: "var(--surface)",
               borderColor: "var(--border)",
               color: "var(--text)",
+              backgroundColor: 'var(--surface)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)'
             }}
           >
             {/* Header */}
@@ -247,7 +250,13 @@ const Chatbot = () => {
             </div>
 
             {/* Messages */}
-            <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-3 xs:p-4 space-y-3 xs:space-y-4">
+            <div 
+              ref={chatContainerRef} 
+              className="flex-1 overflow-y-auto p-3 xs:p-4 space-y-3 xs:space-y-4"
+              style={{
+                backgroundColor: 'var(--surface)'
+              }}
+            >
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
                   <div
@@ -256,7 +265,10 @@ const Chatbot = () => {
                         ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-br-none"
                         : "rounded-bl-none border"
                     }`}
-                    style={message.sender === "bot" ? { background: "var(--surface-2)", borderColor: "var(--border)" } : {}}
+                    style={message.sender === "bot" ? { 
+                      backgroundColor: 'var(--surface-2)', 
+                      borderColor: "var(--border)" 
+                    } : {}}
                   >
                     <p className="text-xs xs:text-sm whitespace-pre-wrap break-words">{message.text}</p>
 
@@ -276,7 +288,10 @@ const Chatbot = () => {
 
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="rounded-2xl rounded-bl-none px-4 py-3 border" style={{ background: "var(--surface-2)", borderColor: "var(--border)" }}>
+                  <div className="rounded-2xl rounded-bl-none px-4 py-3 border" style={{ 
+                    backgroundColor: 'var(--surface-2)', 
+                    borderColor: "var(--border)" 
+                  }}>
                     <div className="flex space-x-2">
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
@@ -291,7 +306,7 @@ const Chatbot = () => {
 
             {/* Quick Actions */}
             {messages.length <= 2 && (
-              <div className="px-3 xs:px-4 pb-2 xs:pb-3">
+              <div className="px-3 xs:px-4 pb-2 xs:pb-3" style={{ backgroundColor: 'var(--surface)' }}>
                 <p className="text-xs xs:text-sm mb-2" style={{ color: "var(--muted)" }}>
                   Quick help:
                 </p>
@@ -303,7 +318,11 @@ const Chatbot = () => {
                         key={idx}
                         onClick={() => sendMessage(action.query)}
                         className="rounded-xl p-2 text-xs transition duration-200 flex flex-col items-center gap-1 border"
-                        style={{ background: "var(--surface-2)", borderColor: "var(--border)", color: "var(--text)" }}
+                        style={{ 
+                          backgroundColor: 'var(--surface-2)', 
+                          borderColor: "var(--border)", 
+                          color: "var(--text)" 
+                        }}
                       >
                         <Icon className="text-cyan-400 text-sm" />
                         <span className="text-[10px] xs:text-xs">{action.text}</span>
@@ -316,14 +335,18 @@ const Chatbot = () => {
 
             {/* Suggestions */}
             {suggestions.length > 0 && messages.length > 1 && (
-              <div className="px-3 xs:px-4 pb-2 xs:pb-3">
+              <div className="px-3 xs:px-4 pb-2 xs:pb-3" style={{ backgroundColor: 'var(--surface)' }}>
                 <div className="flex flex-wrap gap-2">
                   {suggestions.slice(0, 3).map((suggestion, idx) => (
                     <button
                       key={idx}
                       onClick={() => handleSuggestionClick(suggestion)}
                       className="rounded-full px-3 py-1 text-[10px] xs:text-xs border hover:opacity-95"
-                      style={{ background: "var(--surface-2)", borderColor: "var(--border)", color: "var(--text)" }}
+                      style={{ 
+                        backgroundColor: 'var(--surface-2)', 
+                        borderColor: "var(--border)", 
+                        color: "var(--text)" 
+                      }}
                     >
                       {suggestion.length > 22 ? suggestion.substring(0, 22) + "..." : suggestion}
                     </button>
@@ -333,11 +356,18 @@ const Chatbot = () => {
             )}
 
             {/* Input */}
-            <div className="border-t p-3 xs:p-4" style={{ borderColor: "var(--border)" }}>
+            <div className="border-t p-3 xs:p-4" style={{ 
+              borderColor: "var(--border)",
+              backgroundColor: 'var(--surface)'
+            }}>
               <form onSubmit={handleSubmit} className="flex gap-2">
                 <label
                   className="rounded-full w-10 h-10 xs:w-12 xs:h-12 flex items-center justify-center cursor-pointer border"
-                  style={{ background: "var(--surface-2)", borderColor: "var(--border)", color: "var(--text)" }}
+                  style={{ 
+                    backgroundColor: 'var(--surface-2)', 
+                    borderColor: "var(--border)", 
+                    color: "var(--text)" 
+                  }}
                 >
                   <FaPaperclip className="text-xs xs:text-sm" />
                   <input type="file" className="hidden" onChange={handleFileUpload} accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" />
@@ -348,8 +378,12 @@ const Chatbot = () => {
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   placeholder="Type your message..."
-                  className="flex-1 rounded-full px-4 py-2 xs:py-3 text-xs xs:text-sm border outline-none bg-transparent"
-                  style={{ borderColor: "var(--border)", color: "var(--text)" }}
+                  className="flex-1 rounded-full px-4 py-2 xs:py-3 text-xs xs:text-sm border outline-none"
+                  style={{ 
+                    borderColor: "var(--border)", 
+                    color: "var(--text)",
+                    backgroundColor: 'var(--surface-2)'
+                  }}
                   disabled={isLoading}
                 />
 
