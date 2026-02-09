@@ -10,6 +10,7 @@ import {
   FaChevronDown,
   FaShoppingBag,
   FaCheckCircle,
+  FaPen,
 } from "react-icons/fa";
 import { authDataContext } from "../context/AuthContext";
 import { userDataContext } from "../context/UserContext";
@@ -82,18 +83,10 @@ const ProductReviews = ({ productId }) => {
   const [isDelivered, setIsDelivered] = useState(false);
   const [checkingPurchase, setCheckingPurchase] = useState(false);
   const [userAlreadyReviewed, setUserAlreadyReviewed] = useState(false);
+  const [userReview, setUserReview] = useState(null);
 
   // show limited reviews
   const [visibleCount, setVisibleCount] = useState(DEFAULT_VISIBLE_REVIEWS);
-
-  // create form
-  const [rating, setRating] = useState(5);
-  const [comment, setComment] = useState("");
-  const [images, setImages] = useState([]);
-  const [imagePreviews, setImagePreviews] = useState([]);
-
-  const [submitLoading, setSubmitLoading] = useState(false);
-  const [err, setErr] = useState("");
 
   // edit modal state
   const [editOpen, setEditOpen] = useState(false);
@@ -179,13 +172,16 @@ const ProductReviews = ({ productId }) => {
   const checkUserReview = () => {
     if (!uid) {
       setUserAlreadyReviewed(false);
+      setUserReview(null);
       return;
     }
 
-    const userReview = reviews.find(review =>
+    const foundReview = reviews.find(review =>
       review.userId && String(review.userId) === String(uid)
     );
-    setUserAlreadyReviewed(!!userReview);
+
+    setUserAlreadyReviewed(!!foundReview);
+    setUserReview(foundReview || null);
   };
 
   const fetchReviews = async () => {
@@ -228,89 +224,10 @@ const ProductReviews = ({ productId }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviews, uid]);
 
-  // ✅ create review images (max 3) + compress
-  const handleImagesChange = async (e) => {
-    const files = Array.from(e.target.files || []);
-    const limited = files.slice(0, MAX_IMAGES);
-
-    // compress in parallel
-    const compressed = await Promise.all(
-      limited.map((f) => compressImage(f, 1200, 0.7))
-    );
-
-    setImages(compressed);
-    setImagePreviews(compressed.map((file) => URL.createObjectURL(file)));
-  };
-
+  // Cleanup image previews
   useEffect(() => {
-    return () => imagePreviews.forEach((url) => URL.revokeObjectURL(url));
-  }, [imagePreviews]);
-
-  // ✅ submit review (do not set content-type manually)
-  const submitReview = async () => {
-    setErr("");
-
-    if (!userData) {
-      setErr("Please login to submit a review.");
-      return;
-    }
-
-    if (!hasPurchased) {
-      setErr("You need to purchase this product to submit a review.");
-      return;
-    }
-
-    if (!isDelivered) {
-      setErr("Your order needs to be delivered before you can review this product.");
-      return;
-    }
-
-    if (userAlreadyReviewed) {
-      setErr("You have already reviewed this product. You can edit your existing review.");
-      return;
-    }
-
-    const trimmed = comment.trim();
-    if (trimmed.length < 5) {
-      setErr("Comment must be at least 5 characters.");
-      return;
-    }
-
-    if (rating < 1 || rating > 5) {
-      setErr("Rating must be between 1 and 5.");
-      return;
-    }
-
-    try {
-      setSubmitLoading(true);
-
-      const formData = new FormData();
-      formData.append("rating", rating);
-      formData.append("comment", trimmed);
-
-      images.forEach((img) => formData.append("images", img));
-
-      const res = await axios.post(
-        `${serverUrl}/api/review/${productId}`,
-        formData,
-        { withCredentials: true }
-      );
-
-      if (res.data.success) {
-        setComment("");
-        setRating(5);
-        setImages([]);
-        setImagePreviews([]);
-        await fetchReviews();
-      } else {
-        setErr(res.data.message || "Failed to submit review");
-      }
-    } catch (e) {
-      setErr(e.response?.data?.message || "Failed to submit review");
-    } finally {
-      setSubmitLoading(false);
-    }
-  };
+    return () => editNewPreviews.forEach((url) => URL.revokeObjectURL(url));
+  }, [editNewPreviews]);
 
   const canManage = (review) => {
     return uid && review?.userId && String(uid) === String(review.userId);
@@ -318,14 +235,22 @@ const ProductReviews = ({ productId }) => {
 
   const deleteReview = async (reviewId) => {
     if (!userData) return;
+
+    if (!window.confirm("Are you sure you want to delete this review? This action cannot be undone.")) {
+      return;
+    }
+
     try {
       const res = await axios.delete(
         `${serverUrl}/api/review/delete/${reviewId}`,
         { withCredentials: true }
       );
-      if (res.data.success) await fetchReviews();
+      if (res.data.success) {
+        await fetchReviews();
+      }
     } catch (e) {
       console.log("deleteReview error:", e.message);
+      alert("Failed to delete review. Please try again.");
     }
   };
 
@@ -441,9 +366,6 @@ const ProductReviews = ({ productId }) => {
   const displayedReviews = reviews.slice(0, visibleCount);
   const hasMore = visibleCount < reviews.length;
 
-  // Check if user can submit review
-  const canSubmitReview = userData && hasPurchased && isDelivered && !userAlreadyReviewed;
-
   return (
     <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl sm:rounded-2xl p-4 sm:p-6">
       <div className="flex items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
@@ -462,137 +384,89 @@ const ProductReviews = ({ productId }) => {
             <FaStar
               key={star}
               className={`text-xs sm:text-sm ${star <= Math.round(avgRating || 0)
-                  ? "text-yellow-400"
-                  : "text-gray-500"
+                ? "text-yellow-400"
+                : "text-gray-500"
                 }`}
             />
           ))}
         </div>
       </div>
 
-      {/* Review Form - Conditionally shown */}
-      {userData && (
-        <div className="border border-[color:var(--border)] rounded-xl p-3 sm:p-4 bg-[color:var(--surface-2)] mb-4 sm:mb-6">
-          {checkingPurchase ? (
-            <div className="flex items-center justify-center py-4">
-              <div className="w-5 h-5 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-              <span className="ml-2 text-sm text-[color:var(--muted)]">Checking purchase status...</span>
+      {/* User's Review Status */}
+      {userData && checkingPurchase ? (
+        <div className="flex items-center justify-center py-3 mb-4">
+          <div className="w-4 h-4 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+          <span className="ml-2 text-xs text-[color:var(--muted)]">Checking your purchase...</span>
+        </div>
+      ) : userData && userAlreadyReviewed ? (
+        <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-xl p-3 mb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FaCheckCircle className="text-cyan-500" />
+              <div>
+                <p className="font-semibold text-sm text-cyan-500">You've reviewed this product</p>
+                <p className="text-xs text-[color:var(--muted)] mt-0.5">
+                  You can edit or delete your review below
+                </p>
+              </div>
             </div>
-          ) : canSubmitReview ? (
-            <>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                <p className="font-semibold text-xs sm:text-sm">Write a review</p>
-                <div className="flex items-center gap-2 text-xs text-green-500">
-                  <FaCheckCircle className="text-xs" />
-                  <span>Eligible to review</span>
-                </div>
+            {userReview && (
+              <button
+                onClick={() => openEdit(userReview)}
+                className="px-3 py-1.5 text-xs rounded-lg border border-cyan-500 text-cyan-500 hover:bg-cyan-500/10 transition flex items-center gap-1"
+              >
+                <FaEdit className="text-xs" />
+                Edit Review
+              </button>
+            )}
+          </div>
+        </div>
+      ) : userData && hasPurchased && isDelivered ? (
+        <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-xl p-3 mb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FaShoppingBag className="text-yellow-500" />
+              <div>
+                <p className="font-semibold text-sm text-yellow-500">You can review this product</p>
+                <p className="text-xs text-[color:var(--muted)] mt-0.5">
+                  Go to your Orders page to submit a review
+                </p>
               </div>
-
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-[color:var(--muted)] text-xs sm:text-sm">Rating:</span>
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setRating(star)}
-                      className="hover:scale-110 transition"
-                    >
-                      <FaStar
-                        className={`text-base sm:text-lg ${star <= rating ? "text-yellow-400" : "text-gray-500"
-                          }`}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Share your experience with this product..."
-                rows={3}
-                className="w-full rounded-lg sm:rounded-xl bg-transparent border border-[color:var(--border)] p-3 text-sm text-[color:var(--text)] placeholder:text-[color:var(--muted)] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300"
-              />
-
-              <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <label
-                  className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg sm:rounded-xl border border-[color:var(--border)] text-[color:var(--muted)] hover:border-cyan-500 hover:text-cyan-500 cursor-pointer transition"
-                >
-                  <FaImages />
-                  <span className="text-xs">
-                    {images.length > 0
-                      ? `${images.length} image(s) selected`
-                      : "Add images (max 3)"}
-                  </span>
-
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={handleImagesChange}
-                  />
-                </label>
-
-                <button
-                  type="button"
-                  onClick={submitReview}
-                  disabled={submitLoading}
-                  className="px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-95 text-white"
-                >
-                  {submitLoading ? "Submitting..." : "Submit Review"}
-                </button>
-              </div>
-
-              {imagePreviews.length > 0 && (
-                <div className="mt-3 flex gap-2 flex-wrap">
-                  {imagePreviews.map((url, i) => (
-                    <img
-                      key={i}
-                      src={url}
-                      alt="preview"
-                      className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg sm:rounded-xl border border-[color:var(--border)]"
-                    />
-                  ))}
-                </div>
-              )}
-
-              {err && <p className="text-red-500 text-xs mt-2">{err}</p>}
-            </>
-          ) : userAlreadyReviewed ? (
-            <div className="text-center py-3">
-              <div className="flex items-center justify-center gap-2 text-cyan-500 mb-2">
-                <FaCheckCircle className="text-lg" />
-                <span className="font-semibold">You've already reviewed this product</span>
-              </div>
-              <p className="text-[color:var(--muted)] text-xs">
-                You can edit your review from the reviews section below
-              </p>
             </div>
-          ) : hasPurchased && !isDelivered ? (
-            <div className="text-center py-3">
-              <div className="flex items-center justify-center gap-2 text-yellow-500 mb-2">
-                <FaShoppingBag className="text-lg" />
-                <span className="font-semibold">Order not yet delivered</span>
-              </div>
-              <p className="text-[color:var(--muted)] text-xs">
+            <button
+              onClick={() => window.location.href = "/orders"}
+              className="px-3 py-1.5 text-xs rounded-lg border border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 transition flex items-center gap-1"
+            >
+              <FaPen className="text-xs" />
+              Review in Orders
+            </button>
+          </div>
+        </div>
+      ) : userData && hasPurchased && !isDelivered ? (
+        <div className="bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/30 rounded-xl p-3 mb-4">
+          <div className="flex items-center gap-2">
+            <FaShoppingBag className="text-blue-500" />
+            <div>
+              <p className="font-semibold text-sm text-blue-500">Order not yet delivered</p>
+              <p className="text-xs text-[color:var(--muted)] mt-0.5">
                 You can review this product once your order is delivered
               </p>
             </div>
-          ) : !hasPurchased ? (
-            <div className="text-center py-3">
-              <div className="flex items-center justify-center gap-2 text-[color:var(--muted)] mb-2">
-                <FaShoppingBag className="text-lg" />
-                <span className="font-semibold">Purchase to review</span>
-              </div>
-              <p className="text-[color:var(--muted)] text-xs">
-                You need to purchase and receive this product to submit a review
+          </div>
+        </div>
+      ) : userData && !hasPurchased ? (
+        <div className="bg-gradient-to-r from-gray-500/10 to-gray-600/10 border border-gray-500/30 rounded-xl p-3 mb-4">
+          <div className="flex items-center gap-2">
+            <FaShoppingBag className="text-[color:var(--muted)]" />
+            <div>
+              <p className="font-semibold text-sm text-[color:var(--muted)]">Purchase to review</p>
+              <p className="text-xs text-[color:var(--muted)] mt-0.5">
+                Buy this product to share your experience
               </p>
             </div>
-          ) : null}
+          </div>
         </div>
-      )}
+      ) : null}
 
       {/* Reviews List */}
       {loading ? (
@@ -609,6 +483,7 @@ const ProductReviews = ({ productId }) => {
           <div className="space-y-3 sm:space-y-4">
             {displayedReviews.map((review) => {
               const normalized = normalizeReviewImages(review.images);
+              const isUserReview = canManage(review);
 
               return (
                 <div
@@ -617,9 +492,16 @@ const ProductReviews = ({ productId }) => {
                 >
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
                     <div>
-                      <span className="font-semibold text-sm sm:text-base">
-                        {review.userName}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm sm:text-base">
+                          {review.userName}
+                        </span>
+                        {isUserReview && (
+                          <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-cyan-500/10 text-cyan-500 border border-cyan-500/30">
+                            Your Review
+                          </span>
+                        )}
+                      </div>
                       <div className="text-[color:var(--muted)] text-xs mt-0.5">
                         {new Date(review.createdAt).toLocaleDateString("en-IN", {
                           day: "2-digit",
@@ -635,14 +517,14 @@ const ProductReviews = ({ productId }) => {
                           <FaStar
                             key={i}
                             className={`text-xs sm:text-sm ${i < (review.rating || 0)
-                                ? "text-yellow-400"
-                                : "text-gray-500"
+                              ? "text-yellow-400"
+                              : "text-gray-500"
                               }`}
                           />
                         ))}
                       </div>
 
-                      {canManage(review) && (
+                      {isUserReview && (
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => openEdit(review)}
@@ -676,6 +558,8 @@ const ProductReviews = ({ productId }) => {
                           src={img.url}
                           alt="review"
                           className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg sm:rounded-xl border border-[color:var(--border)]"
+                          onClick={() => window.open(img.url, '_blank')}
+                          style={{ cursor: 'pointer' }}
                         />
                       ))}
                     </div>
@@ -706,7 +590,7 @@ const ProductReviews = ({ productId }) => {
         <div className="fixed inset-0 z-[999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
           <div className="w-full max-w-2xl bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <h3 className="font-semibold text-base sm:text-lg">Edit Review</h3>
+              <h3 className="font-semibold text-base sm:text-lg">Edit Your Review</h3>
               <button
                 onClick={closeEdit}
                 className="text-[color:var(--muted)] hover:text-[color:var(--text)] transition"
@@ -737,14 +621,15 @@ const ProductReviews = ({ productId }) => {
             <textarea
               value={editComment}
               onChange={(e) => setEditComment(e.target.value)}
-              rows={3}
+              placeholder="Share your updated experience with this product..."
+              rows={4}
               className="w-full rounded-lg sm:rounded-xl bg-transparent border border-[color:var(--border)] p-3 text-sm text-[color:var(--text)] placeholder:text-[color:var(--muted)] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300"
             />
 
             {editExistingImages.length > 0 && (
               <div className="mt-3 sm:mt-4">
                 <p className="text-[color:var(--text)] text-xs sm:text-sm font-semibold mb-2">
-                  Existing images
+                  Your existing images
                 </p>
 
                 <div className="flex gap-2 flex-wrap">
@@ -756,7 +641,7 @@ const ProductReviews = ({ productId }) => {
                     return (
                       <div
                         key={idx}
-                        className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl border overflow-hidden ${keep ? "border-cyan-500" : "border-[color:var(--border)] opacity-40"
+                        className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl border-2 overflow-hidden transition-all ${keep ? "border-cyan-500" : "border-gray-400 opacity-40"
                           }`}
                       >
                         <img
@@ -765,15 +650,19 @@ const ProductReviews = ({ productId }) => {
                           className="w-full h-full object-cover"
                         />
 
-                        {keep && (
+                        {keep ? (
                           <button
                             type="button"
                             onClick={() => removeExistingImage(img)}
-                            className="absolute top-1 right-1 bg-black/60 text-white p-1 rounded hover:bg-black/80 transition"
-                            title="Remove"
+                            className="absolute top-1 right-1 bg-black/70 text-white p-1 rounded-full hover:bg-black/90 transition"
+                            title="Remove this image"
                           >
                             <FaTimes size={10} />
                           </button>
+                        ) : (
+                          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                            <span className="text-white text-xs font-semibold">Removed</span>
+                          </div>
                         )}
                       </div>
                     );
@@ -781,13 +670,13 @@ const ProductReviews = ({ productId }) => {
                 </div>
 
                 <p className="text-[color:var(--muted)] text-xs mt-2">
-                  (Click ❌ to remove image from review)
+                  Click ❌ to remove images from your review
                 </p>
               </div>
             )}
 
-            <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <label className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg sm:rounded-xl border border-[color:var(--border)] text-[color:var(--muted)] hover:border-cyan-500 hover:text-cyan-500 cursor-pointer transition">
+            <div className="mt-3 sm:mt-4">
+              <label className="items-center gap-2 text-xs px-3 py-2 rounded-lg sm:rounded-xl border border-[color:var(--border)] text-[color:var(--muted)] hover:border-cyan-500 hover:text-cyan-500 cursor-pointer transition inline-block">
                 <FaPlus />
                 <span>Add new images</span>
 
@@ -800,14 +689,11 @@ const ProductReviews = ({ productId }) => {
                 />
               </label>
 
-              <button
-                type="button"
-                onClick={submitEdit}
-                disabled={editLoading}
-                className="px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-95 text-white"
-              >
-                {editLoading ? "Updating..." : "Update"}
-              </button>
+              <p className="text-[color:var(--muted)] text-xs mt-1">
+                You can add up to {MAX_IMAGES - editExistingImages.filter(img =>
+                  editKeepPublicIds.includes(img.publicId || img.url)
+                ).length} new images
+              </p>
             </div>
 
             {editNewPreviews.length > 0 && (
@@ -817,13 +703,29 @@ const ProductReviews = ({ productId }) => {
                     key={i}
                     src={url}
                     alt="new"
-                    className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg sm:rounded-xl border border-[color:var(--border)]"
+                    className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg sm:rounded-xl border-2 border-green-500"
                   />
                 ))}
               </div>
             )}
 
             {editErr && <p className="text-red-500 text-xs mt-3">{editErr}</p>}
+
+            <div className="mt-4 pt-4 border-t border-[color:var(--border)] flex justify-end gap-2">
+              <button
+                onClick={closeEdit}
+                className="px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold border border-[color:var(--border)] text-[color:var(--muted)] hover:border-red-500 hover:text-red-500 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitEdit}
+                disabled={editLoading}
+                className="px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-95 text-white disabled:opacity-50"
+              >
+                {editLoading ? "Updating..." : "Update Review"}
+              </button>
+            </div>
           </div>
         </div>
       )}
