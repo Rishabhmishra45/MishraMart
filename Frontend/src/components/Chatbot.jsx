@@ -191,16 +191,14 @@ const Chatbot = () => {
 
       {isOpen && (
         <div
-          className={`fixed z-50 flex items-end justify-end ${
-            isExpanded ? "inset-0 p-0" : "bottom-4 right-4 xs:bottom-5 xs:right-5 sm:bottom-6 sm:right-6"
-          } transition-all duration-300`}
+          className={`fixed z-50 flex items-end justify-end ${isExpanded ? "inset-0 p-0" : "bottom-4 right-4 xs:bottom-5 xs:right-5 sm:bottom-6 sm:right-6"
+            } transition-all duration-300`}
         >
           <div className={`fixed inset-0 bg-black/50 ${isExpanded ? "block" : "hidden sm:block"}`} onClick={() => setIsOpen(false)} />
 
           <div
-            className={`relative rounded-2xl shadow-2xl border flex flex-col transition-all duration-300 ${
-              isExpanded ? "w-full h-full m-0 rounded-none" : "w-[95vw] max-w-md h-[85vh] max-h-[600px] xs:w-[90vw] sm:w-full"
-            }`}
+            className={`relative rounded-2xl shadow-2xl border flex flex-col transition-all duration-300 ${isExpanded ? "w-full h-full m-0 rounded-none" : "w-[95vw] max-w-md h-[85vh] max-h-[600px] xs:w-[90vw] sm:w-full"
+              }`}
             style={{
               background: "var(--surface)",
               borderColor: "var(--border)",
@@ -250,8 +248,8 @@ const Chatbot = () => {
             </div>
 
             {/* Messages */}
-            <div 
-              ref={chatContainerRef} 
+            <div
+              ref={chatContainerRef}
               className="flex-1 overflow-y-auto p-3 xs:p-4 space-y-3 xs:space-y-4"
               style={{
                 backgroundColor: 'var(--surface)'
@@ -260,14 +258,13 @@ const Chatbot = () => {
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
                   <div
-                    className={`max-w-[85%] xs:max-w-[80%] rounded-2xl px-3 py-2 xs:px-4 xs:py-3 ${
-                      message.sender === "user"
+                    className={`max-w-[85%] xs:max-w-[80%] rounded-2xl px-3 py-2 xs:px-4 xs:py-3 ${message.sender === "user"
                         ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-br-none"
                         : "rounded-bl-none border"
-                    }`}
-                    style={message.sender === "bot" ? { 
-                      backgroundColor: 'var(--surface-2)', 
-                      borderColor: "var(--border)" 
+                      }`}
+                    style={message.sender === "bot" ? {
+                      backgroundColor: 'var(--surface-2)',
+                      borderColor: "var(--border)"
                     } : {}}
                   >
                     <p className="text-xs xs:text-sm whitespace-pre-wrap break-words">{message.text}</p>
@@ -288,9 +285,9 @@ const Chatbot = () => {
 
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="rounded-2xl rounded-bl-none px-4 py-3 border" style={{ 
-                    backgroundColor: 'var(--surface-2)', 
-                    borderColor: "var(--border)" 
+                  <div className="rounded-2xl rounded-bl-none px-4 py-3 border" style={{
+                    backgroundColor: 'var(--surface-2)',
+                    borderColor: "var(--border)"
                   }}>
                     <div className="flex space-x-2">
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
@@ -318,10 +315,10 @@ const Chatbot = () => {
                         key={idx}
                         onClick={() => sendMessage(action.query)}
                         className="rounded-xl p-2 text-xs transition duration-200 flex flex-col items-center gap-1 border"
-                        style={{ 
-                          backgroundColor: 'var(--surface-2)', 
-                          borderColor: "var(--border)", 
-                          color: "var(--text)" 
+                        style={{
+                          backgroundColor: 'var(--surface-2)',
+                          borderColor: "var(--border)",
+                          color: "var(--text)"
                         }}
                       >
                         <Icon className="text-cyan-400 text-sm" />
@@ -342,10 +339,10 @@ const Chatbot = () => {
                       key={idx}
                       onClick={() => handleSuggestionClick(suggestion)}
                       className="rounded-full px-3 py-1 text-[10px] xs:text-xs border hover:opacity-95"
-                      style={{ 
-                        backgroundColor: 'var(--surface-2)', 
-                        borderColor: "var(--border)", 
-                        color: "var(--text)" 
+                      style={{
+                        backgroundColor: 'var(--surface-2)',
+                        borderColor: "var(--border)",
+                        color: "var(--text)"
                       }}
                     >
                       {suggestion.length > 22 ? suggestion.substring(0, 22) + "..." : suggestion}
@@ -356,17 +353,17 @@ const Chatbot = () => {
             )}
 
             {/* Input */}
-            <div className="border-t p-3 xs:p-4" style={{ 
+            <div className="border-t p-3 xs:p-4" style={{
               borderColor: "var(--border)",
               backgroundColor: 'var(--surface)'
             }}>
               <form onSubmit={handleSubmit} className="flex gap-2">
                 <label
                   className="rounded-full w-10 h-10 xs:w-12 xs:h-12 flex items-center justify-center cursor-pointer border"
-                  style={{ 
-                    backgroundColor: 'var(--surface-2)', 
-                    borderColor: "var(--border)", 
-                    color: "var(--text)" 
+                  style={{
+                    backgroundColor: 'var(--surface-2)',
+                    borderColor: "var(--border)",
+                    color: "var(--text)"
                   }}
                 >
                   <FaPaperclip className="text-xs xs:text-sm" />
@@ -379,8 +376,8 @@ const Chatbot = () => {
                   onChange={(e) => setInputMessage(e.target.value)}
                   placeholder="Type your message..."
                   className="flex-1 rounded-full px-4 py-2 xs:py-3 text-xs xs:text-sm border outline-none"
-                  style={{ 
-                    borderColor: "var(--border)", 
+                  style={{
+                    borderColor: "var(--border)",
                     color: "var(--text)",
                     backgroundColor: 'var(--surface-2)'
                   }}

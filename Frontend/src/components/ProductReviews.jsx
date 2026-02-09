@@ -8,6 +8,8 @@ import {
   FaTimes,
   FaPlus,
   FaChevronDown,
+  FaShoppingBag,
+  FaCheckCircle,
 } from "react-icons/fa";
 import { authDataContext } from "../context/AuthContext";
 import { userDataContext } from "../context/UserContext";
@@ -75,6 +77,12 @@ const ProductReviews = ({ productId }) => {
   const [reviews, setReviews] = useState([]);
   const [avgRating, setAvgRating] = useState(0);
 
+  // New state for purchase verification
+  const [hasPurchased, setHasPurchased] = useState(false);
+  const [isDelivered, setIsDelivered] = useState(false);
+  const [checkingPurchase, setCheckingPurchase] = useState(false);
+  const [userAlreadyReviewed, setUserAlreadyReviewed] = useState(false);
+
   // show limited reviews
   const [visibleCount, setVisibleCount] = useState(DEFAULT_VISIBLE_REVIEWS);
 
@@ -117,6 +125,69 @@ const ProductReviews = ({ productId }) => {
       .filter(Boolean);
   };
 
+  // Function to check if user has purchased this product
+  const checkUserPurchase = async () => {
+    if (!userData || !productId) {
+      setHasPurchased(false);
+      setIsDelivered(false);
+      return;
+    }
+
+    try {
+      setCheckingPurchase(true);
+      const res = await axios.get(`${serverUrl}/api/orders/my-orders`, {
+        withCredentials: true,
+      });
+
+      if (res.data.success && res.data.orders) {
+        let purchased = false;
+        let delivered = false;
+
+        // Check all orders for this product
+        res.data.orders.forEach((order) => {
+          if (order.items && Array.isArray(order.items)) {
+            order.items.forEach((item) => {
+              // Check if productId matches
+              if (
+                item.productId?._id === productId ||
+                item.productId === productId
+              ) {
+                purchased = true;
+
+                // Check if order is delivered
+                if (order.status === "delivered") {
+                  delivered = true;
+                }
+              }
+            });
+          }
+        });
+
+        setHasPurchased(purchased);
+        setIsDelivered(delivered);
+      }
+    } catch (error) {
+      console.log("Error checking purchase:", error.message);
+      setHasPurchased(false);
+      setIsDelivered(false);
+    } finally {
+      setCheckingPurchase(false);
+    }
+  };
+
+  // Check if user already reviewed this product
+  const checkUserReview = () => {
+    if (!uid) {
+      setUserAlreadyReviewed(false);
+      return;
+    }
+
+    const userReview = reviews.find(review =>
+      review.userId && String(review.userId) === String(uid)
+    );
+    setUserAlreadyReviewed(!!userReview);
+  };
+
   const fetchReviews = async () => {
     try {
       setLoading(true);
@@ -142,6 +213,21 @@ const ProductReviews = ({ productId }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId]);
 
+  useEffect(() => {
+    if (productId && userData) {
+      checkUserPurchase();
+    } else {
+      setHasPurchased(false);
+      setIsDelivered(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productId, userData]);
+
+  useEffect(() => {
+    checkUserReview();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reviews, uid]);
+
   // ✅ create review images (max 3) + compress
   const handleImagesChange = async (e) => {
     const files = Array.from(e.target.files || []);
@@ -166,6 +252,21 @@ const ProductReviews = ({ productId }) => {
 
     if (!userData) {
       setErr("Please login to submit a review.");
+      return;
+    }
+
+    if (!hasPurchased) {
+      setErr("You need to purchase this product to submit a review.");
+      return;
+    }
+
+    if (!isDelivered) {
+      setErr("Your order needs to be delivered before you can review this product.");
+      return;
+    }
+
+    if (userAlreadyReviewed) {
+      setErr("You have already reviewed this product. You can edit your existing review.");
       return;
     }
 
@@ -340,6 +441,9 @@ const ProductReviews = ({ productId }) => {
   const displayedReviews = reviews.slice(0, visibleCount);
   const hasMore = visibleCount < reviews.length;
 
+  // Check if user can submit review
+  const canSubmitReview = userData && hasPurchased && isDelivered && !userAlreadyReviewed;
+
   return (
     <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl sm:rounded-2xl p-4 sm:p-6">
       <div className="flex items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
@@ -357,111 +461,138 @@ const ProductReviews = ({ productId }) => {
           {[1, 2, 3, 4, 5].map((star) => (
             <FaStar
               key={star}
-              className={`text-xs sm:text-sm ${
-                star <= Math.round(avgRating || 0)
+              className={`text-xs sm:text-sm ${star <= Math.round(avgRating || 0)
                   ? "text-yellow-400"
                   : "text-gray-500"
-              }`}
+                }`}
             />
           ))}
         </div>
       </div>
 
-      {/* Review Form */}
-      <div className="border border-[color:var(--border)] rounded-xl p-3 sm:p-4 bg-[color:var(--surface-2)] mb-4 sm:mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-          <p className="font-semibold text-xs sm:text-sm">Write a review</p>
-          {!userData && (
-            <p className="text-yellow-500 text-xs">Login required to review</p>
-          )}
-        </div>
+      {/* Review Form - Conditionally shown */}
+      {userData && (
+        <div className="border border-[color:var(--border)] rounded-xl p-3 sm:p-4 bg-[color:var(--surface-2)] mb-4 sm:mb-6">
+          {checkingPurchase ? (
+            <div className="flex items-center justify-center py-4">
+              <div className="w-5 h-5 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+              <span className="ml-2 text-sm text-[color:var(--muted)]">Checking purchase status...</span>
+            </div>
+          ) : canSubmitReview ? (
+            <>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                <p className="font-semibold text-xs sm:text-sm">Write a review</p>
+                <div className="flex items-center gap-2 text-xs text-green-500">
+                  <FaCheckCircle className="text-xs" />
+                  <span>Eligible to review</span>
+                </div>
+              </div>
 
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-[color:var(--muted)] text-xs sm:text-sm">Rating:</span>
-          <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                onClick={() => setRating(star)}
-                disabled={!userData}
-                className="hover:scale-110 transition disabled:opacity-50"
-              >
-                <FaStar
-                  className={`text-base sm:text-lg ${
-                    star <= rating ? "text-yellow-400" : "text-gray-500"
-                  }`}
-                />
-              </button>
-            ))}
-          </div>
-        </div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-[color:var(--muted)] text-xs sm:text-sm">Rating:</span>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setRating(star)}
+                      className="hover:scale-110 transition"
+                    >
+                      <FaStar
+                        className={`text-base sm:text-lg ${star <= rating ? "text-yellow-400" : "text-gray-500"
+                          }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-        <textarea
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          placeholder={
-            userData ? "Share your experience..." : "Login to write review..."
-          }
-          disabled={!userData}
-          rows={3}
-          className="w-full rounded-lg sm:rounded-xl bg-transparent border border-[color:var(--border)] p-3 text-sm text-[color:var(--text)] placeholder:text-[color:var(--muted)] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300"
-        />
-
-        <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <label
-            className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg sm:rounded-xl border cursor-pointer transition ${
-              !userData
-                ? "border-[color:var(--border)] text-[color:var(--muted)] cursor-not-allowed"
-                : "border-[color:var(--border)] text-[color:var(--muted)] hover:border-cyan-500 hover:text-cyan-500"
-            }`}
-          >
-            <FaImages />
-            <span className="text-xs">
-              {images.length > 0
-                ? `${images.length} image(s) selected`
-                : "Add images (max 3)"}
-            </span>
-
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              disabled={!userData}
-              className="hidden"
-              onChange={handleImagesChange}
-            />
-          </label>
-
-          <button
-            type="button"
-            onClick={submitReview}
-            disabled={!userData || submitLoading}
-            className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 ${
-              !userData || submitLoading
-                ? "bg-gray-500 text-gray-400 cursor-not-allowed"
-                : "bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-95 text-white"
-            }`}
-          >
-            {submitLoading ? "Submitting..." : "Submit"}
-          </button>
-        </div>
-
-        {imagePreviews.length > 0 && (
-          <div className="mt-3 flex gap-2 flex-wrap">
-            {imagePreviews.map((url, i) => (
-              <img
-                key={i}
-                src={url}
-                alt="preview"
-                className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg sm:rounded-xl border border-[color:var(--border)]"
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Share your experience with this product..."
+                rows={3}
+                className="w-full rounded-lg sm:rounded-xl bg-transparent border border-[color:var(--border)] p-3 text-sm text-[color:var(--text)] placeholder:text-[color:var(--muted)] focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300"
               />
-            ))}
-          </div>
-        )}
 
-        {err && <p className="text-red-500 text-xs mt-2">{err}</p>}
-      </div>
+              <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <label
+                  className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg sm:rounded-xl border border-[color:var(--border)] text-[color:var(--muted)] hover:border-cyan-500 hover:text-cyan-500 cursor-pointer transition"
+                >
+                  <FaImages />
+                  <span className="text-xs">
+                    {images.length > 0
+                      ? `${images.length} image(s) selected`
+                      : "Add images (max 3)"}
+                  </span>
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleImagesChange}
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  onClick={submitReview}
+                  disabled={submitLoading}
+                  className="px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-95 text-white"
+                >
+                  {submitLoading ? "Submitting..." : "Submit Review"}
+                </button>
+              </div>
+
+              {imagePreviews.length > 0 && (
+                <div className="mt-3 flex gap-2 flex-wrap">
+                  {imagePreviews.map((url, i) => (
+                    <img
+                      key={i}
+                      src={url}
+                      alt="preview"
+                      className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg sm:rounded-xl border border-[color:var(--border)]"
+                    />
+                  ))}
+                </div>
+              )}
+
+              {err && <p className="text-red-500 text-xs mt-2">{err}</p>}
+            </>
+          ) : userAlreadyReviewed ? (
+            <div className="text-center py-3">
+              <div className="flex items-center justify-center gap-2 text-cyan-500 mb-2">
+                <FaCheckCircle className="text-lg" />
+                <span className="font-semibold">You've already reviewed this product</span>
+              </div>
+              <p className="text-[color:var(--muted)] text-xs">
+                You can edit your review from the reviews section below
+              </p>
+            </div>
+          ) : hasPurchased && !isDelivered ? (
+            <div className="text-center py-3">
+              <div className="flex items-center justify-center gap-2 text-yellow-500 mb-2">
+                <FaShoppingBag className="text-lg" />
+                <span className="font-semibold">Order not yet delivered</span>
+              </div>
+              <p className="text-[color:var(--muted)] text-xs">
+                You can review this product once your order is delivered
+              </p>
+            </div>
+          ) : !hasPurchased ? (
+            <div className="text-center py-3">
+              <div className="flex items-center justify-center gap-2 text-[color:var(--muted)] mb-2">
+                <FaShoppingBag className="text-lg" />
+                <span className="font-semibold">Purchase to review</span>
+              </div>
+              <p className="text-[color:var(--muted)] text-xs">
+                You need to purchase and receive this product to submit a review
+              </p>
+            </div>
+          ) : null}
+        </div>
+      )}
 
       {/* Reviews List */}
       {loading ? (
@@ -503,11 +634,10 @@ const ProductReviews = ({ productId }) => {
                         {[...Array(5)].map((_, i) => (
                           <FaStar
                             key={i}
-                            className={`text-xs sm:text-sm ${
-                              i < (review.rating || 0)
+                            className={`text-xs sm:text-sm ${i < (review.rating || 0)
                                 ? "text-yellow-400"
                                 : "text-gray-500"
-                            }`}
+                              }`}
                           />
                         ))}
                       </div>
@@ -596,9 +726,8 @@ const ProductReviews = ({ productId }) => {
                     className="hover:scale-110 transition"
                   >
                     <FaStar
-                      className={`text-base sm:text-lg ${
-                        star <= editRating ? "text-yellow-400" : "text-gray-500"
-                      }`}
+                      className={`text-base sm:text-lg ${star <= editRating ? "text-yellow-400" : "text-gray-500"
+                        }`}
                     />
                   </button>
                 ))}
@@ -627,9 +756,8 @@ const ProductReviews = ({ productId }) => {
                     return (
                       <div
                         key={idx}
-                        className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl border overflow-hidden ${
-                          keep ? "border-cyan-500" : "border-[color:var(--border)] opacity-40"
-                        }`}
+                        className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl border overflow-hidden ${keep ? "border-cyan-500" : "border-[color:var(--border)] opacity-40"
+                          }`}
                       >
                         <img
                           src={img.url}
@@ -676,11 +804,7 @@ const ProductReviews = ({ productId }) => {
                 type="button"
                 onClick={submitEdit}
                 disabled={editLoading}
-                className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 ${
-                  editLoading
-                    ? "bg-gray-500 text-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-95 text-white"
-                }`}
+                className="px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-95 text-white"
               >
                 {editLoading ? "Updating..." : "Update"}
               </button>
